@@ -1,175 +1,186 @@
 {
-  "probedAt": "2026-10-03T17:42:25.764Z",
+  "probedAt": "2026-10-03T18:07:44.862Z",
   "registryEntries": 38942,
   "registryWithRemote": 24294,
-  "probed": 200,
+  "probed": 24294,
   "byStatus": {
-    "ok": 123,
-    "auth": 53,
-    "not_found": 8,
-    "dns": 4,
-    "error": 3,
-    "protocol_error": 3,
-    "payment": 2,
-    "tls": 2,
-    "server_error": 1,
-    "timeout": 1
+    "ok": 12975,
+    "auth": 5836,
+    "protocol_error": 1800,
+    "not_found": 881,
+    "dns": 728,
+    "rate_limited": 500,
+    "payment": 434,
+    "server_error": 349,
+    "error": 307,
+    "tls": 259,
+    "timeout": 204,
+    "refused": 21
   },
-  "reachable": 178,
-  "ok": 123,
-  "uniqueToolsets": 123,
-  "duplicateServers": 0,
+  "reachable": 19245,
+  "ok": 12975,
+  "uniqueToolsets": 12405,
+  "duplicateServers": 570,
   "protocols": {
-    "2025-11-25": 79,
-    "2025-06-18": 27,
-    "2025-03-26": 12,
-    "2024-11-05": 5
+    "2025-11-25": 7732,
+    "2025-03-26": 3108,
+    "2025-06-18": 1634,
+    "2024-11-05": 500,
+    "unknown": 1
   },
   "authSchemes": {
-    "Bearer": 51,
-    "none": 2
+    "Bearer": 5109,
+    "none": 706,
+    "ApiKey": 8,
+    "AzureApiManagementKey": 6,
+    "OAuth": 2,
+    "Basic": 1,
+    "Key": 1,
+    "Api-Key": 1,
+    "Simple": 1,
+    "RoseMember": 1
   },
   "transports": {
-    "streamable-http": 194,
-    "sse": 6
+    "streamable-http": 23554,
+    "sse": 740
   },
   "toolsTokens": {
-    "median": 1359,
-    "p90": 5672,
-    "p99": 35079,
-    "max": 56537,
-    "total": 392860
+    "median": 1727,
+    "p90": 7429,
+    "p99": 28200,
+    "max": 431925,
+    "total": 56275131
   },
   "toolCount": {
-    "median": 7,
+    "median": 8,
     "p90": 31,
-    "max": 184
+    "max": 1385
   },
   "initMs": {
-    "median": 424,
-    "p90": 1087
+    "median": 455,
+    "p90": 1458
   },
-  "hosts": 194,
+  "hosts": 16534,
   "heaviest": [
     {
-      "name": "io.github.valuein/mcp-sec-edgar",
-      "toolCount": 121,
-      "toolsTokens": 56537,
-      "host": "mcp.valuein.biz"
+      "name": "com.replynodes/mcp",
+      "toolCount": 66,
+      "toolsTokens": 431925,
+      "host": "mcp.replynodes.com"
     },
     {
-      "name": "ai.borealhost/mcp",
-      "toolCount": 184,
-      "toolsTokens": 35079,
-      "host": "borealhost.ai"
+      "name": "io.github.whiteknightonhorse/apibase",
+      "toolCount": 1385,
+      "toolsTokens": 343770,
+      "host": "apibase.pro"
     },
     {
-      "name": "io.github.assetfare/assetfare-bridge",
-      "toolCount": 9,
-      "toolsTokens": 22684,
-      "host": "api.assetfare.dev"
+      "name": "co.ainumbers/tools",
+      "toolCount": 725,
+      "toolsTokens": 343011,
+      "host": "mcp.ainumbers.co"
     },
     {
-      "name": "io.github.pipeworx-io/kosis-kr",
-      "toolCount": 39,
-      "toolsTokens": 19745,
-      "host": "gateway.pipeworx.io"
+      "name": "ai.oobeprotocol.sap.mcp/sap-mcp",
+      "toolCount": 453,
+      "toolsTokens": 178444,
+      "host": "mcp.sap.oobeprotocol.ai"
     },
     {
-      "name": "io.github.pipeworx-io/inegi",
-      "toolCount": 38,
-      "toolsTokens": 19115,
-      "host": "gateway.pipeworx.io"
-    },
-    {
-      "name": "io.apidirect/api-direct",
-      "toolCount": 102,
-      "toolsTokens": 18348,
-      "host": "apidirect.io"
-    },
-    {
-      "name": "io.github.baldiga/zooq",
-      "toolCount": 45,
-      "toolsTokens": 9799,
-      "host": "zooq.dev"
-    },
-    {
-      "name": "org.polyform/polyform",
-      "toolCount": 70,
-      "toolsTokens": 8563,
-      "host": "api.polyform.org"
-    },
-    {
-      "name": "io.github.sadri-dridi/cc-ph",
-      "toolCount": 31,
-      "toolsTokens": 7425,
-      "host": "agent-observatory-sensor.nolimit-observatory.workers.dev"
-    },
-    {
-      "name": "io.github.sadri-dridi/hostname-ok",
-      "toolCount": 31,
-      "toolsTokens": 7420,
-      "host": "agent-observatory-sensor.nolimit-observatory.workers.dev"
-    },
-    {
-      "name": "io.github.wilmendezofficial/postari",
-      "toolCount": 40,
-      "toolsTokens": 6592,
-      "host": "postari.io"
-    },
-    {
-      "name": "ai.clearvoyance/clearvoyance",
-      "toolCount": 27,
-      "toolsTokens": 5891,
-      "host": "clearvoyance.ai"
-    },
-    {
-      "name": "io.github.WirterNow/agent-bank",
-      "toolCount": 43,
-      "toolsTokens": 5672,
-      "host": "tdueqhfxyojmjgactdyc.supabase.co"
-    },
-    {
-      "name": "io.usefulapi/kayako",
-      "toolCount": 21,
-      "toolsTokens": 5588,
-      "host": "kayako.usefulapi.io"
-    },
-    {
-      "name": "ad.getle/leads",
-      "toolCount": 35,
-      "toolsTokens": 4862,
-      "host": "mcp.getle.ad"
-    },
-    {
-      "name": "io.github.LorgAI/lorg-mcp-server",
-      "toolCount": 26,
-      "toolsTokens": 4568,
-      "host": "api.lorg.ai"
-    },
-    {
-      "name": "io.github.megachadxyz/megachad",
-      "toolCount": 38,
-      "toolsTokens": 4445,
-      "host": "megachad.xyz"
-    },
-    {
-      "name": "org.aioq/aio",
-      "toolCount": 17,
-      "toolsTokens": 4271,
-      "host": "aioq.org"
-    },
-    {
-      "name": "com.radar-cnpj/radar-cnpj",
-      "toolCount": 23,
-      "toolsTokens": 4257,
-      "host": "radar-cnpj.com"
-    },
-    {
-      "name": "io.github.nmxmxh/pronto-stream",
+      "name": "io.github.Invaro/opentax",
       "toolCount": 15,
-      "toolsTokens": 4251,
-      "host": "pronto.stream"
+      "toolsTokens": 175279,
+      "host": "opentax.invaro.ai"
+    },
+    {
+      "name": "io.github.WellApp-ai/well-mcp",
+      "toolCount": 119,
+      "toolsTokens": 156630,
+      "host": "api.wellapp.ai"
+    },
+    {
+      "name": "io.github.duvoai/duvo",
+      "toolCount": 390,
+      "toolsTokens": 143460,
+      "host": "api.duvo.ai"
+    },
+    {
+      "name": "com.tttkmbb/calcgrid",
+      "toolCount": 253,
+      "toolsTokens": 140579,
+      "host": "tttkmbb.com"
+    },
+    {
+      "name": "io.github.getgapup/gapup-mcp",
+      "toolCount": 279,
+      "toolsTokens": 103782,
+      "host": "mcp.gapup.io"
+    },
+    {
+      "name": "io.github.getgapup/mcp-knowledge",
+      "toolCount": 279,
+      "toolsTokens": 103782,
+      "host": "mcp.gapup.io"
+    },
+    {
+      "name": "fr.synergieloc/immobilier",
+      "toolCount": 70,
+      "toolsTokens": 100284,
+      "host": "synergieloc.fr"
+    },
+    {
+      "name": "io.github.yzlee/opcmenu",
+      "toolCount": 288,
+      "toolsTokens": 93654,
+      "host": "mcp.opcmenu.com"
+    },
+    {
+      "name": "co.lovie/company-formation",
+      "toolCount": 340,
+      "toolsTokens": 90475,
+      "host": "mcp.lovie.co"
+    },
+    {
+      "name": "io.github.hermoso-ai/hermoso",
+      "toolCount": 185,
+      "toolsTokens": 88777,
+      "host": "app.hermoso.ai"
+    },
+    {
+      "name": "ai.intuitek.the-stall/the-stall",
+      "toolCount": 302,
+      "toolsTokens": 77488,
+      "host": "the-stall.intuitek.ai"
+    },
+    {
+      "name": "io.github.blackboxfoundry/livedatalink",
+      "toolCount": 381,
+      "toolsTokens": 77261,
+      "host": "livedatalink.ai"
+    },
+    {
+      "name": "io.github.pedro381/gover-mcp",
+      "toolCount": 102,
+      "toolsTokens": 73831,
+      "host": "mcp.gover.phs.tec.br"
+    },
+    {
+      "name": "io.github.tresor4k/macalc-mcp",
+      "toolCount": 446,
+      "toolsTokens": 71430,
+      "host": "macalculatriceenligne.com"
+    },
+    {
+      "name": "com.civilquants/civilquants",
+      "toolCount": 56,
+      "toolsTokens": 71135,
+      "host": "api.civilquants.com"
+    },
+    {
+      "name": "com.theaslangroupllc.pulse/pulsenetwork",
+      "toolCount": 80,
+      "toolsTokens": 70926,
+      "host": "pulse.theaslangroupllc.com"
     }
   ]
 }

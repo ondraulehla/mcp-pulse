@@ -14,6 +14,7 @@ const statusRows = run
 const up = run?.ok ?? 0;
 const gated = run ? (run.byStatus.auth ?? 0) + (run.byStatus.payment ?? 0) : 0;
 const down = run ? run.probed - up - gated : 0;
+const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
 ---
 
 <Layout title="mcp-pulse">
@@ -123,7 +124,7 @@ const down = run ? run.probed - up - gated : 0;
 
       <h2>Badge for your README</h2>
       <p class="muted">Replace the name with your server's registry name. The badge shows the latest probe result.</p>
-      <pre>[![mcp-pulse](https://mcp-pulse.ondraulehla.workers.dev/badge/io.github.you/your-server.svg)](https://mcp-pulse.ondraulehla.workers.dev/s/io.github.you/your-server)</pre>
+      <pre>{`[![mcp-pulse](${site}/badge/io.github.you/your-server.svg)](${site}/s/io.github.you/your-server)`}</pre>
     </>
   )}
 </Layout>
