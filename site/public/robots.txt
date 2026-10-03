@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://mcp-pulse.ulehla.dev/sitemap.xml

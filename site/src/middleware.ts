@@ -8,6 +8,11 @@ import { defineMiddleware } from 'astro:middleware';
 const memory = new Map<string, { expires: number; status: number; headers: [string, string][]; body: ArrayBuffer }>();
 const MAX_ENTRIES = 400;
 
+function withCharset(type: string | null): string {
+  const t = type ?? 'text/html';
+  return /charset=/i.test(t) || !/^(text\/|image\/svg)/.test(t) ? t : `${t}; charset=utf-8`;
+}
+
 function ttlOf(response: Response): number {
   const cc = response.headers.get('cache-control') ?? '';
   const m = /s-maxage=(\d+)/.exec(cc) ?? /max-age=(\d+)/.exec(cc);
@@ -64,7 +69,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     // Store a copy with only the headers the cache needs, keyed by the bare URL.
     const copy = new Response(body.slice(0), {
       status: response.status,
-      headers: { 'content-type': response.headers.get('content-type') ?? 'text/html; charset=utf-8', 'cache-control': `public, max-age=${ttl}` }
+      headers: { 'content-type': withCharset(response.headers.get('content-type')), 'cache-control': `public, max-age=${ttl}` }
     });
     try {
       await edge.put(new Request(key, { method: 'GET' }), copy);

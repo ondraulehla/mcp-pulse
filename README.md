@@ -24,6 +24,15 @@ npx mcptop --budget 30000      # exit 1 when the total is above the budget, for 
 
 It starts every configured server the way your client does, lists the tools and prints the token cost per server and in total. See [packages/mcptop](packages/mcptop/README.md).
 
+## The board
+
+[mcp-pulse.ulehla.dev](https://mcp-pulse.ulehla.dev) is rendered on the edge from a D1 database, ships no JavaScript, and refreshes every night.
+
+- **Overview**: what happened when we knocked, the heaviest tool sets, who publishes the registry, protocol versions in the wild
+- **Servers**: full-text search over name, title, description and host (word prefixes, so `git copilot` finds the GitHub Copilot servers), filters by result, protocol and transport, seven sorts, and every filter is a plain URL you can share
+- **Server page**: status, latency, protocol, capabilities, the most expensive tools, servers with the same tool set, history, and the badge
+- **Hosts**: the 500 biggest publishers with how many distinct tool sets they actually serve
+
 Each server on the board gets a page and a badge:
 
 ```markdown
@@ -77,7 +86,7 @@ registry ──▶ probe/run.ts ──▶ data/raw/probe-run.json
 
 - `packages/mcptop/` the library and the CLI `mcptop`: registry client, remote and stdio probe, config discovery, token counting
 - `probe/` the batch runner and the data pipeline
-- `site/` the board: Astro 7 with the Cloudflare adapter, rendered from D1, with SVG badges
+- `site/` the board: Astro 7 with the Cloudflare adapter on Workers, rendered from D1 with FTS5 search, SVG badges, no client JavaScript
 - `.github/workflows/probe.yml` runs the whole pipeline daily and commits `summary.json` and `hosts.json`
 - `.github/workflows/deploy.yml` deploys the site when `site/` changes
 
