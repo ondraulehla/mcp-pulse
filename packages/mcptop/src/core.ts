@@ -74,11 +74,12 @@ export async function probeRemoteRaw(remote: { url: string; type: RemoteTranspor
     return res;
   };
 
-  const requestInit: RequestInit = { redirect: 'follow', headers: options.headers };
+  // Follow redirects across origins too: a server that moved should be measured where it lives.
+  const requestInit: RequestInit = { headers: options.headers };
   const transport =
     remote.type === 'sse'
-      ? new SSEClientTransport(url, { fetch: observingFetch, requestInit })
-      : new StreamableHTTPClientTransport(url, { fetch: observingFetch, requestInit });
+      ? new SSEClientTransport(url, { fetch: observingFetch, requestInit, redirectPolicy: 'follow' })
+      : new StreamableHTTPClientTransport(url, { fetch: observingFetch, requestInit, redirectPolicy: 'follow' });
 
   const tools = await measure(transport, result, timeoutMs);
 
