@@ -100,3 +100,6 @@ CREATE TRIGGER IF NOT EXISTS servers_au AFTER UPDATE ON servers BEGIN
   INSERT INTO servers_fts(rowid, name, title, description, host, server_name)
   VALUES (new.rowid, new.name, new.title, new.description, new.host, new.server_name);
 END;
+
+-- The check page looks a URL up before it probes it live.
+CREATE INDEX IF NOT EXISTS servers_url ON servers (url);

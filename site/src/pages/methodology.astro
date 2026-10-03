@@ -6,7 +6,7 @@ export const prerender = true;
 <Layout title="Methodology">
   <p class="kicker">method</p>
   <h1 class="poster">How mcp-pulse measures</h1>
-  <p class="lede">Every number on this site comes from one open-source probe that treats every server the same way. This page says exactly what it does.</p>
+  <p class="lede">One open-source probe, the same steps for every server.</p>
 
   <h2 style="margin-top:40px">What is probed</h2>
   <p>
@@ -44,6 +44,11 @@ export const prerender = true;
   <h2>Same tool set</h2>
   <p>
     A hash of the sorted tool names and their schema sizes identifies a tool set. Servers with equal hashes serve the same tools. This is how bulk publishers that register one server under thousands of names become visible.
+  </p>
+
+  <h2>Live check</h2>
+  <p>
+    <a href="/check">/check</a> probes one server on demand with the same steps and a 10 second timeout. The Worker does the network part; the token count runs in your browser with the same tokenizer, because the Worker's CPU budget is too small to load it. Results are cached for ten minutes, and a URL that is already in the registry opens its page instead.
   </p>
 
   <h2>Being a good guest</h2>

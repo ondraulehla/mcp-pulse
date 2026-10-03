@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { probeStdio } from '../src/probe.js';
+import { probeStdio } from '../src/stdio.js';
 
 const fixture = fileURLToPath(new URL('./fixtures/stdio-server.mjs', import.meta.url));
 

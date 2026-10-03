@@ -4,7 +4,8 @@ import { homedir } from 'node:os';
 import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { discoverConfigs, readConfigFile, type ConfiguredServer } from './configs.js';
-import { probeRemote, probeStdio, VERSION } from './probe.js';
+import { probeRemote, VERSION } from './probe.js';
+import { probeStdio } from './stdio.js';
 import { TOKENIZER } from './tokens.js';
 import type { ProbeResult } from './types.js';
 

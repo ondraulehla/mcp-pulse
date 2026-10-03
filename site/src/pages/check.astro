@@ -1,0 +1,156 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getServer, findByUrl } from '../lib/db';
+import { bucket, label, ms, num } from '../lib/format';
+import { probeRemoteRaw } from '../../../packages/mcptop/src/core.ts';
+import { payloadBytes, toolPayload, BYTES_PER_TOKEN } from '../../../packages/mcptop/src/payload.ts';
+
+const raw = (Astro.url.searchParams.get('target') ?? '').trim().slice(0, 500);
+const headers = Astro.response.headers;
+headers.set('cache-control', 'public, max-age=60, s-maxage=600');
+
+type View =
+  | { kind: 'empty' }
+  | { kind: 'not-found'; name: string }
+  | { kind: 'invalid'; reason: string }
+  | { kind: 'busy' }
+  | { kind: 'probed'; url: string; result: Awaited<ReturnType<typeof probeRemoteRaw>>['result']; payloads: string[]; bytes: number; estimate: number; embed: boolean };
+
+// A small per-isolate budget keeps the live probe from being used as a free proxy.
+const g = globalThis as unknown as { __checks?: { minute: number; n: number } };
+function allowed(): boolean {
+  const minute = Math.floor(Date.now() / 60_000);
+  if (!g.__checks || g.__checks.minute !== minute) g.__checks = { minute, n: 0 };
+  return ++g.__checks.n <= 40;
+}
+
+let view: View = { kind: 'empty' };
+if (raw) {
+  if (!/^https?:\/\//i.test(raw)) {
+    const server = await getServer(raw);
+    if (server) return Astro.redirect(`/s/${server.name}`, 302);
+    view = { kind: 'not-found', name: raw };
+  } else {
+    let url: URL | null = null;
+    try {
+      url = new URL(raw);
+    } catch {
+      url = null;
+    }
+    if (!url || url.protocol !== 'https:') view = { kind: 'invalid', reason: 'Only https URLs are probed.' };
+    else if (!url.hostname.includes('.') || /^(\d+\.){3}\d+$/.test(url.hostname) || url.hostname.endsWith('.local')) view = { kind: 'invalid', reason: 'That host is not reachable from here.' };
+    else {
+      const known = await findByUrl(url.toString());
+      if (known) return Astro.redirect(`/s/${known}`, 302);
+      if (!allowed()) {
+        headers.set('cache-control', 'no-store');
+        Astro.response.status = 429;
+        view = { kind: 'busy' };
+      } else {
+        const type = /\/sse\/?$/.test(url.pathname) ? 'sse' : 'streamable-http';
+        const { result, tools } = await probeRemoteRaw({ url: url.toString(), type }, { timeoutMs: 10_000 });
+        const payloads = tools.map(toolPayload);
+        const bytes = tools.reduce((a, t) => a + payloadBytes(t), 0);
+        view = { kind: 'probed', url: url.toString(), result, payloads, bytes, estimate: Math.round(bytes / BYTES_PER_TOKEN), embed: bytes <= 1_500_000 };
+        if (result.status !== 'ok') headers.set('cache-control', 'public, max-age=30, s-maxage=120');
+      }
+    }
+  }
+}
+const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
+---
+
+<Layout title="Check a server" description="Probe one MCP server live: does it answer, what protocol, how many tools, how many tokens.">
+  <p class="kicker">live check</p>
+  <h1 class="poster">Check a server</h1>
+  <form class="filters check" method="get" action="/check">
+    <label>Server URL or registry name
+      <input type="url" name="target" value={raw} placeholder="https://mcp.example.com/mcp" required autocomplete="off" />
+    </label>
+    <div class="actions"><button type="submit">Check</button></div>
+  </form>
+  <p class="muted small">Servers already in the registry open their page. Anything else is probed now: initialize, tools/list, no credentials. Results are cached for ten minutes.</p>
+
+  {view.kind === 'not-found' && <p class="frame pad">No registry server named <code>{view.name}</code>. Enter the server URL to probe it live.</p>}
+  {view.kind === 'invalid' && <p class="frame pad">{view.reason}</p>}
+  {view.kind === 'busy' && <p class="frame pad">Too many live checks right now. Try again in a minute, or run <code>npx mcptop --url …</code>.</p>}
+
+  {view.kind === 'probed' && (
+    <section id="result" data-tokens-known="false">
+      <p style="margin-top:28px">
+        <span class={`tag big ${bucket(view.result.status)}`}>{label(view.result.status)}</span>
+        <span class="muted small"> {view.result.httpStatus && <>HTTP {view.result.httpStatus} · </>}{view.result.authScheme && <>{view.result.authScheme} · </>}<span class="mono">{view.url}</span></span>
+      </p>
+      {view.result.status === 'ok' && (
+        <>
+          <div class="stats">
+            <div class="stat"><b>{num(view.result.toolCount)}</b><span>tools</span></div>
+            <div class="stat"><b id="tok">≈ {num(view.estimate)}</b><span id="tok-label">tokens, estimated from size</span></div>
+            <div class="stat"><b id="share">≈ {((view.estimate / 200_000) * 100).toFixed(1)} %</b><span>of a 200k window</span></div>
+            <div class="stat"><b>{ms(view.result.latencyMs.initialize)}</b><span>to initialize</span></div>
+            <div class="stat"><b>{ms(view.result.latencyMs.toolsList)}</b><span>to list tools</span></div>
+          </div>
+          <dl class="facts">
+            {view.result.protocolVersion && <><dt>Protocol</dt><dd class="mono">{view.result.protocolVersion}</dd></>}
+            {view.result.serverInfo?.name && <><dt>Reports itself as</dt><dd>{view.result.serverInfo.name} {view.result.serverInfo.version}</dd></>}
+            {view.result.capabilities?.length ? <><dt>Capabilities</dt><dd class="mono">{view.result.capabilities.join(', ')}</dd></> : null}
+            <dt>Schema size</dt><dd>{num(view.bytes)} bytes of tool definitions</dd>
+            <dt>Not in the registry</dt><dd><a href="https://registry.modelcontextprotocol.io" rel="noopener">Publish it</a> and the daily probe will track it.</dd>
+          </dl>
+          <div id="tools-table" hidden>
+            <h2>Most expensive tools</h2>
+            <div class="frame"><table><thead><tr><th>Tool</th><th class="num">Tokens</th></tr></thead><tbody></tbody></table></div>
+          </div>
+          <p class="muted small" id="exact-note">Exact token counts need the tokenizer, which loads in your browser (1 MB). Without it, the estimate uses the median of the registry: {BYTES_PER_TOKEN} bytes per token.</p>
+          {view.embed && <script type="application/json" id="payloads" set:html={JSON.stringify(view.payloads)} />}
+        </>
+      )}
+      {view.result.status !== 'ok' && view.result.error && <pre>{view.result.error}</pre>}
+      <p class="muted small">Same measurement from your terminal: <code>npx mcptop --url {view.url}</code></p>
+    </section>
+  )}
+
+  {view.kind === 'empty' && (
+    <p class="muted small">Example: <a href="/check?target=https://mcp.deepwiki.com/mcp">https://mcp.deepwiki.com/mcp</a>, a server that is not in the registry.</p>
+  )}
+</Layout>
+
+<script>
+  // Exact token counts in the browser: the Worker does the network part, the
+  // tokenizer runs here, so the free plan's CPU limit never matters.
+  const el = document.getElementById('payloads');
+  if (el) {
+    (async () => {
+      const payloads = JSON.parse(el.textContent || '[]') as string[];
+      const { encode } = await import('gpt-tokenizer/encoding/o200k_base');
+      const counts = payloads.map((p) => ({ name: (JSON.parse(p) as { name: string }).name, tokens: encode(p).length }));
+      const total = counts.reduce((a, c) => a + c.tokens, 0);
+      const fmt = (n: number) => n.toLocaleString('en-US').replace(/,/g, ' ');
+      const tok = document.getElementById('tok');
+      const share = document.getElementById('share');
+      const lbl = document.getElementById('tok-label');
+      const note = document.getElementById('exact-note');
+      if (tok) tok.textContent = fmt(total);
+      if (share) share.textContent = `${((total / 200_000) * 100).toFixed(1)} %`;
+      if (lbl) lbl.textContent = 'tokens for the tool definitions (o200k_base)';
+      if (note) note.textContent = 'Counted in your browser with o200k_base, the same tokenizer as the board.';
+      const table = document.getElementById('tools-table');
+      const body = table?.querySelector('tbody');
+      if (table && body) {
+        for (const c of counts.sort((a, b) => b.tokens - a.tokens).slice(0, 10)) {
+          const tr = document.createElement('tr');
+          const td1 = document.createElement('td');
+          td1.className = 'mono break';
+          td1.textContent = c.name;
+          const td2 = document.createElement('td');
+          td2.className = 'num';
+          td2.textContent = fmt(c.tokens);
+          tr.append(td1, td2);
+          body.append(tr);
+        }
+        table.hidden = false;
+      }
+      document.getElementById('result')?.setAttribute('data-tokens-known', 'true');
+    })().catch(() => undefined);
+  }
+</script>

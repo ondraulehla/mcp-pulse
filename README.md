@@ -28,7 +28,9 @@ It starts every configured server the way your client does, lists the tools and 
 
 [mcp-pulse.ulehla.dev](https://mcp-pulse.ulehla.dev) is rendered on the edge from a D1 database, ships no JavaScript, and refreshes every night.
 
-- **Overview**: what happened when we knocked, the heaviest tool sets, who publishes the registry, protocol versions in the wild
+- **Overview**: the share of servers that answer, token cost percentiles, and a form to check any server
+- **Check**: probes one URL live, with the same steps as the daily run; the exact token count runs in the browser
+- **Statistics**: results by cause, token cost and tool count percentiles, the heaviest tool sets, protocol versions, auth schemes, transports, biggest publishers
 - **Servers**: full-text search over name, title, description and host (word prefixes, so `git copilot` finds the GitHub Copilot servers), filters by result, protocol and transport, seven sorts, and every filter is a plain URL you can share
 - **Server page**: status, latency, protocol, capabilities, the most expensive tools, servers with the same tool set, history, and the badge
 - **Hosts**: the 500 biggest publishers with how many distinct tool sets they actually serve

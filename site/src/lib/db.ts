@@ -82,6 +82,12 @@ export async function getServer(name: string): Promise<ServerRecord | null> {
   return db().prepare('SELECT * FROM servers WHERE name = ?').bind(name).first<ServerRecord>();
 }
 
+/** The registry name of the server at this URL, if any. */
+export async function findByUrl(url: string): Promise<string | null> {
+  const row = await db().prepare('SELECT name FROM servers WHERE url = ? OR url = ? LIMIT 1').bind(url, url.replace(/\/$/, '')).first<{ name: string }>();
+  return row?.name ?? null;
+}
+
 export async function getHistory(name: string, limit = 60): Promise<ProbeRecord[]> {
   const { results } = await db()
     .prepare('SELECT probed_at, status, init_ms, tool_count, tools_tokens FROM probes WHERE name = ? ORDER BY probed_at DESC LIMIT ?')

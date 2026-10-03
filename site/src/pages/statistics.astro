@@ -1,0 +1,138 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { latestRun, listHosts } from '../lib/db';
+import { bucket, label, num, pct, tokens, date, ms } from '../lib/format';
+
+const run = await latestRun();
+const hosts = run ? await listHosts(15) : [];
+Astro.response.headers.set('cache-control', 'public, max-age=300, s-maxage=3600');
+const statusRows = run ? Object.entries(run.byStatus).sort((a, b) => b[1] - a[1]) : [];
+---
+
+<Layout title="Statistics">
+  <p class="kicker">{run ? `${num(run.probed)} remote servers · probed ${date(run.probedAt)}` : ''}</p>
+  <h1 class="poster">Statistics</h1>
+
+  {!run && <p class="frame pad">No run imported yet.</p>}
+  {run && (
+    <>
+      <h2>Registry</h2>
+      <div class="stats">
+        <div class="stat"><b>{num(run.registryEntries)}</b><span>entries, latest versions</span></div>
+        <div class="stat"><b>{num(run.registryWithRemote)}</b><span>with a remote endpoint</span></div>
+        <div class="stat"><b>{num(run.probed)}</b><span>probed</span></div>
+        <div class="stat"><b>{num(run.hosts)}</b><span>hosts</span></div>
+        <div class="stat"><b>{num(run.uniqueToolsets)}</b><span>distinct tool sets among alive servers</span></div>
+        <div class="stat"><b>{num(run.duplicateServers)}</b><span>alive servers that duplicate another's tool set</span></div>
+      </div>
+
+      <h2>Results</h2>
+      <div class="frame">
+        <table>
+          <thead><tr><th>Result</th><th class="num">Servers</th><th class="num">Share</th><th></th></tr></thead>
+          <tbody>
+            {statusRows.map(([status, n]) => (
+              <tr>
+                <td><span class={`tag ${bucket(status)}`}>{label(status)}</span></td>
+                <td class="num">{num(n)}</td>
+                <td class="num">{pct(n, run.probed)}</td>
+                <td><a href={`/servers?status=${status}`}>list</a></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Token cost of tool definitions, alive servers</h2>
+      <div class="stats">
+        <div class="stat"><b>{num(run.toolsTokens.median)}</b><span>median</span></div>
+        <div class="stat"><b>{num(run.toolsTokens.p90)}</b><span>90th percentile</span></div>
+        <div class="stat"><b>{num(run.toolsTokens.p99)}</b><span>99th percentile</span></div>
+        <div class="stat"><b>{tokens(run.toolsTokens.max)}</b><span>maximum</span></div>
+        <div class="stat"><b>{num(run.toolCount.median)}</b><span>median tools per server</span></div>
+        <div class="stat"><b>{num(run.toolCount.max)}</b><span>most tools on one server</span></div>
+      </div>
+
+      <h2>Heaviest tool sets</h2>
+      <div class="frame">
+        <table>
+          <thead><tr><th>Server</th><th>Host</th><th class="num">Tools</th><th class="num">Tokens</th><th class="num">Of 200k</th></tr></thead>
+          <tbody>
+            {run.heaviest.map((s) => (
+              <tr>
+                <td class="break"><a href={`/s/${s.name}`}>{s.name}</a></td>
+                <td class="mono faint break">{s.host}</td>
+                <td class="num">{num(s.toolCount)}</td>
+                <td class="num">{num(s.toolsTokens)}</td>
+                <td class="num">{((s.toolsTokens / 200_000) * 100).toFixed(1)} %</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p><a href="/servers?sort=tokens">All servers by token cost →</a></p>
+
+      <h2>Latency</h2>
+      <div class="stats">
+        <div class="stat"><b>{ms(run.initMs.median)}</b><span>median initialize</span></div>
+        <div class="stat"><b>{ms(run.initMs.p90)}</b><span>90th percentile initialize</span></div>
+      </div>
+
+      <h2>Protocol versions, alive servers</h2>
+      <div class="frame">
+        <table>
+          <thead><tr><th>Negotiated version</th><th class="num">Servers</th><th class="num">Share</th></tr></thead>
+          <tbody>
+            {Object.entries(run.protocols).map(([v, n]) => (
+              <tr><td class="mono"><a href={`/servers?protocol=${v}`}>{v}</a></td><td class="num">{num(n)}</td><td class="num">{pct(n, run.ok)}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Auth schemes, servers that need auth</h2>
+      <div class="frame">
+        <table>
+          <thead><tr><th>WWW-Authenticate</th><th class="num">Servers</th></tr></thead>
+          <tbody>
+            {Object.entries(run.authSchemes).map(([v, n]) => (
+              <tr><td class="mono">{v}</td><td class="num">{num(n)}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Transports</h2>
+      <div class="frame">
+        <table>
+          <thead><tr><th>Transport</th><th class="num">Servers</th><th class="num">Share</th></tr></thead>
+          <tbody>
+            {Object.entries(run.transports).map(([v, n]) => (
+              <tr><td class="mono"><a href={`/servers?transport=${v}`}>{v}</a></td><td class="num">{num(n)}</td><td class="num">{pct(n, run.probed)}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Biggest publishers</h2>
+      <div class="frame hosts">
+        <table>
+          <thead><tr><th>Host</th><th class="num">Servers</th><th class="num">Alive</th><th class="num">Gated</th><th class="num">Down</th><th class="num">Distinct tool sets</th></tr></thead>
+          <tbody>
+            {hosts.map((h) => (
+              <tr>
+                <td class="host"><a class="mono" href={`/servers?host=${encodeURIComponent(h.host)}`}>{h.host}</a></td>
+                <td class="num">{num(h.servers)}</td>
+                <td class="num">{num(h.ok)}</td>
+                <td class="num">{num(h.auth)}</td>
+                <td class="num">{num(h.dead)}</td>
+                <td class="num">{num(h.unique_toolsets)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p><a href="/hosts">All hosts →</a></p>
+    </>
+  )}
+</Layout>

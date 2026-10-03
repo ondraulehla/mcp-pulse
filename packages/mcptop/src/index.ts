@@ -1,6 +1,8 @@
 export { fetchRegistry, primaryRemote, hostOf, REGISTRY_URL } from './registry.js';
-export { probeRemote, probeStdio, USER_AGENT, VERSION } from './probe.js';
-export type { ProbeOptions, StdioTarget } from './probe.js';
+export { probeRemote, USER_AGENT, VERSION } from './probe.js';
+export type { ProbeOptions } from './probe.js';
+export { probeStdio } from './stdio.js';
+export type { StdioTarget } from './stdio.js';
 export { discoverConfigs, readConfigFile, normalizeServers, knownConfigPaths, expand } from './configs.js';
 export type { ConfiguredServer, ConfigFile, DiscoverOptions } from './configs.js';
 export { toolCost, toolsCost, toolPayload, countTokens, TOKENIZER } from './tokens.js';

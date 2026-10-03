@@ -1,28 +1,12 @@
 import { encode } from 'gpt-tokenizer/encoding/o200k_base';
+import { toolPayload, type ToolLike } from './payload.js';
 import type { ToolCost } from './types.js';
+
+export { toolPayload, BYTES_PER_TOKEN } from './payload.js';
+export type { ToolLike } from './payload.js';
 
 /** The tokenizer used for every count. Stated in the methodology. */
 export const TOKENIZER = 'o200k_base';
-
-export interface ToolLike {
-  name: string;
-  description?: string;
-  inputSchema?: unknown;
-  outputSchema?: unknown;
-}
-
-/**
- * Serialises a tool the way a client sends it to a model: name, description and
- * input schema, as compact JSON. Different clients wrap this differently, so the
- * count is an estimate, and it is the same estimate for every server.
- */
-export function toolPayload(tool: ToolLike): string {
-  return JSON.stringify({
-    name: tool.name,
-    description: tool.description ?? '',
-    input_schema: tool.inputSchema ?? { type: 'object' }
-  });
-}
 
 export function countTokens(text: string): number {
   return encode(text).length;

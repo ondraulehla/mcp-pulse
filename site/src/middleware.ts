@@ -1,4 +1,5 @@
 import { defineMiddleware } from 'astro:middleware';
+import { env } from 'cloudflare:workers';
 
 /**
  * Caches rendered GET responses inside the isolate. The data changes once a day,
@@ -31,8 +32,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
     url.port = '';
     return Response.redirect(url.toString(), 301);
   }
-  if (request.method !== 'GET') return next();
-  const key = request.url;
+  if (request.method !== 'GET' || import.meta.env.DEV) return next();
+  // The deployed version is part of the key, so a deploy never serves stale pages.
+  const version = (env as unknown as { CF_VERSION_METADATA?: { id?: string } }).CF_VERSION_METADATA?.id ?? 'dev';
+  const key = `${request.url}${url.search ? '&' : '?'}__v=${version}`;
   const now = Date.now();
 
   const hit = memory.get(key);

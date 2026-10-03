@@ -15,7 +15,9 @@ const path = Astro.url.pathname;
 const nav: Array<[string, string]> = [
   ['/', 'Overview'],
   ['/servers', 'Servers'],
+  ['/statistics', 'Statistics'],
   ['/hosts', 'Hosts'],
+  ['/check', 'Check'],
   ['/methodology', 'Method']
 ];
 const year = new Date().getFullYear();
@@ -60,7 +62,7 @@ const canonical = new URL(path + Astro.url.search, Astro.site ?? Astro.url).toSt
         <Emblem class="emblem small" />
         <span class="wordmark">© {year} Ondřej Úlehla</span>
       </a>
-      <p class="note">Probes once a day. Token counts are one estimate for every server. To exclude a server, open an issue.</p>
+      <p class="note">Probed daily. One tokenizer for every server. Exclusions by issue.</p>
       <nav aria-label="Footer" class="cells">
         <a href="https://github.com/ondraulehla/mcp-pulse" rel="noopener" class="cell cell-flood">GitHub</a>
         <a href="https://www.npmjs.com/package/mcptop" rel="noopener" class="cell cell-flood">npm</a>
@@ -191,6 +193,18 @@ const canonical = new URL(path + Astro.url.search, Astro.site ?? Astro.url).toSt
   .tag.gated { border-left-color: var(--gated); color: var(--gated); background: var(--gated-soft); }
   .tag.down { border-left-color: var(--accent); color: var(--accent-strong); background: var(--accent-soft); }
   .tag.big { font-size: 0.8rem; padding: 5px 12px 5px 10px; }
+
+  /* section links on the overview */
+  .links { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); margin: 32px 0 0; }
+  .links a { display: block; padding: 16px 18px 14px; background: var(--surface); color: var(--ink); font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; }
+  .links a span { display: block; margin-top: 6px; font-weight: 400; letter-spacing: 0.04em; text-transform: none; color: var(--ink-faint); font-family: var(--font-sans); font-size: 0.85rem; }
+  .links a:hover { background: var(--ink); color: var(--surface); text-decoration: none; }
+  .links a:hover span { color: var(--surface); }
+  .frame.pad { padding: 14px 16px; margin: 24px 0 0; }
+  .frame.hosts table { min-width: 960px; }
+  td.host { min-width: 300px; overflow-wrap: anywhere; }
+  form.filters.check { grid-template-columns: 1fr auto; }
+  form.filters.check .actions button { padding: 0 22px; }
 
   /* filters: a band of cells */
   form.filters { display: grid; grid-template-columns: minmax(200px, 2fr) repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); margin: 24px 0 18px; }
