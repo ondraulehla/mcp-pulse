@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { listServers, SORTS, type SortKey } from '../lib/db';
+import { latestRun, listServers, SORTS, type SortKey } from '../lib/db';
 import { bucket, label, ms, num, tokens, date, STATUS_LABEL } from '../lib/format';
 
 const p = Astro.url.searchParams;
@@ -11,8 +11,17 @@ const protocol = p.get('protocol') ?? '';
 const sort = (Object.keys(SORTS).includes(p.get('sort') ?? '') ? p.get('sort') : 'tokens') as SortKey;
 const page = Math.max(1, Number(p.get('page') ?? '1') || 1);
 
-const { rows, total, perPage } = await listServers({ q, status, host, protocol, sort, page });
-const pages = Math.max(1, Math.ceil(total / perPage));
+const { rows, hasNext, perPage } = await listServers({ q, status, host, protocol, sort, page });
+// A total is cheap only when it is already in the run summary.
+const run = !q && !host && !protocol ? await latestRun() : null;
+const total = run
+  ? status === ''
+    ? run.probed
+    : status === 'down'
+      ? run.probed - run.ok - (run.byStatus.auth ?? 0) - (run.byStatus.payment ?? 0)
+      : (run.byStatus[status] ?? 0)
+  : null;
+const pages = total !== null ? Math.max(1, Math.ceil(total / perPage)) : null;
 
 Astro.response.headers.set('cache-control', 'public, max-age=120, s-maxage=1800');
 
@@ -56,8 +65,8 @@ const title = host ? `Servers on ${host}` : status ? `${label(status)} servers` 
   </form>
 
   <div class="pager">
-    <span>{num(total)} servers{host && <> on <span class="mono">{host}</span></>}{protocol && <> speaking <span class="mono">{protocol}</span></>}</span>
-    <span>page {page} of {num(pages)}</span>
+    <span>{total !== null ? `${num(total)} servers` : 'servers'}{host && <> on <span class="mono">{host}</span></>}{protocol && <> speaking <span class="mono">{protocol}</span></>}</span>
+    <span>page {page}{pages !== null && <> of {num(pages)}</>}</span>
   </div>
 
   <div class="table-wrap">
@@ -99,7 +108,7 @@ const title = host ? `Servers on ${host}` : status ? `${label(status)} servers` 
 
   <div class="pager">
     <span>{page > 1 ? <a href={pageHref(page - 1)}>← previous</a> : ''}</span>
-    <span>{page < pages ? <a href={pageHref(page + 1)}>next →</a> : ''}</span>
+    <span>{hasNext ? <a href={pageHref(page + 1)}>next →</a> : ''}</span>
   </div>
   <p class="muted" style="font-size:13px">Registry data as of {date(rows[0]?.registry_updated_at)}. Probe results refresh daily.</p>
 </Layout>

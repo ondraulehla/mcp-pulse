@@ -98,14 +98,15 @@ export async function getSiblings(hash: string, except: string, limit = 12): Pro
   return results;
 }
 
+/** Sort keys. Directions match the indexes in schema.sql, so each page reads only its rows. */
 export const SORTS = {
-  tokens: 'tools_tokens DESC NULLS LAST, name',
-  'tokens-asc': 'tools_tokens ASC NULLS LAST, name',
-  tools: 'tool_count DESC NULLS LAST, name',
-  latency: 'init_ms ASC NULLS LAST, name',
-  'latency-desc': 'init_ms DESC NULLS LAST, name',
-  name: 'name',
-  updated: 'registry_updated_at DESC, name'
+  tokens: { order: 'tools_tokens DESC, name', where: '' },
+  'tokens-asc': { order: 'tools_tokens ASC, name', where: 'tools_tokens IS NOT NULL' },
+  tools: { order: 'tool_count DESC, name', where: '' },
+  latency: { order: 'init_ms ASC, name', where: 'init_ms IS NOT NULL' },
+  'latency-desc': { order: 'init_ms DESC, name', where: 'init_ms IS NOT NULL' },
+  name: { order: 'name', where: '' },
+  updated: { order: 'registry_updated_at DESC, name', where: '' }
 } as const;
 export type SortKey = keyof typeof SORTS;
 
@@ -127,7 +128,12 @@ export type ListRow = Pick<
   | 'init_ms' | 'tool_count' | 'tools_tokens' | 'toolset_siblings' | 'registry_updated_at'
 >;
 
-export async function listServers(query: ListQuery): Promise<{ rows: ListRow[]; total: number; page: number; perPage: number }> {
+/**
+ * Lists one page of servers. There is no COUNT(*): on the free tier every row a
+ * query scans counts against the daily budget, so the page asks for one row more
+ * than it shows to know whether a next page exists.
+ */
+export async function listServers(query: ListQuery): Promise<{ rows: ListRow[]; hasNext: boolean; page: number; perPage: number }> {
   const where: string[] = [];
   const binds: unknown[] = [];
   if (query.q) {
@@ -149,16 +155,16 @@ export async function listServers(query: ListQuery): Promise<{ rows: ListRow[]; 
     where.push('protocol_version = ?');
     binds.push(query.protocol);
   }
-  const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
   const sort = SORTS[query.sort ?? 'tokens'] ?? SORTS.tokens;
+  if (sort.where) where.push(sort.where);
+  const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
   const perPage = Math.min(200, Math.max(10, query.perPage ?? 50));
-  const page = Math.max(1, query.page ?? 1);
-  const [count, list] = await db().batch([
-    db().prepare(`SELECT COUNT(*) AS n FROM servers ${whereSql}`).bind(...binds),
-    db().prepare(`SELECT ${LIST_COLUMNS} FROM servers ${whereSql} ORDER BY ${sort} LIMIT ? OFFSET ?`).bind(...binds, perPage, (page - 1) * perPage)
-  ]);
-  const total = (count.results[0] as { n: number }).n;
-  return { rows: list.results as ListRow[], total, page, perPage };
+  const page = Math.min(400, Math.max(1, query.page ?? 1));
+  const { results } = await db()
+    .prepare(`SELECT ${LIST_COLUMNS} FROM servers ${whereSql} ORDER BY ${sort.order} LIMIT ? OFFSET ?`)
+    .bind(...binds, perPage + 1, (page - 1) * perPage)
+    .all<ListRow>();
+  return { rows: results.slice(0, perPage), hasNext: results.length > perPage, page, perPage };
 }
 
 export async function listHosts(limit = 300): Promise<HostRecord[]> {

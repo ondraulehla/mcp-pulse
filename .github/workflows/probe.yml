@@ -34,10 +34,25 @@ jobs:
           else
             npm run probe --silent -- --all --concurrency 24 --out data/raw/probe-run.json
           fi
+      - name: Fetch the previous run's servers.json
+        if: ${{ inputs.sample == '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p data/previous
+          id=$(gh run list --workflow "Daily probe" --status success --limit 1 --json databaseId -q '.[0].databaseId' || true)
+          if [ -n "$id" ]; then
+            gh run download "$id" --name "probe-$id" --dir data/previous && ls -la data/previous || echo "no artifact in run $id"
+          fi
+          test -f data/previous/data/latest/servers.json && cp data/previous/data/latest/servers.json data/previous/servers.json || echo "::notice::No previous run found, importing everything."
       - name: Build the site data and the D1 import
         run: |
           node --import tsx probe/build-data.ts --in data/raw/probe-run.json --out data/latest
-          node --import tsx probe/to-sql.ts --in data/latest --out data/latest/import.sql
+          if [ -f data/previous/servers.json ]; then
+            node --import tsx probe/to-sql.ts --in data/latest --out data/latest/import.sql --previous data/previous/servers.json
+          else
+            node --import tsx probe/to-sql.ts --in data/latest --out data/latest/import.sql
+          fi
       - name: Keep the raw run as an artifact
         uses: actions/upload-artifact@v4
         with:

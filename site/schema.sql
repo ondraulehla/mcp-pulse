@@ -61,3 +61,17 @@ CREATE TABLE IF NOT EXISTS hosts (
   median_tokens INTEGER,
   probed_at TEXT NOT NULL
 );
+
+-- Indexes that let the list page read only the rows it shows. Directions match
+-- the ORDER BY clauses in src/lib/db.ts so SQLite needs no temp sort.
+CREATE INDEX IF NOT EXISTS servers_tokens_name ON servers (tools_tokens DESC, name);
+CREATE INDEX IF NOT EXISTS servers_status_tokens ON servers (status, tools_tokens DESC, name);
+CREATE INDEX IF NOT EXISTS servers_host_tokens ON servers (host, tools_tokens DESC, name);
+CREATE INDEX IF NOT EXISTS servers_protocol_tokens ON servers (protocol_version, tools_tokens DESC, name);
+CREATE INDEX IF NOT EXISTS servers_tools_name ON servers (tool_count DESC, name);
+CREATE INDEX IF NOT EXISTS servers_status_tools ON servers (status, tool_count DESC, name);
+CREATE INDEX IF NOT EXISTS servers_init_name ON servers (init_ms, name);
+CREATE INDEX IF NOT EXISTS servers_status_init ON servers (status, init_ms, name);
+CREATE INDEX IF NOT EXISTS servers_updated_name ON servers (registry_updated_at DESC, name);
+CREATE INDEX IF NOT EXISTS servers_status_updated ON servers (status, registry_updated_at DESC, name);
+DROP INDEX IF EXISTS servers_tokens;
