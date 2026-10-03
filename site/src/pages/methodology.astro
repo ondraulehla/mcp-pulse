@@ -1,0 +1,58 @@
+---
+import Layout from '../layouts/Layout.astro';
+export const prerender = true;
+---
+
+<Layout title="Methodology">
+  <h1>How mcp-pulse measures</h1>
+  <p class="lede">Every number on this site comes from one open-source probe that treats every server the same way. This page says exactly what it does.</p>
+
+  <h2>What is probed</h2>
+  <p>
+    The probe reads the <a href="https://registry.modelcontextprotocol.io" rel="noopener">official MCP registry</a>, latest version of each server only.
+    It takes the first <code>streamable-http</code> remote, or the <code>sse</code> remote when that is the only one. Servers that ship only as packages (npm, PyPI, OCI, MCPB) are not probed yet.
+  </p>
+
+  <h2>How a server is probed</h2>
+  <ol>
+    <li>Connect with the official TypeScript SDK as a client named <code>mcp-pulse</code>, with no credentials.</li>
+    <li>Send <code>initialize</code> and <code>notifications/initialized</code>. Record the time to the <code>initialize</code> result, the negotiated protocol version, the server's name and version, its capabilities and the length of its instructions.</li>
+    <li>If the server advertises tools, call <code>tools/list</code>, following pagination. Record the time and the tools.</li>
+    <li>Never open the standalone GET stream. The probe answers 405 to the SDK's GET, so no server-to-client stream is opened. The probe needs none, and some servers stall <code>tools/list</code> while that stream is open.</li>
+    <li>Close the session.</li>
+  </ol>
+  <p>Timeouts are 15 seconds per request. At most one probe runs against a host at a time.</p>
+
+  <h2>Results</h2>
+  <dl class="facts">
+    <dt>alive</dt><dd><code>initialize</code> and <code>tools/list</code> both succeeded.</dd>
+    <dt>needs auth</dt><dd>HTTP 401 or 403. The <code>WWW-Authenticate</code> scheme is recorded when present. A server that needs auth is reachable, it just does not talk to strangers.</dd>
+    <dt>paid (402)</dt><dd>HTTP 402 Payment Required.</dd>
+    <dt>not found</dt><dd>HTTP 404, 405 or 410 on the MCP endpoint.</dd>
+    <dt>not MCP</dt><dd>HTTP 200, but the response was not a valid MCP reply, or the server returned a JSON-RPC error to <code>initialize</code>.</dd>
+    <dt>timeout, no DNS, TLS error, refused, server error, rate limited</dt><dd>Transport-level failures, named after their cause.</dd>
+  </dl>
+
+  <h2>Token counts</h2>
+  <p>
+    Each tool is serialised as compact JSON with <code>name</code>, <code>description</code> and <code>input_schema</code>, and counted with the <code>o200k_base</code> tokenizer.
+    Clients wrap tool definitions in different ways and models tokenise differently, so the number is an estimate. It is the same estimate for every server, which makes servers comparable.
+    "Of a 200k context window" divides that count by 200 000.
+  </p>
+
+  <h2>Same tool set</h2>
+  <p>
+    A hash of the sorted tool names and their schema sizes identifies a tool set. Servers with equal hashes serve the same tools. This is how bulk publishers that register one server under thousands of names become visible.
+  </p>
+
+  <h2>Being a good guest</h2>
+  <p>
+    Every request carries the User-Agent <code>mcp-pulse/&lt;version&gt; (+https://github.com/ondraulehla/mcp-pulse)</code>. The probe runs once a day, sends no tool calls, and makes at most three requests per server.
+    To exclude a server, <a href="https://github.com/ondraulehla/mcp-pulse/issues" rel="noopener">open an issue</a> with its registry name.
+  </p>
+
+  <h2>Run it yourself</h2>
+  <pre>git clone https://github.com/ondraulehla/mcp-pulse
+cd mcp-pulse && npm install
+npm run probe -- --sample 200 --per-host 2</pre>
+</Layout>

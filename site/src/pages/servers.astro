@@ -1,0 +1,105 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { listServers, SORTS, type SortKey } from '../lib/db';
+import { bucket, label, ms, num, tokens, date, STATUS_LABEL } from '../lib/format';
+
+const p = Astro.url.searchParams;
+const q = (p.get('q') ?? '').trim().slice(0, 80);
+const status = p.get('status') ?? '';
+const host = p.get('host') ?? '';
+const protocol = p.get('protocol') ?? '';
+const sort = (Object.keys(SORTS).includes(p.get('sort') ?? '') ? p.get('sort') : 'tokens') as SortKey;
+const page = Math.max(1, Number(p.get('page') ?? '1') || 1);
+
+const { rows, total, perPage } = await listServers({ q, status, host, protocol, sort, page });
+const pages = Math.max(1, Math.ceil(total / perPage));
+
+Astro.response.headers.set('cache-control', 'public, max-age=120, s-maxage=1800');
+
+function pageHref(n: number) {
+  const u = new URL(Astro.url);
+  u.searchParams.set('page', String(n));
+  return u.pathname + u.search;
+}
+const sortLabels: Record<SortKey, string> = {
+  tokens: 'most tokens',
+  'tokens-asc': 'fewest tokens',
+  tools: 'most tools',
+  latency: 'fastest',
+  'latency-desc': 'slowest',
+  name: 'name',
+  updated: 'recently updated'
+};
+const title = host ? `Servers on ${host}` : status ? `${label(status)} servers` : 'Servers';
+---
+
+<Layout title={title}>
+  <h1>{title}</h1>
+  <form class="filters" method="get" action="/servers">
+    <label>Search<input type="search" name="q" value={q} placeholder="name, title or host" /></label>
+    <label>Result
+      <select name="status">
+        <option value="">any</option>
+        <option value="down" selected={status === 'down'}>down or broken (all)</option>
+        {Object.entries(STATUS_LABEL).map(([k, v]) => <option value={k} selected={status === k}>{v}</option>)}
+      </select>
+    </label>
+    <label>Sort
+      <select name="sort">
+        {(Object.keys(SORTS) as SortKey[]).map((k) => <option value={k} selected={sort === k}>{sortLabels[k]}</option>)}
+      </select>
+    </label>
+    {host && <input type="hidden" name="host" value={host} />}
+    {protocol && <input type="hidden" name="protocol" value={protocol} />}
+    <button class="primary" type="submit">Filter</button>
+    {(q || status || host || protocol) && <a href="/servers">clear</a>}
+  </form>
+
+  <div class="pager">
+    <span>{num(total)} servers{host && <> on <span class="mono">{host}</span></>}{protocol && <> speaking <span class="mono">{protocol}</span></>}</span>
+    <span>page {page} of {num(pages)}</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Server</th>
+          <th>Result</th>
+          <th class="num">Tools</th>
+          <th class="num">Tokens</th>
+          <th class="num">Init</th>
+          <th>Protocol</th>
+          <th>Host</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr>
+            <td class="break">
+              <a href={`/s/${r.name}`}>{r.name}</a>
+              {r.title && r.title !== r.name && <div class="muted" style="font-size:12px">{r.title}</div>}
+            </td>
+            <td>
+              <span class={`pill ${bucket(r.status)}`}>{label(r.status)}</span>
+              {r.status === 'auth' && r.auth_scheme && <span class="muted" style="font-size:12px"> {r.auth_scheme}</span>}
+              {(r.toolset_siblings ?? 0) > 0 && <div class="muted" style="font-size:12px">same tools as {num(r.toolset_siblings)} other{r.toolset_siblings === 1 ? '' : 's'}</div>}
+            </td>
+            <td class="num">{num(r.tool_count)}</td>
+            <td class="num">{tokens(r.tools_tokens)}</td>
+            <td class="num">{ms(r.init_ms)}</td>
+            <td class="mono muted">{r.protocol_version ?? ''}</td>
+            <td class="mono muted break"><a href={`/servers?host=${encodeURIComponent(r.host)}`}>{r.host}</a></td>
+          </tr>
+        ))}
+        {rows.length === 0 && <tr><td colspan="7" class="muted">Nothing matches.</td></tr>}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pager">
+    <span>{page > 1 ? <a href={pageHref(page - 1)}>← previous</a> : ''}</span>
+    <span>{page < pages ? <a href={pageHref(page + 1)}>next →</a> : ''}</span>
+  </div>
+  <p class="muted" style="font-size:13px">Registry data as of {date(rows[0]?.registry_updated_at)}. Probe results refresh daily.</p>
+</Layout>

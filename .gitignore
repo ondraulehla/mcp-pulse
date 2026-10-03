@@ -4,3 +4,7 @@ dist
 *.log
 data/raw
 probe/scratch
+site/.wrangler
+site/worker-configuration.d.ts
+site/.astro
+data/latest/import.sql

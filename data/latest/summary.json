@@ -1,0 +1,175 @@
+{
+  "probedAt": "2026-10-03T17:42:25.764Z",
+  "registryEntries": 38942,
+  "registryWithRemote": 24294,
+  "probed": 200,
+  "byStatus": {
+    "ok": 123,
+    "auth": 53,
+    "not_found": 8,
+    "dns": 4,
+    "error": 3,
+    "protocol_error": 3,
+    "payment": 2,
+    "tls": 2,
+    "server_error": 1,
+    "timeout": 1
+  },
+  "reachable": 178,
+  "ok": 123,
+  "uniqueToolsets": 123,
+  "duplicateServers": 0,
+  "protocols": {
+    "2025-11-25": 79,
+    "2025-06-18": 27,
+    "2025-03-26": 12,
+    "2024-11-05": 5
+  },
+  "authSchemes": {
+    "Bearer": 51,
+    "none": 2
+  },
+  "transports": {
+    "streamable-http": 194,
+    "sse": 6
+  },
+  "toolsTokens": {
+    "median": 1359,
+    "p90": 5672,
+    "p99": 35079,
+    "max": 56537,
+    "total": 392860
+  },
+  "toolCount": {
+    "median": 7,
+    "p90": 31,
+    "max": 184
+  },
+  "initMs": {
+    "median": 424,
+    "p90": 1087
+  },
+  "hosts": 194,
+  "heaviest": [
+    {
+      "name": "io.github.valuein/mcp-sec-edgar",
+      "toolCount": 121,
+      "toolsTokens": 56537,
+      "host": "mcp.valuein.biz"
+    },
+    {
+      "name": "ai.borealhost/mcp",
+      "toolCount": 184,
+      "toolsTokens": 35079,
+      "host": "borealhost.ai"
+    },
+    {
+      "name": "io.github.assetfare/assetfare-bridge",
+      "toolCount": 9,
+      "toolsTokens": 22684,
+      "host": "api.assetfare.dev"
+    },
+    {
+      "name": "io.github.pipeworx-io/kosis-kr",
+      "toolCount": 39,
+      "toolsTokens": 19745,
+      "host": "gateway.pipeworx.io"
+    },
+    {
+      "name": "io.github.pipeworx-io/inegi",
+      "toolCount": 38,
+      "toolsTokens": 19115,
+      "host": "gateway.pipeworx.io"
+    },
+    {
+      "name": "io.apidirect/api-direct",
+      "toolCount": 102,
+      "toolsTokens": 18348,
+      "host": "apidirect.io"
+    },
+    {
+      "name": "io.github.baldiga/zooq",
+      "toolCount": 45,
+      "toolsTokens": 9799,
+      "host": "zooq.dev"
+    },
+    {
+      "name": "org.polyform/polyform",
+      "toolCount": 70,
+      "toolsTokens": 8563,
+      "host": "api.polyform.org"
+    },
+    {
+      "name": "io.github.sadri-dridi/cc-ph",
+      "toolCount": 31,
+      "toolsTokens": 7425,
+      "host": "agent-observatory-sensor.nolimit-observatory.workers.dev"
+    },
+    {
+      "name": "io.github.sadri-dridi/hostname-ok",
+      "toolCount": 31,
+      "toolsTokens": 7420,
+      "host": "agent-observatory-sensor.nolimit-observatory.workers.dev"
+    },
+    {
+      "name": "io.github.wilmendezofficial/postari",
+      "toolCount": 40,
+      "toolsTokens": 6592,
+      "host": "postari.io"
+    },
+    {
+      "name": "ai.clearvoyance/clearvoyance",
+      "toolCount": 27,
+      "toolsTokens": 5891,
+      "host": "clearvoyance.ai"
+    },
+    {
+      "name": "io.github.WirterNow/agent-bank",
+      "toolCount": 43,
+      "toolsTokens": 5672,
+      "host": "tdueqhfxyojmjgactdyc.supabase.co"
+    },
+    {
+      "name": "io.usefulapi/kayako",
+      "toolCount": 21,
+      "toolsTokens": 5588,
+      "host": "kayako.usefulapi.io"
+    },
+    {
+      "name": "ad.getle/leads",
+      "toolCount": 35,
+      "toolsTokens": 4862,
+      "host": "mcp.getle.ad"
+    },
+    {
+      "name": "io.github.LorgAI/lorg-mcp-server",
+      "toolCount": 26,
+      "toolsTokens": 4568,
+      "host": "api.lorg.ai"
+    },
+    {
+      "name": "io.github.megachadxyz/megachad",
+      "toolCount": 38,
+      "toolsTokens": 4445,
+      "host": "megachad.xyz"
+    },
+    {
+      "name": "org.aioq/aio",
+      "toolCount": 17,
+      "toolsTokens": 4271,
+      "host": "aioq.org"
+    },
+    {
+      "name": "com.radar-cnpj/radar-cnpj",
+      "toolCount": 23,
+      "toolsTokens": 4257,
+      "host": "radar-cnpj.com"
+    },
+    {
+      "name": "io.github.nmxmxh/pronto-stream",
+      "toolCount": 15,
+      "toolsTokens": 4251,
+      "host": "pronto.stream"
+    }
+  ]
+}

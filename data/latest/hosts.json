@@ -1,0 +1,1748 @@
+[
+ {
+  "host": "agent-observatory-sensor.nolimit-observatory.workers.dev",
+  "servers": 2,
+  "byStatus": {
+   "ok": 2
+  },
+  "uniqueToolsets": 2,
+  "medianTokens": 7425
+ },
+ {
+  "host": "gateway.pipeworx.io",
+  "servers": 2,
+  "byStatus": {
+   "ok": 2
+  },
+  "uniqueToolsets": 2,
+  "medianTokens": 19745
+ },
+ {
+  "host": "api.mcp.ai",
+  "servers": 2,
+  "byStatus": {
+   "ok": 2
+  },
+  "uniqueToolsets": 2,
+  "medianTokens": 2017
+ },
+ {
+  "host": "mcp.apify.com",
+  "servers": 2,
+  "byStatus": {
+   "auth": 2
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "mcp.jojapi.com",
+  "servers": 2,
+  "byStatus": {
+   "ok": 2
+  },
+  "uniqueToolsets": 2,
+  "medianTokens": 2418
+ },
+ {
+  "host": "server.smithery.ai",
+  "servers": 2,
+  "byStatus": {
+   "not_found": 2
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "mcpuptimeledger.clauxel.com",
+  "servers": 1,
+  "byStatus": {
+   "dns": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "www.socialfaktory.com",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "mcp.furrsati.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 808
+ },
+ {
+  "host": "app.revensi.com",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "snapog.com",
+  "servers": 1,
+  "byStatus": {
+   "server_error": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "firm.tengu.co",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "infinivoai.eu",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 1788
+ },
+ {
+  "host": "api.echoloc.ai",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 379
+ },
+ {
+  "host": "elgadmisijrfowuujcmu.supabase.co",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 1230
+ },
+ {
+  "host": "agent.koynfx.com",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "krystalview.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 1056
+ },
+ {
+  "host": "peopleanalyst.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2612
+ },
+ {
+  "host": "intelligence.inversolabs.us",
+  "servers": 1,
+  "byStatus": {
+   "error": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "mcp.getle.ad",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 4862
+ },
+ {
+  "host": "mcp.docwand.app",
+  "servers": 1,
+  "byStatus": {
+   "dns": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "lets.usebrains.app",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "drillspark.io",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "api.getvaletparking.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2151
+ },
+ {
+  "host": "mcp.paperoffice.ai",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "api.spiralstake.xyz",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 3100
+ },
+ {
+  "host": "optimistic-compassion-production.up.railway.app",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 315
+ },
+ {
+  "host": "partywallquotes.co.uk",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 456
+ },
+ {
+  "host": "accountingwiki.co.kr",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2437
+ },
+ {
+  "host": "token-diet-mcp.vercel.app",
+  "servers": 1,
+  "byStatus": {
+   "payment": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "quoteos-api-production.up.railway.app",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 350
+ },
+ {
+  "host": "factstamp.agentrails.workers.dev",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2649
+ },
+ {
+  "host": "actablesite.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 541
+ },
+ {
+  "host": "api.cardmind.app",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "hiveconsult.onrender.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 502
+ },
+ {
+  "host": "contractors.agentlookups.ai",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 645
+ },
+ {
+  "host": "hydrant.dev",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "address-validator.api.klymax402.com",
+  "servers": 1,
+  "byStatus": {
+   "tls": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "api.m2mcent.com",
+  "servers": 1,
+  "byStatus": {
+   "payment": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "social.mcp.goaimoat.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 539
+ },
+ {
+  "host": "edinetdb.jp",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "sites.silentdirectivellc.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 363
+ },
+ {
+  "host": "fcefnmdlggldmfusydix.supabase.co",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2407
+ },
+ {
+  "host": "api.oasdiff.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 699
+ },
+ {
+  "host": "crawl4agent.saastemly.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 187
+ },
+ {
+  "host": "found-money.dropwatchhq.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 316
+ },
+ {
+  "host": "api-production-d9143.up.railway.app",
+  "servers": 1,
+  "byStatus": {
+   "not_found": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "particlehealth.usefulapi.io",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2132
+ },
+ {
+  "host": "socrata.caseyjhand.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2232
+ },
+ {
+  "host": "aioq.org",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 4271
+ },
+ {
+  "host": "mcp.lead411.com",
+  "servers": 1,
+  "byStatus": {
+   "not_found": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "api.assetfare.dev",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 22684
+ },
+ {
+  "host": "herstack.co.uk",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 811
+ },
+ {
+  "host": "tdueqhfxyojmjgactdyc.supabase.co",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 5672
+ },
+ {
+  "host": "megachad.xyz",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 4445
+ },
+ {
+  "host": "stores.openkrill.app",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 1924
+ },
+ {
+  "host": "mcp.idealo.com",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "api.bareun.ai",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "api.odei.ai",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 639
+ },
+ {
+  "host": "huntboard.ai",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 792
+ },
+ {
+  "host": "mcp.bitbybit.dev",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 1112
+ },
+ {
+  "host": "bashoor.ir",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 287
+ },
+ {
+  "host": "recover-api-production-bbba.up.railway.app",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 325
+ },
+ {
+  "host": "mcp.unulu.ai",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 1900
+ },
+ {
+  "host": "api.roomvana.co",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 263
+ },
+ {
+  "host": "openajan.com",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "mcp.usemuro.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2193
+ },
+ {
+  "host": "mcp-x402-gitlab-main.onrender.com",
+  "servers": 1,
+  "byStatus": {
+   "not_found": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "cloudapi.wasync.app",
+  "servers": 1,
+  "byStatus": {
+   "error": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "api.flask.do",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 3819
+ },
+ {
+  "host": "mcp.rephonic.com",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "mcp.crawlconsole.com",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "apidirect.io",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 18348
+ },
+ {
+  "host": "horse-truth-edge-production.up.railway.app",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 856
+ },
+ {
+  "host": "hiveposts.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2478
+ },
+ {
+  "host": "borealhost.ai",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 35079
+ },
+ {
+  "host": "gembook.xyz",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 512
+ },
+ {
+  "host": "hive-mcp-insurance.onrender.com",
+  "servers": 1,
+  "byStatus": {
+   "not_found": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "printify.usefulapi.io",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2056
+ },
+ {
+  "host": "mcp-devkit.mapbox.com",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "dutyfinch.cybermax-tools.workers.dev",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 323
+ },
+ {
+  "host": "mcp.pixelvault.dev",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 3113
+ },
+ {
+  "host": "mentions.mcp.goaimoat.com",
+  "servers": 1,
+  "byStatus": {
+   "tls": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "api.useholon.com",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "mcp.expatriator.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 374
+ },
+ {
+  "host": "verirouteintel.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 748
+ },
+ {
+  "host": "{host}",
+  "servers": 1,
+  "byStatus": {
+   "dns": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "mcp.zoom.us",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "productschema.pages.dev",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 180
+ },
+ {
+  "host": "echo-mcp.thetempleofdoom.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 275
+ },
+ {
+  "host": "kayako.usefulapi.io",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 5588
+ },
+ {
+  "host": "minter.io",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "api.yokka.ai",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "mcp.customdomain.ai",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "note-mcp.vercel.app",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "htmlbook.io",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "snapto.link",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "api.polyform.org",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 8563
+ },
+ {
+  "host": "zoningverdict.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 1727
+ },
+ {
+  "host": "mcp.e2llm.com",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "open-agent-marketplace-lab.werkruimte-v-0931.chatgpt.site",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 122
+ },
+ {
+  "host": "cern-inspire.caseyjhand.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 3960
+ },
+ {
+  "host": "api.lorg.ai",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 4568
+ },
+ {
+  "host": "api.askrentai.com",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "brieform.app",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "app.thinqos.com",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "ecommerce-mcp.mcpize.run",
+  "servers": 1,
+  "byStatus": {
+   "protocol_error": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "api.reps-log.com",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "entropy-mcp.terradev.cloud",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 902
+ },
+ {
+  "host": "tooloracle.io",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 1910
+ },
+ {
+  "host": "juicy-designs-quote.black-voice-76e6.workers.dev",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 869
+ },
+ {
+  "host": "mcp.svc.cloud.microsoft",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "mcp-server.outris.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2569
+ },
+ {
+  "host": "api.compoundinterest.ing",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2086
+ },
+ {
+  "host": "ohio.dwelldata.io",
+  "servers": 1,
+  "byStatus": {
+   "not_found": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "yeetit.site",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 1207
+ },
+ {
+  "host": "app.managelm.com",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "render.skillforge99.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 802
+ },
+ {
+  "host": "eu.spaceinvoices.com",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "mcp.firecrawl.dev",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 3850
+ },
+ {
+  "host": "postari.io",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 6592
+ },
+ {
+  "host": "mcp-template-e37c5898.staging.alpic.live",
+  "servers": 1,
+  "byStatus": {
+   "not_found": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "mcp.maatsii.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2307
+ },
+ {
+  "host": "mcp.reduck.ai",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "mcp.ryla.ai",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2939
+ },
+ {
+  "host": "ronventures.pages.dev",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 468
+ },
+ {
+  "host": "mcp.spocal.xyz",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 444
+ },
+ {
+  "host": "pohoda-mcp.uctomost.sk",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "agp.hcompany.ai",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 778
+ },
+ {
+  "host": "aialtfinder.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 1359
+ },
+ {
+  "host": "mcp.skylit.ai",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "aiod-automatic-discount.com",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "texaswaterdamagecost.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 457
+ },
+ {
+  "host": "ai.skala.io",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 666
+ },
+ {
+  "host": "www.ablakunio.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 1161
+ },
+ {
+  "host": "seamgrin.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 728
+ },
+ {
+  "host": "mcp.wcagc.com",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "jabbertoon.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2238
+ },
+ {
+  "host": "console.mermail.app",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "api.velarion.ai",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2189
+ },
+ {
+  "host": "nabarfinder.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 1240
+ },
+ {
+  "host": "clearvoyance.ai",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 5891
+ },
+ {
+  "host": "radar-cnpj.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 4257
+ },
+ {
+  "host": "funding.tech.eu",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 1291
+ },
+ {
+  "host": "www.veridionmarkets.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 955
+ },
+ {
+  "host": "musicbrainz.caseyjhand.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2484
+ },
+ {
+  "host": "mcp.bookingmaven.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 1826
+ },
+ {
+  "host": "api.meok.ai",
+  "servers": 1,
+  "byStatus": {
+   "dns": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "api.formpaste.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 967
+ },
+ {
+  "host": "mcp.audiopod.ai",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "comms.osis.co",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "erp-mcp.jaikin.eu",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 452
+ },
+ {
+  "host": "mcp.influsense.tech",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "structureclerk.ca",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 807
+ },
+ {
+  "host": "hndcw.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 252
+ },
+ {
+  "host": "healthchecksio.usefulapi.io",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2133
+ },
+ {
+  "host": "mcp.rv-grid.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 1893
+ },
+ {
+  "host": "gccbrokers.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2082
+ },
+ {
+  "host": "install.crustdata.com",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "mcp.rootly.com",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "www.shipmycar.co.uk",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 332
+ },
+ {
+  "host": "subcontractor-check.nerolabs.workers.dev",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 338
+ },
+ {
+  "host": "verdigraph-mcp.hartjustin6.workers.dev",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "findmypart.base44.app",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 812
+ },
+ {
+  "host": "streamshortcut.staycek.workers.dev",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "pronto.stream",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 4251
+ },
+ {
+  "host": "agent-commons.martin-granger-44f.workers.dev",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 313
+ },
+ {
+  "host": "mailcheer.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2437
+ },
+ {
+  "host": "migration-exception-mcp-mainnet.awaw-999-iw.workers.dev",
+  "servers": 1,
+  "byStatus": {
+   "protocol_error": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "zhiyong.dev",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2680
+ },
+ {
+  "host": "www.amz-vault.com",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "telegraph-morse.vercel.app",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "calorieapiadmin.com",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "mcp.scrymore.com",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "nota-ryo.vercel.app",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 1764
+ },
+ {
+  "host": "www.huettentouren.org",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 590
+ },
+ {
+  "host": "ryufin.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 739
+ },
+ {
+  "host": "console.atlas.rakuda.co",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "wealth-engine-production-e178.up.railway.app",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 105
+ },
+ {
+  "host": "mcp.creditcards.best",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 1286
+ },
+ {
+  "host": "siliconfriendly.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 1035
+ },
+ {
+  "host": "vendorping.artificl.us",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 385
+ },
+ {
+  "host": "mcp.january.ai",
+  "servers": 1,
+  "byStatus": {
+   "auth": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "zooq.dev",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 9799
+ },
+ {
+  "host": "api.kaiv.ai",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 351
+ },
+ {
+  "host": "titan-frameworks-production.up.railway.app",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2008
+ },
+ {
+  "host": "api.zyberno.com",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 3442
+ },
+ {
+  "host": "www.tpool.com.cn",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 882
+ },
+ {
+  "host": "mcp.valuein.biz",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 56537
+ },
+ {
+  "host": "pathguard-v2.up.railway.app",
+  "servers": 1,
+  "byStatus": {
+   "error": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "sportpoeder.nl",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 2048
+ },
+ {
+  "host": "mcp.nostos.market",
+  "servers": 1,
+  "byStatus": {
+   "ok": 1
+  },
+  "uniqueToolsets": 1,
+  "medianTokens": 1731
+ },
+ {
+  "host": "mcp.btcnode.uk",
+  "servers": 1,
+  "byStatus": {
+   "protocol_error": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ },
+ {
+  "host": "mcp.virohanalife.com",
+  "servers": 1,
+  "byStatus": {
+   "timeout": 1
+  },
+  "uniqueToolsets": 0,
+  "medianTokens": 0
+ }
+]

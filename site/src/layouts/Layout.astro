@@ -1,0 +1,138 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description = 'Is that MCP server alive, and what does it cost your context window? Live health and token cost of every remote server in the official MCP registry.' } = Astro.props;
+const path = Astro.url.pathname;
+const nav = [
+  ['/', 'Overview'],
+  ['/servers', 'Servers'],
+  ['/hosts', 'Hosts'],
+  ['/methodology', 'Methodology']
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title === 'mcp-pulse' ? title : `${title} · mcp-pulse`}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+  </head>
+  <body>
+    <header class="top">
+      <a class="brand" href="/"><span class="dot" aria-hidden="true"></span>mcp-pulse</a>
+      <nav>
+        {nav.map(([href, text]) => <a href={href} aria-current={path === href || (href !== '/' && path.startsWith(href)) ? 'page' : undefined}>{text}</a>)}
+        <a href="https://github.com/ondraulehla/mcp-pulse" rel="noopener">GitHub</a>
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer>
+      <p>
+        mcp-pulse probes the remote servers listed in the <a href="https://registry.modelcontextprotocol.io" rel="noopener">official MCP registry</a> once a day.
+        Token counts are estimates with one tokenizer. See <a href="/methodology">how it is measured</a>. To exclude a server, <a href="https://github.com/ondraulehla/mcp-pulse/issues" rel="noopener">open an issue</a>.
+      </p>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --bg: #fbfbf9;
+    --fg: #16181d;
+    --muted: #666b75;
+    --line: #e3e3dd;
+    --card: #ffffff;
+    --accent: #0f4ec4;
+    --up: #1d8a4a;
+    --up-bg: #e6f4ea;
+    --gated: #2d5bd1;
+    --gated-bg: #e8eefb;
+    --down: #c43a2f;
+    --down-bg: #fbe9e6;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121317;
+      --fg: #e8e8e4;
+      --muted: #9a9ea8;
+      --line: #2a2c33;
+      --card: #1a1b20;
+      --accent: #7aa2ff;
+      --up: #4fc17c;
+      --up-bg: #15301f;
+      --gated: #8fb0ff;
+      --gated-bg: #1a2440;
+      --down: #ff7b6e;
+      --down-bg: #3a1d1a;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { font-family: var(--sans); color: var(--fg); background: var(--bg); line-height: 1.5; font-size: 16px; }
+  body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  main { flex: 1; width: min(1100px, 100% - 32px); margin: 0 auto; padding: 24px 0 48px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: min(1100px, 100% - 32px); margin: 0 auto; padding: 16px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  .brand { font-weight: 700; font-size: 18px; color: var(--fg); display: inline-flex; align-items: center; gap: 8px; letter-spacing: -0.01em; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--up); box-shadow: 0 0 0 3px var(--up-bg); }
+  header nav { display: flex; gap: 18px; flex-wrap: wrap; }
+  header nav a { color: var(--muted); font-size: 15px; }
+  header nav a[aria-current] { color: var(--fg); font-weight: 600; }
+  footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+  footer p { width: min(1100px, 100% - 32px); margin: 0 auto; padding: 20px 0; }
+  h1 { font-size: clamp(26px, 4vw, 38px); letter-spacing: -0.02em; line-height: 1.15; margin: 8px 0 12px; }
+  h2 { font-size: 20px; margin: 32px 0 12px; letter-spacing: -0.01em; }
+  .lede { font-size: 18px; color: var(--muted); max-width: 70ch; margin: 0 0 24px; }
+  .mono { font-family: var(--mono); font-size: 0.93em; }
+  .muted { color: var(--muted); }
+  .num { font-variant-numeric: tabular-nums; text-align: right; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 16px 0; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .card .big { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .card .sub { color: var(--muted); font-size: 13px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+  th.num, td.num { text-align: right; }
+  tbody tr:hover { background: color-mix(in srgb, var(--card) 70%, var(--line)); }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+  .table-wrap table { min-width: 720px; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .pill.up { background: var(--up-bg); color: var(--up); }
+  .pill.gated { background: var(--gated-bg); color: var(--gated); }
+  .pill.down { background: var(--down-bg); color: var(--down); }
+  .bar { display: flex; height: 14px; border-radius: 7px; overflow: hidden; background: var(--line); margin: 10px 0; }
+  .bar span { display: block; height: 100%; }
+  .bar .up { background: var(--up); }
+  .bar .gated { background: var(--gated); }
+  .bar .down { background: var(--down); }
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
+  form.filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; margin: 12px 0 16px; }
+  form.filters label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  input, select, button { font: inherit; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--fg); }
+  button { cursor: pointer; }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  pre { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font-family: var(--mono); font-size: 13px; }
+  code { font-family: var(--mono); font-size: 0.93em; }
+  dl.facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; margin: 12px 0; font-size: 15px; }
+  dl.facts dt { color: var(--muted); }
+  dl.facts dd { margin: 0; overflow-wrap: anywhere; }
+  .pager { display: flex; gap: 12px; align-items: center; justify-content: space-between; margin: 14px 0; font-size: 14px; color: var(--muted); }
+  .break { overflow-wrap: anywhere; }
+  @media (max-width: 640px) {
+    dl.facts { grid-template-columns: 1fr; gap: 2px; }
+    dl.facts dt { margin-top: 8px; }
+  }
+</style>

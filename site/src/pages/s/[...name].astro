@@ -1,0 +1,106 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getHistory, getServer, getSiblings } from '../../lib/db';
+import { bucket, label, ms, num, tokens, date, windowShare } from '../../lib/format';
+
+const name = Astro.params.name ?? '';
+const server = await getServer(name);
+if (!server) {
+  return new Response('Not found', { status: 404 });
+}
+const [history, siblings] = await Promise.all([
+  getHistory(name, 60),
+  server.toolset_hash ? getSiblings(server.toolset_hash, name) : Promise.resolve([])
+]);
+Astro.response.headers.set('cache-control', 'public, max-age=300, s-maxage=3600');
+
+const capabilities = server.capabilities ? (JSON.parse(server.capabilities) as string[]) : [];
+const topTools = server.top_tools ? (JSON.parse(server.top_tools) as Array<{ name: string; tokens: number }>) : [];
+const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
+const badgeMd = `[![mcp-pulse](${site}/badge/${name}.svg)](${site}/s/${name})`;
+const uptime = history.length ? Math.round((history.filter((h) => h.status === 'ok' || h.status === 'auth' || h.status === 'payment').length / history.length) * 100) : null;
+---
+
+<Layout title={server.title && server.title !== name ? `${server.title} (${name})` : name} description={server.description ?? undefined}>
+  <p class="muted mono">{name}</p>
+  <h1>{server.title ?? server.server_name ?? name}</h1>
+  {server.description && <p class="lede">{server.description}</p>}
+
+  <p>
+    <span class={`pill ${bucket(server.status)}`} style="font-size:15px;padding:4px 12px">{label(server.status)}</span>
+    <span class="muted"> on {date(server.probed_at)}</span>
+    {server.http_status && <span class="muted"> · HTTP {server.http_status}</span>}
+    {server.auth_scheme && <span class="muted"> · {server.auth_scheme}</span>}
+  </p>
+
+  {server.status === 'ok' && (
+    <div class="cards">
+      <div class="card"><div class="big">{num(server.tool_count)}</div><div class="sub">tools</div></div>
+      <div class="card"><div class="big">{tokens(server.tools_tokens)}</div><div class="sub">tokens for the tool definitions</div></div>
+      <div class="card"><div class="big">{windowShare(server.tools_tokens)}</div><div class="sub">of a 200k context window</div></div>
+      <div class="card"><div class="big">{ms(server.init_ms)}</div><div class="sub">to initialize</div></div>
+      <div class="card"><div class="big">{ms(server.tools_ms)}</div><div class="sub">to list tools</div></div>
+    </div>
+  )}
+  {server.status !== 'ok' && server.error && <pre>{server.error}</pre>}
+
+  <dl class="facts">
+    <dt>Endpoint</dt><dd class="mono">{server.url} <span class="muted">({server.transport})</span></dd>
+    <dt>Host</dt><dd><a class="mono" href={`/servers?host=${encodeURIComponent(server.host)}`}>{server.host}</a></dd>
+    {server.protocol_version && <><dt>Protocol</dt><dd class="mono">{server.protocol_version}</dd></>}
+    {server.server_name && <><dt>Reports itself as</dt><dd>{server.server_name} {server.server_version}</dd></>}
+    {capabilities.length > 0 && <><dt>Capabilities</dt><dd class="mono">{capabilities.join(', ')}</dd></>}
+    {server.instructions_chars != null && server.status === 'ok' && <><dt>Instructions</dt><dd>{server.instructions_chars ? `${num(server.instructions_chars)} characters` : 'none'}</dd></>}
+    {server.repo && <><dt>Repository</dt><dd><a href={server.repo} rel="noopener" class="break">{server.repo}</a></dd></>}
+    {server.website && <><dt>Website</dt><dd><a href={server.website} rel="noopener" class="break">{server.website}</a></dd></>}
+    <dt>Registry</dt><dd>{server.registry_status}, updated {date(server.registry_updated_at)} · <a href={`https://registry.modelcontextprotocol.io/v0/servers?search=${encodeURIComponent(name)}`} rel="noopener">registry entry</a></dd>
+    {uptime !== null && <><dt>Reachable</dt><dd>{uptime} % of the last {history.length} probe{history.length === 1 ? '' : 's'}</dd></>}
+  </dl>
+
+  {topTools.length > 0 && (
+    <>
+      <h2>Most expensive tools</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tool</th><th class="num">Tokens</th><th class="num">Share of this server</th></tr></thead>
+          <tbody>
+            {topTools.map((t) => (
+              <tr><td class="mono break">{t.name}</td><td class="num">{num(t.tokens)}</td><td class="num">{server.tools_tokens ? Math.round((t.tokens / server.tools_tokens) * 100) : 0} %</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  )}
+
+  {siblings.length > 0 && (
+    <>
+      <h2>Same tool set as {num(server.toolset_siblings)} other server{server.toolset_siblings === 1 ? '' : 's'}</h2>
+      <p class="muted">These registry entries expose exactly the same tool names and schema sizes.</p>
+      <ul>
+        {siblings.map((s) => <li><a href={`/s/${s.name}`}>{s.name}</a> <span class="muted mono">{s.host}</span></li>)}
+        {(server.toolset_siblings ?? 0) > siblings.length && <li class="muted">and {num((server.toolset_siblings ?? 0) - siblings.length)} more</li>}
+      </ul>
+    </>
+  )}
+
+  {history.length > 1 && (
+    <>
+      <h2>History</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Probed</th><th>Result</th><th class="num">Init</th><th class="num">Tools</th><th class="num">Tokens</th></tr></thead>
+          <tbody>
+            {history.map((h) => (
+              <tr><td>{h.probed_at.slice(0, 16).replace('T', ' ')}</td><td><span class={`pill ${bucket(h.status)}`}>{label(h.status)}</span></td><td class="num">{ms(h.init_ms)}</td><td class="num">{num(h.tool_count)}</td><td class="num">{tokens(h.tools_tokens)}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  )}
+
+  <h2>Badge</h2>
+  <p><img src={`/badge/${name}.svg`} alt={`mcp-pulse: ${label(server.status)}`} /></p>
+  <pre>{badgeMd}</pre>
+</Layout>

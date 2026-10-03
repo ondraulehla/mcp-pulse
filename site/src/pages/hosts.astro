@@ -1,0 +1,38 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { listHosts } from '../lib/db';
+import { num, pct, tokens } from '../lib/format';
+
+const hosts = await listHosts(500);
+const total = hosts.reduce((a, h) => a + h.servers, 0);
+Astro.response.headers.set('cache-control', 'public, max-age=300, s-maxage=3600');
+---
+
+<Layout title="Hosts">
+  <h1>Hosts</h1>
+  <p class="lede">
+    The registry lists servers by name, but a few hosts publish thousands of entries. This table groups the probed servers by hostname.
+    "Distinct tool sets" counts how many different tool lists a host actually serves.
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Host</th><th class="num">Servers</th><th class="num">Share</th><th class="num">Alive</th><th class="num">Gated</th><th class="num">Down</th><th class="num">Distinct tool sets</th><th class="num">Median tokens</th></tr>
+      </thead>
+      <tbody>
+        {hosts.map((h) => (
+          <tr>
+            <td class="mono break"><a href={`/servers?host=${encodeURIComponent(h.host)}`}>{h.host}</a></td>
+            <td class="num">{num(h.servers)}</td>
+            <td class="num">{pct(h.servers, total)}</td>
+            <td class="num">{num(h.ok)}</td>
+            <td class="num">{num(h.auth)}</td>
+            <td class="num">{num(h.dead)}</td>
+            <td class="num">{num(h.unique_toolsets)}</td>
+            <td class="num">{tokens(h.median_tokens)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</Layout>
