@@ -86,7 +86,7 @@ npm run probe -- --sample 200 --per-host 2        # a sample, results in data/sa
 npm run probe -- --all --out data/raw/probe-run.json
 node --import tsx probe/build-data.ts --in data/raw/probe-run.json --out data/latest
 node --import tsx probe/to-sql.ts --in data/latest --out data/latest/import.sql
-npm test --workspaces
+npm test --workspaces --if-present
 ```
 
 Site, locally against a local D1:
