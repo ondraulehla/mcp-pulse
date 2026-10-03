@@ -1,0 +1,12 @@
+{
+  "name": "mcp-pulse-monorepo",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "probe": "node --import tsx probe/run.ts"
+  },
+  "engines": { "node": ">=22" }
+}
