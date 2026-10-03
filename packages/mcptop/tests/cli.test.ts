@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdtemp, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -75,6 +75,14 @@ describe('cli', () => {
     const { code, stderr } = await exec(['--config', file, '--budget', '1']);
     expect(code).toBe(1);
     expect(stderr).toContain('Over budget');
+  });
+
+  it('runs when invoked through a symlink, like the npm bin', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'mcp-pulse-bin-'));
+    const link = path.join(dir, 'mcptop');
+    await symlink(cli, link);
+    const { stdout } = await run(process.execPath, ['--import', 'tsx', link, '--version'], { timeout: 60_000 });
+    expect(stdout.trim()).toMatch(/^\d+\.\d+\.\d+$/);
   });
 
   it('exits 2 for an unreadable config', async () => {

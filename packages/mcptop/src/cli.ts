@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
 import { homedir } from 'node:os';
+import { realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { discoverConfigs, readConfigFile, type ConfiguredServer } from './configs.js';
 import { probeRemote, probeStdio, VERSION } from './probe.js';
 import { TOKENIZER } from './tokens.js';
@@ -240,8 +242,16 @@ function render(rows: Row[], o: { window: number; total: number; totalTools: num
   return lines.join('\n');
 }
 
-const invokedDirectly = process.argv[1] && /cli\.(ts|js)$/.test(process.argv[1]);
-if (invokedDirectly) {
+function invokedDirectly(): boolean {
+  if (!process.argv[1]) return false;
+  try {
+    // The bin is a symlink in node_modules/.bin, so compare real paths.
+    return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+if (invokedDirectly()) {
   main(process.argv.slice(2)).then(
     (code) => process.exit(code),
     (err) => {
