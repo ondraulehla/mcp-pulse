@@ -17,10 +17,11 @@ const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
 
 <Layout title="mcp-pulse">
   <p class="kicker">{run ? `${num(run.probed)} remote servers · probed ${date(run.probedAt)}` : 'no run yet'}</p>
-  <h1 class="poster">Is that MCP server alive, and what does it cost your context window?</h1>
+  <h1 class="poster">The MCP registry, measured daily</h1>
   <p class="lede">
-    Every day mcp-pulse connects to every remote server in the official MCP registry, lists its tools and counts
-    the tokens its tool definitions take before your agent says a word. For your own config, run <code>npx mcptop</code>.
+    Is that MCP server alive, and what does it cost your context window? mcp-pulse connects to every remote server in the
+    official registry, lists its tools and counts the tokens the tool definitions take before your agent says a word.
+    For your own config, run <code>npx mcptop</code>.
   </p>
 
   {!run && <p class="frame" style="padding:16px">No probe run has been imported yet.</p>}

@@ -41,7 +41,7 @@ const title = host ? `Servers on ${host}` : status ? `${label(status)} servers` 
 
 <Layout title={title}>
   <p class="kicker">{run ? `probed ${run.probedAt.slice(0, 10)}` : ''}</p>
-  <h1 class="poster">{host ? host : status ? label(status) : q ? `“${q}”` : 'Every remote server'}</h1>
+  <h1 class="poster">{host ? host : status ? `${label(status)} servers` : q ? `Servers matching “${q}”` : 'Every remote server'}</h1>
 
   <form class="filters" method="get" action="/servers" role="search">
     <label>Search
