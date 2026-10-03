@@ -12,7 +12,17 @@ mcp-pulse probes every remote server in the [official MCP registry](https://regi
 - whether it asks for payment (HTTP 402)
 - how many tools it has and how many tokens their definitions cost
 
-Each server gets a page and a badge:
+## The CLI: what do your own servers cost?
+
+```bash
+npx mcp-pulse                     # reads Claude Code, Claude Desktop, Cursor, VS Code, Windsurf and Gemini CLI configs
+npx mcp-pulse --config .mcp.json  # one file
+npx mcp-pulse --budget 30000      # exit 1 when the total is above the budget, for CI
+```
+
+It starts every configured server the way your client does, lists the tools and prints the token cost per server and in total. See [packages/mcp-pulse](packages/mcp-pulse/README.md).
+
+Each server on the board gets a page and a badge:
 
 ```markdown
 [![mcp-pulse](https://mcp-pulse.ondrejulehla.workers.dev/badge/io.github.you/your-server.svg)](https://mcp-pulse.ondrejulehla.workers.dev/s/io.github.you/your-server)
@@ -63,7 +73,7 @@ registry ──▶ probe/run.ts ──▶ data/raw/probe-run.json
                               site/ (Astro on Workers) ◀────────┘
 ```
 
-- `packages/mcp-pulse/` the library: registry client, probe, token counting. The CLI for your own MCP config is next.
+- `packages/mcp-pulse/` the library and the CLI: registry client, remote and stdio probe, config discovery, token counting
 - `probe/` the batch runner and the data pipeline
 - `site/` the board: Astro 7 with the Cloudflare adapter, rendered from D1, with SVG badges
 - `.github/workflows/probe.yml` runs the whole pipeline daily and commits `summary.json` and `hosts.json`

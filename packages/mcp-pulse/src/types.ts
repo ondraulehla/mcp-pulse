@@ -1,4 +1,5 @@
 export type RemoteTransport = 'streamable-http' | 'sse';
+export type ProbeTransport = RemoteTransport | 'stdio';
 
 export interface RegistryRemote {
   type: RemoteTransport;
@@ -58,8 +59,9 @@ export interface ToolCost {
 }
 
 export interface ProbeResult {
+  /** The endpoint URL, or `stdio:<command>` for a local server. */
   url: string;
-  transport: RemoteTransport;
+  transport: ProbeTransport;
   probedAt: string;
   status: ProbeStatus;
   httpStatus?: number;

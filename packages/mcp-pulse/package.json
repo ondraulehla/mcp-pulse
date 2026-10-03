@@ -1,6 +1,6 @@
 {
   "name": "mcp-pulse",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Is that MCP server alive, and what does it cost your context window? Probe remote MCP servers and measure the token cost of their tool schemas.",
   "license": "MIT",
   "type": "module",
@@ -10,7 +10,8 @@
     "mcp-pulse": "./dist/cli.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
@@ -27,5 +28,26 @@
     "typescript": "^5.9.0",
     "vitest": "^5.0.3",
     "zod": "^3.25.76"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "tokens",
+    "context-window",
+    "cli",
+    "agents",
+    "claude-code",
+    "cursor"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ondraulehla/mcp-pulse.git",
+    "directory": "packages/mcp-pulse"
+  },
+  "homepage": "https://mcp-pulse.ondrejulehla.workers.dev",
+  "bugs": "https://github.com/ondraulehla/mcp-pulse/issues",
+  "author": "Ondřej Úlehla",
+  "engines": {
+    "node": ">=22"
   }
 }
