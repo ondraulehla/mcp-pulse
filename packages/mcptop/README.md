@@ -1,13 +1,15 @@
-# mcp-pulse
+# mcptop
 
-**How many tokens do your MCP servers cost before the first prompt?**
+**`top` for your MCP servers: how many tokens do their tool definitions cost before the first prompt?**
+
+mcptop is the CLI of [mcp-pulse](https://github.com/ondraulehla/mcp-pulse), the board that probes every remote server in the official MCP registry. The board tells you about servers out there. mcptop tells you about yours.
 
 Every MCP server you configure hands your agent its tool definitions at the start of each session. Those definitions are tokens, and you pay for them in every turn. This command starts each configured server, lists its tools and tells you what they cost.
 
 ```
-$ npx mcp-pulse --config .mcp.json --tools 3
+$ npx mcptop --config .mcp.json --tools 3
 
-mcp-pulse 0.1.0 · tool definitions your agent loads before the first prompt
+mcptop 0.1.0 · tool definitions your agent loads before the first prompt
   .mcp.json
 
   server      source     result               tools  tokens  of 200k
@@ -36,10 +38,10 @@ It reads the config files of Claude Code (`.mcp.json`, `~/.claude.json`), Claude
 ## Options
 
 ```
-mcp-pulse [options]                 measure every server in the configs it can find
-mcp-pulse --config <file>           measure one config file (repeatable)
-mcp-pulse --url <url>               measure one remote server (repeatable)
-mcp-pulse --stdio "<command args>"  measure one local server (repeatable)
+mcptop [options]                 measure every server in the configs it can find
+mcptop --config <file>           measure one config file (repeatable)
+mcptop --url <url>               measure one remote server (repeatable)
+mcptop --stdio "<command args>"  measure one local server (repeatable)
 
 --window <tokens>    context window for the percentages (default 200000)
 --budget <tokens>    exit with code 1 when the total is above this
@@ -49,7 +51,7 @@ mcp-pulse --stdio "<command args>"  measure one local server (repeatable)
 --json               machine-readable output
 ```
 
-`--budget` makes it a CI check: commit your `.mcp.json`, run `npx mcp-pulse --budget 30000` in the pipeline, and a pull request that adds a 40 000-token server fails.
+`--budget` makes it a CI check: commit your `.mcp.json`, run `npx mcptop --budget 30000` in the pipeline, and a pull request that adds a 40 000-token server fails.
 
 ## How tokens are counted
 
@@ -58,7 +60,7 @@ Each tool is serialised as compact JSON with `name`, `description` and `input_sc
 ## Library
 
 ```ts
-import { probeRemote, probeStdio, discoverConfigs } from 'mcp-pulse';
+import { probeRemote, probeStdio, discoverConfigs } from 'mcptop';
 
 const r = await probeRemote({ url: 'https://mcp.deepwiki.com/mcp', type: 'streamable-http' });
 r.status;       // 'ok' | 'auth' | 'payment' | 'not_found' | 'timeout' | ...

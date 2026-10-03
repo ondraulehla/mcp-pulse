@@ -6,13 +6,13 @@ import { probeRemote, probeStdio, VERSION } from './probe.js';
 import { TOKENIZER } from './tokens.js';
 import type { ProbeResult } from './types.js';
 
-const HELP = `mcp-pulse ${VERSION}: how many tokens do your MCP servers cost before the first prompt?
+const HELP = `mcptop ${VERSION}: how many tokens do your MCP servers cost before the first prompt?
 
 Usage
-  mcp-pulse [options]                 measure every server in the configs it can find
-  mcp-pulse --config <file>           measure one config file (repeatable)
-  mcp-pulse --url <url>               measure one remote server (repeatable)
-  mcp-pulse --stdio "<command args>"  measure one local server (repeatable)
+  mcptop [options]                 measure every server in the configs it can find
+  mcptop --config <file>           measure one config file (repeatable)
+  mcptop --url <url>               measure one remote server (repeatable)
+  mcptop --stdio "<command args>"  measure one local server (repeatable)
 
 Options
   --window <tokens>    context window for the percentages (default 200000)
@@ -24,7 +24,8 @@ Options
   --help, --version
 
 Config files it looks for: .mcp.json, ~/.claude.json, Claude Desktop, Cursor, VS Code, Windsurf, Gemini CLI.
-Tokens are counted with ${TOKENIZER} over name, description and input schema of each tool.`;
+Tokens are counted with ${TOKENIZER} over name, description and input schema of each tool.
+The same probe runs the public board at https://mcp-pulse.ondrejulehla.workers.dev`;
 
 interface Row {
   name: string;
@@ -192,7 +193,7 @@ function statusText(r: Row): string {
 
 function render(rows: Row[], o: { window: number; total: number; totalTools: number; topTools: number; sources: string[] }): string {
   const lines: string[] = [];
-  lines.push(`mcp-pulse ${VERSION} · tool definitions your agent loads before the first prompt`);
+  lines.push(`mcptop ${VERSION} · tool definitions your agent loads before the first prompt`);
   if (o.sources.length) lines.push(o.sources.map((s) => `  ${shortSource(s)}`).join('\n'));
   lines.push('');
   if (!rows.length) {

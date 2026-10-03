@@ -10,7 +10,7 @@
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { parseArgs } from 'node:util';
-import type { ProbeResult, RegistryEntry } from '../packages/mcp-pulse/src/index.js';
+import type { ProbeResult, RegistryEntry } from '../packages/mcptop/src/index.js';
 
 const { values: args } = parseArgs({
   options: {

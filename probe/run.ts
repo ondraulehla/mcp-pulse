@@ -7,8 +7,8 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { parseArgs } from 'node:util';
-import { fetchRegistry, hostOf, primaryRemote, probeRemote } from '../packages/mcp-pulse/src/index.js';
-import type { ProbeResult, RegistryEntry } from '../packages/mcp-pulse/src/index.js';
+import { fetchRegistry, hostOf, primaryRemote, probeRemote } from '../packages/mcptop/src/index.js';
+import type { ProbeResult, RegistryEntry } from '../packages/mcptop/src/index.js';
 
 const { values: args } = parseArgs({
   options: {

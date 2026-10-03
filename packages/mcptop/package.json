@@ -1,0 +1,56 @@
+{
+  "name": "mcptop",
+  "version": "0.1.0",
+  "description": "top for your MCP servers: how many tokens do their tool definitions cost before the first prompt?",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "tokens",
+    "context-window",
+    "cli",
+    "agents",
+    "claude-code",
+    "cursor",
+    "top"
+  ],
+  "homepage": "https://mcp-pulse.ondrejulehla.workers.dev",
+  "bugs": "https://github.com/ondraulehla/mcp-pulse/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ondraulehla/mcp-pulse.git",
+    "directory": "packages/mcptop"
+  },
+  "author": "Ondřej Úlehla",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "mcptop": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "dev": "node --import tsx src/cli.ts",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.0",
+    "gpt-tokenizer": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "vitest": "^5.0.3",
+    "zod": "^3.25.76"
+  }
+}

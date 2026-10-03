@@ -7,7 +7,7 @@ import { toolsCost } from './tokens.js';
 import type { ProbeResult, ProbeStatus, RemoteTransport } from './types.js';
 
 export const VERSION = '0.1.0';
-export const USER_AGENT = `mcp-pulse/${VERSION} (+https://github.com/ondraulehla/mcp-pulse)`;
+export const USER_AGENT = `mcp-pulse/${VERSION} (mcptop; +https://github.com/ondraulehla/mcp-pulse)`;
 
 export interface ProbeOptions {
   /** Timeout for the whole probe and for each request. Default 15 000 ms. */
