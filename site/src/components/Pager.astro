@@ -1,0 +1,86 @@
+---
+/**
+ * Pagination: previous and next, a window of page numbers when the total is
+ * known, and a "go to page" field. Works without JavaScript: the field is a
+ * form that keeps every other filter as hidden inputs.
+ */
+interface Props {
+  page: number;
+  /** Total pages, or null when the total is not known (filtered lists). */
+  pages: number | null;
+  hasNext: boolean;
+  /** Current URL; the component replaces its page parameter. */
+  url: URL;
+  position: 'top' | 'bottom';
+}
+const { page, pages, hasNext, url, position } = Astro.props;
+
+function href(n: number): string {
+  const u = new URL(url);
+  if (n <= 1) u.searchParams.delete('page');
+  else u.searchParams.set('page', String(n));
+  return u.pathname + u.search;
+}
+
+const numbers: Array<number | '…'> = [];
+if (pages !== null && pages > 1) {
+  const want = new Set<number>([1, 2, pages - 1, pages, page - 2, page - 1, page, page + 1, page + 2]);
+  const sorted = [...want].filter((n) => n >= 1 && n <= pages).sort((a, b) => a - b);
+  let prev = 0;
+  for (const n of sorted) {
+    if (n - prev > 1) numbers.push('…');
+    numbers.push(n);
+    prev = n;
+  }
+}
+const hidden = [...url.searchParams.entries()].filter(([k]) => k !== 'page');
+const last = pages ?? (hasNext ? page + 1 : page);
+---
+
+<nav class={`pager pager-${position}`} aria-label={`Pagination ${position}`}>
+  <div class="pager-arrows">
+    <a class={`pbtn${page > 1 ? '' : ' disabled'}`} href={page > 1 ? href(1) : undefined} aria-label="First page" aria-disabled={page > 1 ? undefined : 'true'}>«</a>
+    <a class={`pbtn${page > 1 ? '' : ' disabled'}`} href={page > 1 ? href(page - 1) : undefined} aria-label="Previous page" aria-disabled={page > 1 ? undefined : 'true'}>‹ prev</a>
+  </div>
+  {numbers.length > 0 ? (
+    <ol class="pager-numbers">
+      {numbers.map((n) =>
+        n === '…' ? <li class="gap">…</li> : <li><a class={`pbtn${n === page ? ' current' : ''}`} href={href(n)} aria-current={n === page ? 'page' : undefined}>{n}</a></li>
+      )}
+    </ol>
+  ) : (
+    <span class="pager-label">page {page}</span>
+  )}
+  <div class="pager-arrows">
+    <a class={`pbtn${hasNext ? '' : ' disabled'}`} href={hasNext ? href(page + 1) : undefined} aria-label="Next page" aria-disabled={hasNext ? undefined : 'true'}>next ›</a>
+    {pages !== null && <a class={`pbtn${page < pages ? '' : ' disabled'}`} href={page < pages ? href(pages) : undefined} aria-label="Last page" aria-disabled={page < pages ? undefined : 'true'}>»</a>}
+  </div>
+  <form class="pager-goto" method="get" action={url.pathname}>
+    {hidden.map(([k, v]) => <input type="hidden" name={k} value={v} />)}
+    <label>go to<input type="number" name="page" min="1" max={pages ?? 400} value={page} aria-label="Page number" />{pages !== null && <span class="of">of {pages.toLocaleString('en-US').replace(/,/g, ' ')}</span>}</label>
+    <button type="submit">Go</button>
+  </form>
+</nav>
+
+<style is:global>
+  .pager { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 12px 0; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); }
+  .pager-top { margin-bottom: 10px; }
+  .pager-bottom { margin-top: 12px; }
+  .pager-arrows { display: flex; gap: 4px; }
+  .pager-numbers { display: flex; gap: 4px; list-style: none; margin: 0; padding: 0; flex-wrap: wrap; }
+  .pager-numbers .gap { padding: 6px 4px; }
+  .pbtn { display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 32px; padding: 0 9px; border: 1px solid var(--line); color: var(--ink-muted); white-space: nowrap; }
+  main .pager a.pbtn { color: var(--ink-muted); }
+  main .pager a.pbtn:hover { background: var(--ink); color: var(--surface); text-decoration: none; }
+  main .pager a.pbtn.current { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .pbtn.disabled { opacity: 0.35; pointer-events: none; }
+  .pager-label { padding: 0 6px; }
+  .pager-goto { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+  .pager-goto label { display: flex; align-items: center; gap: 6px; }
+  .pager-goto input { width: 5.5em; height: 32px; padding: 0 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-family: var(--font-mono); font-size: 0.8rem; text-align: right; -moz-appearance: textfield; }
+  .pager-goto input::-webkit-outer-spin-button, .pager-goto input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .pager-goto .of { white-space: nowrap; }
+  .pager-goto button { height: 32px; padding: 0 12px; border: 1px solid var(--line); background: transparent; color: var(--ink-muted); font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
+  .pager-goto button:hover { background: var(--ink); color: var(--surface); }
+  @media (max-width: 640px) { .pager-goto { margin-left: 0; } }
+</style>

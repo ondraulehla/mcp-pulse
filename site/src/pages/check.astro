@@ -63,11 +63,9 @@ const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
 <Layout title="Check a server" description="Probe one MCP server live: does it answer, what protocol, how many tools, how many tokens.">
   <p class="kicker">live check</p>
   <h1 class="poster">Check a server</h1>
-  <form class="filters check" method="get" action="/check">
-    <label>Server URL or registry name
-      <input type="url" name="target" value={raw} placeholder="https://mcp.example.com/mcp" required autocomplete="off" />
-    </label>
-    <div class="actions"><button type="submit">Check</button></div>
+  <form class="checkform" method="get" action="/check" style="margin-top:18px">
+    <input type="text" name="target" value={raw} placeholder="https://mcp.example.com/mcp or io.github.you/server" required autocomplete="off" aria-label="Server URL or registry name" />
+    <button type="submit">Check</button>
   </form>
   <p class="muted small">Servers already in the registry open their page. Anything else is probed now: initialize, tools/list, no credentials. Results are cached for ten minutes.</p>
 

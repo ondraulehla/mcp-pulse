@@ -7,6 +7,6 @@ export default defineConfig({
   session: false,
   site: 'https://mcp-pulse.ulehla.dev',
   trailingSlash: 'never',
-  build: { format: 'file' },
+  build: { format: 'file', inlineStylesheets: 'always' },
   vite: { server: { fs: { allow: ['..'] } } }
 });

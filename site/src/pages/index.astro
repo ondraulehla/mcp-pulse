@@ -8,20 +8,28 @@ Astro.response.headers.set('cache-control', 'public, max-age=300, s-maxage=3600'
 const up = run?.ok ?? 0;
 const gated = run ? (run.byStatus.auth ?? 0) + (run.byStatus.payment ?? 0) : 0;
 const down = run ? run.probed - up - gated : 0;
-const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
 ---
 
 <Layout title="mcp-pulse">
-  <p class="kicker">{run ? `${num(run.probed)} remote servers · probed ${date(run.probedAt)}` : 'no run yet'}</p>
   <h1 class="poster">Health and token cost of the MCP registry</h1>
   <p class="lede">Every remote server in the official registry, probed daily: does it answer, and how many tokens do its tool definitions cost before the first prompt.</p>
 
-  <form class="filters check" method="get" action="/check">
-    <label>Check a server
-      <input type="text" name="target" placeholder="https://mcp.example.com/mcp or io.github.you/server" required autocomplete="off" />
-    </label>
-    <div class="actions"><button type="submit">Check</button></div>
-  </form>
+  <section class="panel check-panel" aria-labelledby="check-h">
+    <h2 id="check-h" class="poster panel-title">Check a server</h2>
+    <p class="muted small" style="margin:0 0 12px">Paste an MCP server URL or a registry name. Registry servers open their page; anything else is probed live, with exact token counts.</p>
+    <form class="checkform" method="get" action="/check">
+      <input type="text" name="target" placeholder="https://mcp.example.com/mcp" required autocomplete="off" aria-label="Server URL or registry name" />
+      <button type="submit">Check</button>
+    </form>
+    <p class="muted small" style="margin:10px 0 0">Example: <a href="/check?target=https://mcp.deepwiki.com/mcp">https://mcp.deepwiki.com/mcp</a> · in a terminal: <code>npx mcptop --url …</code></p>
+  </section>
+
+  <nav class="links" aria-label="Sections">
+    <a href="/servers">Servers<span>search, filter, sort</span></a>
+    <a href="/statistics">Statistics<span>results, costs, protocols, publishers</span></a>
+    <a href="/hosts">Hosts<span>who publishes what</span></a>
+    <a href="/methodology">Method<span>how it is measured</span></a>
+  </nav>
 
   {run && (
     <>
@@ -42,21 +50,13 @@ const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
         <span><i style="background:var(--up)"></i>alive {num(up)}</span>
         <span><i style="background:var(--gated)"></i>needs auth or payment {num(gated)}</span>
         <span><i style="background:var(--accent)"></i>down or broken {num(down)}</span>
+        <span class="legend-note">{num(run.probed)} remote servers · probed {date(run.probedAt)}</span>
       </div>
     </>
   )}
-
-  <nav class="links" aria-label="Sections">
-    <a href="/servers">Servers<span>search, filter, sort</span></a>
-    <a href="/statistics">Statistics<span>results, costs, protocols, publishers</span></a>
-    <a href="/hosts">Hosts<span>who publishes what</span></a>
-    <a href="/methodology">Method<span>how it is measured</span></a>
-  </nav>
 
   <h2>Your own config</h2>
   <pre>npx mcptop</pre>
   <p class="muted small">Reads Claude Code, Claude Desktop, Cursor, VS Code and Windsurf configs, starts each server and prints the token cost. <code>--budget</code> for CI.</p>
 
-  <h2>Badge</h2>
-  <pre>{`[![mcp-pulse](${site}/badge/io.github.you/your-server.svg)](${site}/s/io.github.you/your-server)`}</pre>
 </Layout>
