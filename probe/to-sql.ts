@@ -75,11 +75,11 @@ const serverRows = servers.map((s) => [
   s.initMs, s.toolsMs, s.toolCount, s.toolsTokens, s.instructionsChars, s.toolsetHash, s.toolsetSiblings, s.topTools ? JSON.stringify(s.topTools) : null, s.error
 ]);
 const probeRows = servers.map((s) => [s.name, s.probedAt, s.status, s.initMs, s.toolCount, s.toolsTokens]);
-const dead = (b: Record<string, number>) => Object.entries(b).filter(([k]) => !['ok', 'auth', 'payment'].includes(k)).reduce((a, [, n]) => a + n, 0);
+const dead = (b: Record<string, number>) => Object.entries(b).filter(([k]) => !['ok', 'auth', 'payment', 'newer_protocol'].includes(k)).reduce((a, [, n]) => a + n, 0);
 const changedHosts = new Set(servers.map((s) => s.host));
 const hostRows = hosts
   .filter((h) => !previous || changedHosts.has(h.host))
-  .map((h) => [h.host, h.servers, h.byStatus.ok ?? 0, (h.byStatus.auth ?? 0) + (h.byStatus.payment ?? 0), dead(h.byStatus), h.uniqueToolsets, h.medianTokens, summary.probedAt]);
+  .map((h) => [h.host, h.servers, h.byStatus.ok ?? 0, (h.byStatus.auth ?? 0) + (h.byStatus.payment ?? 0) + (h.byStatus.newer_protocol ?? 0), dead(h.byStatus), h.uniqueToolsets, h.medianTokens, summary.probedAt]);
 
 const statements = [
   `INSERT OR REPLACE INTO runs (probed_at, summary) VALUES (${lit(summary.probedAt)}, ${lit(JSON.stringify(summary))});`,

@@ -11,7 +11,7 @@ Astro.response.headers.set('cache-control', 'public, max-age=300, s-maxage=3600'
 <Layout title="Hosts">
   <p class="kicker">{run ? `${num(run.hosts)} hosts · probed ${run.probedAt.slice(0, 10)}` : ''}</p>
   <h1 class="poster">Who publishes the registry</h1>
-  <p class="lede">Probed servers grouped by hostname. “Distinct tool sets” is the number of different tool lists a host serves.</p>
+  <p class="lede">Probed servers, grouped by host name. “Distinct tool sets” is the number of different tool lists that one host serves.</p>
   <div class="frame hosts" style="margin-top:28px">
     <table>
       <thead>

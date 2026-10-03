@@ -51,7 +51,7 @@ function build(): McpServer {
       description: 'Find servers by words in name, title, description or host, with optional filters, sorted by token cost by default. Returns up to 20 servers per page.',
       inputSchema: {
         query: z.string().optional().describe('Words to match, three or more characters each'),
-        status: z.enum(['ok', 'auth', 'payment', 'down']).optional().describe('ok = answers and lists tools'),
+        status: z.enum(['ok', 'auth', 'payment', 'newer_protocol', 'down']).optional().describe('ok = answers and lists tools'),
         sort: z.enum(Object.keys(SORTS) as [SortKey, ...SortKey[]]).optional(),
         page: z.number().int().min(1).max(1000).optional()
       }

@@ -190,6 +190,7 @@ function statusText(r: Row): string {
   if (s === 'ok') return 'alive';
   if (s === 'auth') return `needs auth${r.result?.authScheme ? ` (${r.result.authScheme})` : ''}`;
   if (s === 'payment') return 'payment required';
+  if (s === 'newer_protocol') return 'newer protocol than this SDK';
   if (s === 'not_found') return r.kind === 'stdio' ? 'command not found' : 'not found';
   return s.replace('_', ' ');
 }

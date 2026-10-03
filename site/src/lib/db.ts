@@ -175,7 +175,7 @@ export async function listServers(query: ListQuery): Promise<{ rows: ListRow[]; 
     binds.push(match);
   }
   if (query.status === 'down') {
-    where.push("status NOT IN ('ok', 'auth', 'payment')");
+    where.push("status NOT IN ('ok', 'auth', 'payment', 'newer_protocol')");
   } else if (query.status) {
     where.push('status = ?');
     binds.push(query.status);

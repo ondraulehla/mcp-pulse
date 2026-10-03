@@ -1,8 +1,8 @@
 # mcp-pulse
 
-> Health and token cost of every remote server in the official MCP registry, probed daily. Answers "is this MCP server alive?" and "how many context tokens does it cost?" for 24 000+ servers.
+> Health and token cost of every remote server in the official MCP registry. We probe each server each day. The site answers two questions for 24 000+ servers: Is this MCP server alive? How many context tokens does it cost?
 
-Token counts: each tool serialised as compact JSON (name, description, input_schema), counted with o200k_base. The same count for every server.
+Token counts: we serialize each tool as compact JSON (name, description, input_schema). We count with o200k_base. We use the same count for every server.
 
 ## Pages
 - https://mcp-pulse.ulehla.dev/ : overview and a live check form

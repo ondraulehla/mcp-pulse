@@ -23,7 +23,7 @@ const total =
     ? status === ''
       ? run.probed
       : status === 'down'
-        ? run.probed - run.ok - (run.byStatus.auth ?? 0) - (run.byStatus.payment ?? 0)
+        ? run.probed - run.ok - (run.byStatus.auth ?? 0) - (run.byStatus.payment ?? 0) - (run.byStatus.newer_protocol ?? 0)
         : (run.byStatus[status] ?? 0)
     : null;
 const pages = total !== null ? Math.max(1, Math.ceil(total / perPage)) : null;
@@ -69,10 +69,11 @@ const title = host ? `Servers on ${host}` : status ? `${label(status)} servers` 
         <option value="ok" selected={status === 'ok'}>alive</option>
         <option value="auth" selected={status === 'auth'}>needs auth</option>
         <option value="payment" selected={status === 'payment'}>paid (402)</option>
+        <option value="newer_protocol" selected={status === 'newer_protocol'}>newer protocol</option>
         <option value="down" selected={status === 'down'}>down or broken</option>
         <optgroup label="down, by cause">
           {Object.entries(STATUS_LABEL)
-            .filter(([k]) => !['ok', 'auth', 'payment'].includes(k))
+            .filter(([k]) => !['ok', 'auth', 'payment', 'newer_protocol'].includes(k))
             .map(([k, v]) => <option value={k} selected={status === k}>{v}</option>)}
         </optgroup>
       </select>

@@ -6,13 +6,13 @@ import { num, pct, tokens, date } from '../lib/format';
 const run = await latestRun();
 Astro.response.headers.set('cache-control', 'public, max-age=300, s-maxage=3600');
 const up = run?.ok ?? 0;
-const gated = run ? (run.byStatus.auth ?? 0) + (run.byStatus.payment ?? 0) : 0;
+const gated = run ? (run.byStatus.auth ?? 0) + (run.byStatus.payment ?? 0) + (run.byStatus.newer_protocol ?? 0) : 0;
 const down = run ? run.probed - up - gated : 0;
 ---
 
 <Layout title="mcp-pulse">
   <h1 class="poster">Health and token cost of the MCP registry</h1>
-  <p class="lede">Every remote server in the official registry, probed daily: does it answer, and how many tokens do its tool definitions cost before the first prompt.</p>
+  <p class="lede">mcp-pulse probes every remote server in the official MCP registry each day. It records if the server answers. It counts the tokens that the tool definitions use.</p>
 
   <section class="panel check-panel" aria-labelledby="check-h">
     <h2 id="check-h" class="poster panel-title">Check a server</h2>
@@ -20,14 +20,14 @@ const down = run ? run.probed - up - gated : 0;
       <input type="text" name="target" placeholder="https://mcp.example.com/mcp or io.github.you/server" required autocomplete="off" aria-label="Server URL or registry name" />
       <button type="submit">Check</button>
     </form>
-    <p class="muted small" style="margin:8px 0 0">Registry servers open their page, anything else is probed live. Example: <a href="/check?target=https://mcp.deepwiki.com/mcp">mcp.deepwiki.com/mcp</a></p>
+    <p class="muted small" style="margin:8px 0 0">Enter a server URL or a registry name. A registry server opens its page. Other servers are probed now. Example: <a href="/check?target=https://mcp.deepwiki.com/mcp">mcp.deepwiki.com/mcp</a></p>
   </section>
 
   <nav class="links" aria-label="Sections">
-    <a href="/tokens">Tokens<span>what a server costs, and why</span></a>
+    <a href="/tokens">Tokens<span>what a server costs</span></a>
     <a href="/servers">Servers<span>search, filter, sort</span></a>
     <a href="/statistics">Statistics<span>results, costs, protocols, publishers</span></a>
-    <a href="/methodology">Method<span>how it is measured</span></a>
+    <a href="/methodology">Method<span>how we measure</span></a>
   </nav>
 
   {run && (
@@ -56,6 +56,6 @@ const down = run ? run.probed - up - gated : 0;
 
   <h2>Your own config</h2>
   <pre>npx mcptop</pre>
-  <p class="muted small">Reads Claude Code, Claude Desktop, Cursor, VS Code and Windsurf configs, starts each server and prints the token cost. <code>--budget</code> for CI.</p>
+  <p class="muted small">The command reads the configs of Claude Code, Claude Desktop, Cursor, VS Code and Windsurf. It starts each server. It shows the token cost of each server. Use <code>--budget</code> in CI.</p>
 
 </Layout>

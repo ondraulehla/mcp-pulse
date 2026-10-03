@@ -156,6 +156,8 @@ export async function measure(transport: Transport, result: ProbeResult, timeout
 
 export function classify(message: string | undefined, first: Observed | undefined): ProbeStatus {
   const text = message ?? '';
+  // The server speaks a protocol version that this SDK does not support yet.
+  if (/protocol version is not supported/i.test(text)) return 'newer_protocol';
   if (first) {
     if (first.status === 401 || first.status === 403) return 'auth';
     if (first.status === 402) return 'payment';

@@ -11,7 +11,7 @@ interface Props {
 }
 const {
   title,
-  description = 'Is that MCP server alive, and what does it cost your context window? Daily health and token cost of every remote server in the official MCP registry.',
+  description = 'Is this MCP server alive? What does it cost your context window? Daily health and token cost of every remote server in the official MCP registry.',
   jsonld
 } = Astro.props;
 const path = Astro.url.pathname;
@@ -65,7 +65,7 @@ const canonical = new URL(path + Astro.url.search, Astro.site ?? Astro.url).toSt
         <Emblem class="emblem small" />
         <span class="wordmark">© {year} Ondřej Úlehla</span>
       </a>
-      <p class="note">Probed daily. One tokenizer for every server. Exclusions by issue.</p>
+      <p class="note">Probed each day. One tokenizer for all servers. To exclude a server, open an issue.</p>
       <nav aria-label="Footer" class="cells">
         <a href="https://github.com/ondraulehla/mcp-pulse" rel="noopener" class="cell cell-flood">GitHub</a>
         <a href="https://www.npmjs.com/package/mcptop" rel="noopener" class="cell cell-flood">npm</a>

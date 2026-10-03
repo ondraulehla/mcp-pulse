@@ -43,6 +43,7 @@ export type ProbeStatus =
   | 'rate_limited'
   | 'server_error'
   | 'protocol_error'
+  | 'newer_protocol'
   | 'timeout'
   | 'dns'
   | 'tls'

@@ -6,60 +6,62 @@ export const prerender = true;
 <Layout title="Methodology">
   <p class="kicker">method</p>
   <h1 class="poster">How mcp-pulse measures</h1>
-  <p class="lede">One open-source probe, the same steps for every server.</p>
+  <p class="lede">One open-source probe. The same steps for every server.</p>
 
-  <h2 style="margin-top:40px">What is probed</h2>
+  <h2 style="margin-top:40px">What we probe</h2>
   <p>
-    The probe reads the <a href="https://registry.modelcontextprotocol.io" rel="noopener">official MCP registry</a>, latest version of each server only.
-    It takes the first <code>streamable-http</code> remote, or the <code>sse</code> remote when that is the only one. Servers that ship only as packages (npm, PyPI, OCI, MCPB) are not probed yet.
+    The probe reads the <a href="https://registry.modelcontextprotocol.io" rel="noopener">official MCP registry</a>. It uses the latest version of each server.
+    It takes the first <code>streamable-http</code> remote. If the server has only an <code>sse</code> remote, it takes that one.
+    We do not probe servers that ship only as packages (npm, PyPI, OCI, MCPB).
   </p>
 
-  <h2>How a server is probed</h2>
+  <h2>How we probe a server</h2>
   <ol>
-    <li>Connect with the official TypeScript SDK as a client named <code>mcp-pulse</code>, with no credentials.</li>
-    <li>Send <code>initialize</code> and <code>notifications/initialized</code>. Record the time to the <code>initialize</code> result, the negotiated protocol version, the server's name and version, its capabilities and the length of its instructions.</li>
-    <li>If the server advertises tools, call <code>tools/list</code>, following pagination. Record the time and the tools.</li>
-    <li>Never open the standalone GET stream. The probe answers 405 to the SDK's GET, so no server-to-client stream is opened. The probe needs none, and some servers stall <code>tools/list</code> while that stream is open.</li>
+    <li>Connect with the official TypeScript SDK. The client name is <code>mcp-pulse</code>. We send no credentials.</li>
+    <li>Send <code>initialize</code> and <code>notifications/initialized</code>. Record the time to the <code>initialize</code> result, the protocol version, the server name and version, the capabilities and the length of the instructions.</li>
+    <li>If the server has tools, call <code>tools/list</code>. Follow the pagination. Record the time and the tools.</li>
+    <li>Do not open the standalone GET stream. The probe answers 405 to the SDK's GET. The probe needs no messages from the server. Some servers stop <code>tools/list</code> while that stream is open.</li>
     <li>Close the session.</li>
   </ol>
-  <p>Timeouts are 15 seconds per request. At most one probe runs against a host at a time.</p>
+  <p>Each request has a timeout of 15 seconds. We run one probe at a time against each host.</p>
 
   <h2>Results</h2>
   <dl class="facts">
-    <dt>alive</dt><dd><code>initialize</code> and <code>tools/list</code> both succeeded.</dd>
-    <dt>needs auth</dt><dd>HTTP 401 or 403. The <code>WWW-Authenticate</code> scheme is recorded when present. A server that needs auth is reachable, it just does not talk to strangers.</dd>
+    <dt>alive</dt><dd><code>initialize</code> and <code>tools/list</code> were successful.</dd>
+    <dt>needs auth</dt><dd>HTTP 401 or 403. We record the <code>WWW-Authenticate</code> scheme when the server sends one. The server is reachable, but it does not talk to clients without credentials.</dd>
     <dt>paid (402)</dt><dd>HTTP 402 Payment Required.</dd>
+    <dt>newer protocol</dt><dd>The server answers with a protocol version that the current SDK does not support. The server is reachable.</dd>
     <dt>not found</dt><dd>HTTP 404, 405 or 410 on the MCP endpoint.</dd>
-    <dt>not MCP</dt><dd>HTTP 200, but the response was not a valid MCP reply, or the server returned a JSON-RPC error to <code>initialize</code>.</dd>
-    <dt>timeout, no DNS, TLS error, refused, server error, rate limited</dt><dd>Transport-level failures, named after their cause.</dd>
+    <dt>not MCP</dt><dd>HTTP 200, but the response is not a valid MCP reply. Or the server returned a JSON-RPC error to <code>initialize</code>.</dd>
+    <dt>timeout, no DNS, TLS error, refused, server error, rate limited</dt><dd>Transport failures. We name each one after its cause.</dd>
   </dl>
 
   <h2>Token counts</h2>
   <p>
-    Each tool is serialised as compact JSON with <code>name</code>, <code>description</code> and <code>input_schema</code>, and counted with the <code>o200k_base</code> tokenizer.
-    Clients wrap tool definitions in different ways and models tokenise differently, so the number is an estimate. It is the same estimate for every server, which makes servers comparable.
-    "Of a 200k context window" divides that count by 200 000.
+    We serialize each tool as compact JSON with <code>name</code>, <code>description</code> and <code>input_schema</code>. We count the tokens with the <code>o200k_base</code> tokenizer.
+    Clients wrap tool definitions in different ways. Models also tokenize in different ways. The count is an estimate. It is the same estimate for every server. This makes servers comparable.
+    “Of a 200k context window” divides the count by 200 000.
   </p>
 
   <h2>Same tool set</h2>
   <p>
-    A hash of the sorted tool names and their schema sizes identifies a tool set. Servers with equal hashes serve the same tools. This is how bulk publishers that register one server under thousands of names become visible.
+    We hash the sorted tool names and their schema sizes. Servers with the same hash serve the same tools. This shows bulk publishers that register one server under many names.
   </p>
 
   <h2>Live check</h2>
   <p>
-    <a href="/check">/check</a> probes one server on demand with the same steps and a 10 second timeout. The Worker does the network part; the token count runs in your browser with the same tokenizer, because the Worker's CPU budget is too small to load it. Results are cached for ten minutes, and a URL that is already in the registry opens its page instead.
+    <a href="/check">/check</a> probes one server on demand. It uses the same steps and a timeout of 10 seconds. The Worker does the network part. Your browser counts the tokens with the same tokenizer, because the Worker has a small CPU budget. We keep a result for ten minutes. A URL that is already in the registry opens its page.
   </p>
 
   <h2>Machine access</h2>
   <p>
-    Every server has JSON at <code>/api/s/&lt;name&gt;.json</code>, the list at <code>/api/servers.json</code>, the live probe at <code>/api/check.json?url=…</code>, the run summary at <code>/api/summary.json</code>.
-    The board is also an MCP server: <code>https://mcp-pulse.ulehla.dev/mcp</code> over Streamable HTTP, no auth, with <code>lookup_server</code>, <code>search_servers</code>, <code>check_server</code> and <code>registry_summary</code>. <a href="/llms.txt">/llms.txt</a> lists all of it.
+    Each server has JSON at <code>/api/s/&lt;name&gt;.json</code>. The list is at <code>/api/servers.json</code>. The live probe is at <code>/api/check.json?url=…</code>. The run summary is at <code>/api/summary.json</code>.
+    The board is also an MCP server: <code>https://mcp-pulse.ulehla.dev/mcp</code> over Streamable HTTP, no auth. Its tools are <code>lookup_server</code>, <code>search_servers</code>, <code>check_server</code> and <code>registry_summary</code>. <a href="/llms.txt">/llms.txt</a> lists all of this.
   </p>
 
   <h2>Being a good guest</h2>
   <p>
-    Every request carries the User-Agent <code>mcp-pulse/&lt;version&gt; (+https://github.com/ondraulehla/mcp-pulse)</code>. The probe runs once a day, sends no tool calls, and makes at most three requests per server.
+    Each request carries the User-Agent <code>mcp-pulse/&lt;version&gt; (+https://github.com/ondraulehla/mcp-pulse)</code>. The probe runs one time each day. It sends no tool calls. It makes at most three requests to each server.
     To exclude a server, <a href="https://github.com/ondraulehla/mcp-pulse/issues" rel="noopener">open an issue</a> with its registry name.
   </p>
 

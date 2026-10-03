@@ -67,11 +67,11 @@ const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
     <input type="text" name="target" value={raw} placeholder="https://mcp.example.com/mcp or io.github.you/server" required autocomplete="off" aria-label="Server URL or registry name" />
     <button type="submit">Check</button>
   </form>
-  <p class="muted small">Servers already in the registry open their page. Anything else is probed now: initialize, tools/list, no credentials. Results are cached for ten minutes.</p>
+  <p class="muted small">A registry server opens its page. Other servers are probed now: initialize, tools/list, no credentials. We keep a result for ten minutes.</p>
 
-  {view.kind === 'not-found' && <p class="frame pad">No registry server named <code>{view.name}</code>. Enter the server URL to probe it live.</p>}
+  {view.kind === 'not-found' && <p class="frame pad">The registry has no server named <code>{view.name}</code>. Enter the server URL to probe it now.</p>}
   {view.kind === 'invalid' && <p class="frame pad">{view.reason}</p>}
-  {view.kind === 'busy' && <p class="frame pad">Too many live checks right now. Try again in a minute, or run <code>npx mcptop --url …</code>.</p>}
+  {view.kind === 'busy' && <p class="frame pad">Too many checks run now. Try again in one minute, or run <code>npx mcptop --url …</code>.</p>}
 
   {view.kind === 'probed' && (
     <section id="result" data-tokens-known="false">
@@ -93,23 +93,23 @@ const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
             {view.result.serverInfo?.name && <><dt>Reports itself as</dt><dd>{view.result.serverInfo.name} {view.result.serverInfo.version}</dd></>}
             {view.result.capabilities?.length ? <><dt>Capabilities</dt><dd class="mono">{view.result.capabilities.join(', ')}</dd></> : null}
             <dt>Schema size</dt><dd>{num(view.bytes)} bytes of tool definitions</dd>
-            <dt>Not in the registry</dt><dd><a href="https://registry.modelcontextprotocol.io" rel="noopener">Publish it</a> and the daily probe will track it.</dd>
+            <dt>Not in the registry</dt><dd><a href="https://registry.modelcontextprotocol.io" rel="noopener">Publish the server</a>. The daily probe then tracks it.</dd>
           </dl>
           <div id="tools-table" hidden>
             <h2>Most expensive tools</h2>
             <div class="frame"><table><thead><tr><th>Tool</th><th class="num">Tokens</th></tr></thead><tbody></tbody></table></div>
           </div>
-          <p class="muted small" id="exact-note">Exact token counts need the tokenizer, which loads in your browser (1 MB). Without it, the estimate uses the median of the registry: {BYTES_PER_TOKEN} bytes per token.</p>
+          <p class="muted small" id="exact-note">The exact count needs the tokenizer. Your browser loads it (1 MB). Without it, we estimate {BYTES_PER_TOKEN} bytes per token, the registry median.</p>
           {view.embed && <script type="application/json" id="payloads" set:html={JSON.stringify(view.payloads)} />}
         </>
       )}
       {view.result.status !== 'ok' && view.result.error && <pre>{view.result.error}</pre>}
-      <p class="muted small">Same measurement from your terminal: <code>npx mcptop --url {view.url}</code></p>
+      <p class="muted small">The same measurement in a terminal: <code>npx mcptop --url {view.url}</code></p>
     </section>
   )}
 
   {view.kind === 'empty' && (
-    <p class="muted small">Example: <a href="/check?target=https://mcp.deepwiki.com/mcp">https://mcp.deepwiki.com/mcp</a>, a server that is not in the registry.</p>
+    <p class="muted small">Example: <a href="/check?target=https://mcp.deepwiki.com/mcp">https://mcp.deepwiki.com/mcp</a>. This server is not in the registry.</p>
   )}
 </Layout>
 
@@ -131,7 +131,7 @@ const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
       if (tok) tok.textContent = fmt(total);
       if (share) share.textContent = `${((total / 200_000) * 100).toFixed(1)} %`;
       if (lbl) lbl.textContent = 'tokens for the tool definitions (o200k_base)';
-      if (note) note.textContent = 'Counted in your browser with o200k_base, the same tokenizer as the board.';
+      if (note) note.textContent = 'Your browser counted the tokens with o200k_base. The board uses the same tokenizer.';
       const table = document.getElementById('tools-table');
       const body = table?.querySelector('tbody');
       if (table && body) {

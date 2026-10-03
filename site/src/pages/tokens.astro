@@ -16,27 +16,27 @@ const measured = run ? date(run.probedAt) : '';
 const faq = [
   {
     q: 'How many context tokens does an MCP server cost?',
-    a: `The median remote server in the official MCP registry costs ${num(median)} tokens of context per session for its tool definitions alone. The 90th percentile is ${num(p90)}, the 99th ${num(p99)}, and the heaviest server costs ${num(max)} tokens, more than two full 200k windows. Measured ${measured} across ${num(run?.ok ?? 0)} servers that answered.`
+    a: `The median remote server in the official MCP registry costs ${num(median)} tokens of context per session. This is the cost of its tool definitions only. The 90th percentile is ${num(p90)} tokens. The 99th percentile is ${num(p99)} tokens. The heaviest server costs ${num(max)} tokens. That is more than two full 200k windows. We measured ${num(run?.ok ?? 0)} servers on ${measured}.`
   },
   {
     q: 'Why does an MCP server cost tokens before I send a prompt?',
-    a: 'A client sends the model the name, description and input schema of every tool from every connected server at the start of a session, and again on every turn. Those definitions are part of the prompt, so you pay for them in every request whether or not the model calls a tool.'
+    a: 'A client sends the model the name, the description and the input schema of each tool. It does this for each connected server at the start of a session. It does this again in each turn. These definitions are part of the prompt. You pay for them in each request. This is true also when the model calls no tool.'
   },
   {
-    q: 'How is the cost measured?',
-    a: 'Each tool is serialised as compact JSON with name, description and input_schema and counted with the o200k_base tokenizer. Clients wrap tool definitions in slightly different ways and models tokenise differently, so the count is a floor, and it is the same floor for every server, which keeps servers comparable.'
+    q: 'How do we measure the cost?',
+    a: 'We serialize each tool as compact JSON with name, description and input_schema. We count the tokens with the o200k_base tokenizer. Clients wrap tool definitions in different ways. Models tokenize in different ways. The count is a minimum. It is the same minimum for every server. This makes servers comparable.'
   },
   {
-    q: 'How many tokens does a specific MCP server cost?',
-    a: `Every remote server in the registry has a page at ${site}/s/<registry name> with its measured cost, tool count and status. For a server that is not in the registry, ${site}/check probes it live. In a terminal, npx mcptop measures the servers in your own Claude Code, Claude Desktop, Cursor, VS Code or Windsurf config.`
+    q: 'How many tokens does one specific MCP server cost?',
+    a: `Each remote server in the registry has a page at ${site}/s/<registry name>. The page shows the measured cost, the tool count and the status. For a server that is not in the registry, ${site}/check probes it now. In a terminal, npx mcptop measures the servers in your own Claude Code, Claude Desktop, Cursor, VS Code or Windsurf config.`
   },
   {
-    q: 'What is a reasonable budget?',
-    a: `Half of all servers cost under ${num(median)} tokens. A config that adds up to a few thousand tokens is cheap. Above 20 000 tokens for one server, ask whether you need all of its tools; ${num(run ? run.heaviest.filter((h) => h.toolsTokens > 20_000).length : 0)} of the 20 heaviest servers alone exceed that. npx mcptop --budget 30000 fails a CI run when a config grows past a budget.`
+    q: 'What is a good budget?',
+    a: `Half of all servers cost less than ${num(median)} tokens. A config with a total of a few thousand tokens is cheap. If one server costs more than 20 000 tokens, ask if you need all of its tools. ${num(run ? run.heaviest.filter((h) => h.toolsTokens > 20_000).length : 0)} of the 20 heaviest servers are above that limit. The command npx mcptop --budget 30000 fails a CI run when a config grows past the budget.`
   },
   {
-    q: 'Does a server that needs auth cost tokens too?',
-    a: 'Yes, once you are authenticated it hands over its tool definitions like any other. The board cannot list the tools of a server that refuses anonymous clients, so those servers show as “needs auth” without a count. mcptop measures them with the headers from your config.'
+    q: 'Does a server that needs auth also cost tokens?',
+    a: 'Yes. After you authenticate, it sends its tool definitions like any other server. The board cannot list the tools of a server that refuses clients without credentials. These servers show “needs auth” and no count. mcptop measures them with the headers from your config.'
   }
 ];
 const jsonld = {
@@ -72,7 +72,7 @@ const jsonld = {
 
   {heaviest && (
     <>
-      <h2>The heaviest servers right now</h2>
+      <h2>The heaviest servers today</h2>
       <div class="frame">
         <table>
           <thead><tr><th>Server</th><th class="num">Tools</th><th class="num">Tokens</th><th class="num">Of 200k</th></tr></thead>

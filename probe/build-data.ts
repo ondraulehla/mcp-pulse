@@ -130,7 +130,7 @@ const summary = {
   registryWithRemote: registryRaw.filter((r) => r.server.remotes?.length).length,
   probed: rows.length,
   byStatus: count(rows, (r) => r.status),
-  reachable: ok.length + rows.filter((r) => r.status === 'auth' || r.status === 'payment').length,
+  reachable: ok.length + rows.filter((r) => r.status === 'auth' || r.status === 'payment' || r.status === 'newer_protocol').length,
   ok: ok.length,
   uniqueToolsets,
   duplicateServers: ok.length - uniqueToolsets,

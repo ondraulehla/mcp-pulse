@@ -23,7 +23,7 @@ const statusRows = run ? Object.entries(run.byStatus).sort((a, b) => b[1] - a[1]
         <div class="stat"><b>{num(run.probed)}</b><span>probed</span></div>
         <div class="stat"><b>{num(run.hosts)}</b><span>hosts</span></div>
         <div class="stat"><b>{num(run.uniqueToolsets)}</b><span>distinct tool sets among alive servers</span></div>
-        <div class="stat"><b>{num(run.duplicateServers)}</b><span>alive servers that duplicate another's tool set</span></div>
+        <div class="stat"><b>{num(run.duplicateServers)}</b><span>alive servers with the same tool set as another server</span></div>
       </div>
 
       <h2>Results</h2>

@@ -6,6 +6,7 @@ export const STATUS_LABEL: Record<string, string> = {
   rate_limited: 'rate limited',
   server_error: 'server error',
   protocol_error: 'not MCP',
+  newer_protocol: 'newer protocol',
   timeout: 'timeout',
   dns: 'no DNS',
   tls: 'TLS error',
@@ -16,7 +17,7 @@ export const STATUS_LABEL: Record<string, string> = {
 /** Three buckets for colours and filters. */
 export function bucket(status: string): 'up' | 'gated' | 'down' {
   if (status === 'ok') return 'up';
-  if (status === 'auth' || status === 'payment') return 'gated';
+  if (status === 'auth' || status === 'payment' || status === 'newer_protocol') return 'gated';
   return 'down';
 }
 
