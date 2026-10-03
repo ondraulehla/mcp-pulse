@@ -17,10 +17,9 @@ const {
 const path = Astro.url.pathname;
 const nav: Array<[string, string]> = [
   ['/', 'Overview'],
+  ['/check', 'Check'],
   ['/servers', 'Servers'],
   ['/statistics', 'Statistics'],
-  ['/hosts', 'Hosts'],
-  ['/check', 'Check'],
   ['/methodology', 'Method']
 ];
 const year = new Date().getFullYear();
@@ -190,6 +189,10 @@ const canonical = new URL(path + Astro.url.search, Astro.site ?? Astro.url).toSt
   tbody tr:last-child td { border-bottom: 0; }
   th { font-family: var(--font-mono); font-weight: 500; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); white-space: nowrap; background: var(--panel); }
   th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  main th a.sort { color: var(--ink-faint); }
+  main th a.sort:hover { color: var(--ink); text-decoration: none; }
+  main th a.sort.active { color: var(--ink); }
+  th .arrow { margin-left: 4px; color: var(--accent); }
   tbody tr:hover { background: var(--panel); }
   td .sub { display: block; font-size: 0.78rem; color: var(--ink-faint); margin-top: 2px; }
 

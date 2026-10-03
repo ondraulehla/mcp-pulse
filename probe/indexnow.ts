@@ -21,15 +21,19 @@ if (args.changed) {
 }
 const urls = [`https://${args.host}/`, `https://${args.host}/tokens`, `https://${args.host}/statistics`, ...names.map((n) => `https://${args.host}/s/${n}`)];
 let sent = 0;
-for (let i = 0; i < urls.length; i += 10_000) {
-  const urlList = urls.slice(i, i + 10_000);
-  const res = await fetch('https://api.indexnow.org/indexnow', {
+for (let i = 0; i < urls.length; i += 1_000) {
+  const urlList = urls.slice(i, i + 1_000);
+  const res = await fetch('https://www.bing.com/indexnow', {
     method: 'POST',
     headers: { 'content-type': 'application/json; charset=utf-8' },
     body: JSON.stringify({ host: args.host, key, keyLocation: `https://${args.host}/${key}.txt`, urlList })
   });
   console.error(`IndexNow: ${urlList.length} URLs -> HTTP ${res.status}`);
-  if (res.status >= 400) process.exit(0);
+  if (res.status >= 400) {
+    console.error(await res.text().catch(() => ''));
+    process.exit(0);
+  }
   sent += urlList.length;
+  await new Promise((r) => setTimeout(r, 500));
 }
 console.error(`IndexNow: submitted ${sent} URLs.`);

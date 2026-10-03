@@ -32,6 +32,26 @@ const protocols = run ? Object.keys(run.protocols).filter((v) => v !== 'unknown'
 Astro.response.headers.set('cache-control', 'public, max-age=120, s-maxage=1800');
 
 const filtered = Boolean(q || status || host || protocol || transport);
+
+/** Column headers: first click sorts the natural way (numbers high first, text A to Z), the second click flips. */
+const columns: Array<{ label: string; first: SortKey; second: SortKey; num?: boolean }> = [
+  { label: 'Server', first: 'name', second: 'name-desc' },
+  { label: 'Result', first: 'status', second: 'status-desc' },
+  { label: 'Tools', first: 'tools', second: 'tools-asc', num: true },
+  { label: 'Tokens', first: 'tokens', second: 'tokens-asc', num: true },
+  { label: 'Init', first: 'latency', second: 'latency-desc', num: true },
+  { label: 'Protocol', first: 'protocol-desc', second: 'protocol' },
+  { label: 'Host', first: 'host', second: 'host-desc' }
+];
+function sortHref(key: SortKey): string {
+  const u = new URL(Astro.url);
+  u.searchParams.set('sort', key);
+  u.searchParams.delete('page');
+  return u.pathname + u.search;
+}
+function arrow(key: SortKey): string {
+  return /-asc$|^latency$|^name$|^status$|^host$|^protocol$/.test(key) ? '▲' : '▼';
+}
 const title = host ? `Servers on ${host}` : status ? `${label(status)} servers` : q ? `Servers matching “${q}”` : 'Servers';
 ---
 
@@ -91,13 +111,15 @@ const title = host ? `Servers on ${host}` : status ? `${label(status)} servers` 
     <table>
       <thead>
         <tr>
-          <th>Server</th>
-          <th>Result</th>
-          <th class="num">Tools</th>
-          <th class="num">Tokens</th>
-          <th class="num">Init</th>
-          <th>Protocol</th>
-          <th>Host</th>
+          {columns.map((c) => {
+            const active = sort === c.first || sort === c.second;
+            const next = sort === c.first ? c.second : c.first;
+            return (
+              <th class={c.num ? 'num' : ''} aria-sort={active ? (arrow(sort) === '▲' ? 'ascending' : 'descending') : undefined}>
+                <a class={`sort${active ? ' active' : ''}`} href={sortHref(next)} title={`Sort by ${SORTS[next].label}`}>{c.label}{active && <span class="arrow">{arrow(sort)}</span>}</a>
+              </th>
+            );
+          })}
         </tr>
       </thead>
       <tbody>

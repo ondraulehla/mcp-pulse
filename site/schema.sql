@@ -103,3 +103,15 @@ END;
 
 -- The check page looks a URL up before it probes it live.
 CREATE INDEX IF NOT EXISTS servers_url ON servers (url);
+
+-- Column sorts on the list page.
+CREATE INDEX IF NOT EXISTS servers_status_name ON servers (status, name);
+CREATE INDEX IF NOT EXISTS servers_protocol_name ON servers (protocol_version, name);
+CREATE INDEX IF NOT EXISTS servers_host_name ON servers (host, name);
+-- The reverse direction of each sortable column, so both directions read only their page.
+CREATE INDEX IF NOT EXISTS servers_tokens_asc ON servers (tools_tokens ASC, name);
+CREATE INDEX IF NOT EXISTS servers_tools_asc ON servers (tool_count ASC, name);
+CREATE INDEX IF NOT EXISTS servers_init_desc ON servers (init_ms DESC, name);
+CREATE INDEX IF NOT EXISTS servers_status_desc ON servers (status DESC, name);
+CREATE INDEX IF NOT EXISTS servers_protocol_desc ON servers (protocol_version DESC, name);
+CREATE INDEX IF NOT EXISTS servers_host_desc ON servers (host DESC, name);

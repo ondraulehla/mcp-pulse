@@ -109,9 +109,17 @@ export const SORTS = {
   tokens: { order: 'tools_tokens DESC, name', where: '', label: 'most tokens' },
   'tokens-asc': { order: 'tools_tokens ASC, name', where: 'tools_tokens IS NOT NULL', label: 'fewest tokens' },
   tools: { order: 'tool_count DESC, name', where: '', label: 'most tools' },
+  'tools-asc': { order: 'tool_count ASC, name', where: 'tool_count IS NOT NULL', label: 'fewest tools' },
   latency: { order: 'init_ms ASC, name', where: 'init_ms IS NOT NULL', label: 'fastest' },
   'latency-desc': { order: 'init_ms DESC, name', where: 'init_ms IS NOT NULL', label: 'slowest' },
-  name: { order: 'name', where: '', label: 'name' },
+  name: { order: 'name', where: '', label: 'name A to Z' },
+  'name-desc': { order: 'name DESC', where: '', label: 'name Z to A' },
+  status: { order: 'status, name', where: '', label: 'result A to Z' },
+  'status-desc': { order: 'status DESC, name', where: '', label: 'result Z to A' },
+  protocol: { order: 'protocol_version ASC, name', where: 'protocol_version IS NOT NULL', label: 'oldest protocol' },
+  'protocol-desc': { order: 'protocol_version DESC, name', where: 'protocol_version IS NOT NULL', label: 'newest protocol' },
+  host: { order: 'host, name', where: '', label: 'host A to Z' },
+  'host-desc': { order: 'host DESC, name', where: '', label: 'host Z to A' },
   updated: { order: 'registry_updated_at DESC, name', where: '', label: 'recently updated' }
 } as const;
 export type SortKey = keyof typeof SORTS;
