@@ -1,5 +1,7 @@
 # mcp-pulse
 
+[![CI](https://github.com/ondraulehla/mcp-pulse/actions/workflows/ci.yml/badge.svg)](https://github.com/ondraulehla/mcp-pulse/actions/workflows/ci.yml) [![npm mcptop](https://img.shields.io/npm/v/mcptop?label=mcptop)](https://www.npmjs.com/package/mcptop) [![license](https://img.shields.io/github/license/ondraulehla/mcp-pulse)](LICENSE)
+
 **Is that MCP server alive, and what does it cost your context window?**
 
 **Live board: [mcp-pulse.ondrejulehla.workers.dev](https://mcp-pulse.ondrejulehla.workers.dev)**

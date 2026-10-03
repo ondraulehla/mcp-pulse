@@ -1,5 +1,7 @@
 # mcptop
 
+[![npm](https://img.shields.io/npm/v/mcptop)](https://www.npmjs.com/package/mcptop) [![CI](https://github.com/ondraulehla/mcp-pulse/actions/workflows/ci.yml/badge.svg)](https://github.com/ondraulehla/mcp-pulse/actions/workflows/ci.yml) [![license](https://img.shields.io/npm/l/mcptop)](LICENSE)
+
 **`top` for your MCP servers: how many tokens do their tool definitions cost before the first prompt?**
 
 mcptop is the CLI of [mcp-pulse](https://github.com/ondraulehla/mcp-pulse), the board that probes every remote server in the official MCP registry. The board tells you about servers out there. mcptop tells you about yours.
