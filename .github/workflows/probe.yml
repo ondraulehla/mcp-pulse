@@ -66,6 +66,11 @@ jobs:
         if: ${{ inputs.sample == '' && env.CLOUDFLARE_API_TOKEN != '' }}
         working-directory: site
         run: npx wrangler d1 execute mcp-pulse --remote --file=../data/latest/import.sql
+      - name: Tell IndexNow which pages changed
+        if: ${{ inputs.sample == '' && env.CLOUDFLARE_API_TOKEN != '' }}
+        env:
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
+        run: node --import tsx probe/indexnow.ts --changed data/latest/changed.json
       - name: Say when the import was skipped
         if: ${{ inputs.sample == '' && env.CLOUDFLARE_API_TOKEN == '' }}
         run: echo "::notice::CLOUDFLARE_API_TOKEN is not set, so the run was not imported into D1."

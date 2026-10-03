@@ -57,7 +57,7 @@ const last = pages ?? (hasNext ? page + 1 : page);
   </div>
   <form class="pager-goto" method="get" action={url.pathname}>
     {hidden.map(([k, v]) => <input type="hidden" name={k} value={v} />)}
-    <label>go to<input type="number" name="page" min="1" max={pages ?? 400} value={page} aria-label="Page number" />{pages !== null && <span class="of">of {pages.toLocaleString('en-US').replace(/,/g, ' ')}</span>}</label>
+    <label>go to<input type="number" name="page" min="1" max={pages ?? 1000} value={page} aria-label="Page number" />{pages !== null && <span class="of">of {pages.toLocaleString('en-US').replace(/,/g, ' ')}</span>}</label>
     <button type="submit">Go</button>
   </form>
 </nav>

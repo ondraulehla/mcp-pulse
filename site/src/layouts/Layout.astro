@@ -6,10 +6,13 @@ import Emblem from '../components/Emblem.astro';
 interface Props {
   title: string;
   description?: string;
+  /** Structured data for the page, rendered as JSON-LD. */
+  jsonld?: unknown;
 }
 const {
   title,
-  description = 'Is that MCP server alive, and what does it cost your context window? Daily health and token cost of every remote server in the official MCP registry.'
+  description = 'Is that MCP server alive, and what does it cost your context window? Daily health and token cost of every remote server in the official MCP registry.',
+  jsonld
 } = Astro.props;
 const path = Astro.url.pathname;
 const nav: Array<[string, string]> = [
@@ -39,6 +42,7 @@ const canonical = new URL(path + Astro.url.search, Astro.site ?? Astro.url).toSt
     <meta property="og:type" content="website" />
     <meta name="theme-color" content="#f6f3ec" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#1c1a17" media="(prefers-color-scheme: dark)" />
+    {jsonld && <script type="application/ld+json" set:html={JSON.stringify(jsonld)} />}
   </head>
   <body>
     <header class="band">
@@ -152,6 +156,8 @@ const canonical = new URL(path + Astro.url.search, Astro.site ?? Astro.url).toSt
   h2 { font-family: var(--font-display); font-size: clamp(1.35rem, 1.05rem + 1.2vw, 1.9rem); font-weight: 600; letter-spacing: -0.01em; margin: 56px 0 14px; }
   h2:first-of-type { margin-top: 40px; }
   .kicker { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); margin: 0 0 14px; }
+  .answer { font-size: 1.1rem; margin: 18px 0 0; max-width: 70ch; line-height: 1.5; }
+  .answer b { font-variant-numeric: tabular-nums; }
   .lede { font-size: 1.125rem; color: var(--ink-muted); max-width: 62ch; margin: 18px 0 0; line-height: 1.55; }
   .muted { color: var(--ink-muted); }
   .faint { color: var(--ink-faint); }
@@ -195,8 +201,10 @@ const canonical = new URL(path + Astro.url.search, Astro.site ?? Astro.url).toSt
   .tag.big { font-size: 0.8rem; padding: 5px 12px 5px 10px; }
 
   /* the check panel on the overview */
-  .panel { border: 1px solid var(--accent); padding: 20px 22px 18px; margin: 28px 0 0; background: var(--panel); }
-  .panel-title { font-size: 1.15rem; margin: 0 0 6px; }
+  .panel { border: 1px solid var(--accent); padding: 12px 14px 12px; margin: 22px 0 0; background: var(--panel); }
+  .panel h2.panel-title { font-size: 0.95rem; margin: 0 0 8px; }
+  .panel .checkform input { padding: 9px 12px; font-size: 0.95rem; }
+  .panel .checkform button { padding: 0 18px; }
   .checkform { display: flex; gap: 0; border: 1px solid var(--line); background: var(--surface); }
   .checkform input { flex: 1; min-width: 0; border: 0; padding: 12px 14px; font-size: 1rem; font-family: var(--font-mono); background: transparent; color: var(--ink); }
   .checkform button { border: 0; border-left: 1px solid var(--line); padding: 0 22px; background: var(--accent); color: #fff; font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; cursor: pointer; }

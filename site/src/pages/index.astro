@@ -16,15 +16,15 @@ const down = run ? run.probed - up - gated : 0;
 
   <section class="panel check-panel" aria-labelledby="check-h">
     <h2 id="check-h" class="poster panel-title">Check a server</h2>
-    <p class="muted small" style="margin:0 0 12px">Paste an MCP server URL or a registry name. Registry servers open their page; anything else is probed live, with exact token counts.</p>
     <form class="checkform" method="get" action="/check">
-      <input type="text" name="target" placeholder="https://mcp.example.com/mcp" required autocomplete="off" aria-label="Server URL or registry name" />
+      <input type="text" name="target" placeholder="https://mcp.example.com/mcp or io.github.you/server" required autocomplete="off" aria-label="Server URL or registry name" />
       <button type="submit">Check</button>
     </form>
-    <p class="muted small" style="margin:10px 0 0">Example: <a href="/check?target=https://mcp.deepwiki.com/mcp">https://mcp.deepwiki.com/mcp</a> · in a terminal: <code>npx mcptop --url …</code></p>
+    <p class="muted small" style="margin:8px 0 0">Registry servers open their page, anything else is probed live. Example: <a href="/check?target=https://mcp.deepwiki.com/mcp">mcp.deepwiki.com/mcp</a></p>
   </section>
 
   <nav class="links" aria-label="Sections">
+    <a href="/tokens">Tokens<span>what a server costs, and why</span></a>
     <a href="/servers">Servers<span>search, filter, sort</span></a>
     <a href="/statistics">Statistics<span>results, costs, protocols, publishers</span></a>
     <a href="/hosts">Hosts<span>who publishes what</span></a>

@@ -92,6 +92,7 @@ const statements = [
   `DELETE FROM probes WHERE probed_at < ${lit(new Date(Date.now() - 90 * 86_400_000).toISOString())};`
 ];
 await writeFile(args.out, statements.join('\n') + '\n');
+await writeFile(`${args.in}/changed.json`, JSON.stringify({ changed: servers.map((s) => s.name), removed }));
 console.error(
   previous
     ? `wrote ${statements.length} statements: ${servers.length} of ${allServers.length} servers changed, ${removed.length} removed, ${hostRows.length} hosts touched, to ${args.out}`

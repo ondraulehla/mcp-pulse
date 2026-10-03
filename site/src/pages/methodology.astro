@@ -51,6 +51,12 @@ export const prerender = true;
     <a href="/check">/check</a> probes one server on demand with the same steps and a 10 second timeout. The Worker does the network part; the token count runs in your browser with the same tokenizer, because the Worker's CPU budget is too small to load it. Results are cached for ten minutes, and a URL that is already in the registry opens its page instead.
   </p>
 
+  <h2>Machine access</h2>
+  <p>
+    Every server has JSON at <code>/api/s/&lt;name&gt;.json</code>, the list at <code>/api/servers.json</code>, the live probe at <code>/api/check.json?url=…</code>, the run summary at <code>/api/summary.json</code>.
+    The board is also an MCP server: <code>https://mcp-pulse.ulehla.dev/mcp</code> over Streamable HTTP, no auth, with <code>lookup_server</code>, <code>search_servers</code>, <code>check_server</code> and <code>registry_summary</code>. <a href="/llms.txt">/llms.txt</a> lists all of it.
+  </p>
+
   <h2>Being a good guest</h2>
   <p>
     Every request carries the User-Agent <code>mcp-pulse/&lt;version&gt; (+https://github.com/ondraulehla/mcp-pulse)</code>. The probe runs once a day, sends no tool calls, and makes at most three requests per server.

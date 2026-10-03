@@ -11,7 +11,7 @@ const host = p.get('host') ?? '';
 const protocol = p.get('protocol') ?? '';
 const transport = p.get('transport') ?? '';
 const sort = (Object.keys(SORTS).includes(p.get('sort') ?? '') ? p.get('sort') : 'tokens') as SortKey;
-const page = Math.min(400, Math.max(1, Number(p.get('page') ?? '1') || 1));
+const page = Math.min(1000, Math.max(1, Number(p.get('page') ?? '1') || 1));
 
 const [{ rows, hasNext, perPage }, run] = await Promise.all([
   listServers({ q, status, host, protocol, transport, sort, page }),

@@ -188,7 +188,7 @@ export async function listServers(query: ListQuery): Promise<{ rows: ListRow[]; 
   if (sort.where) where.push(sort.where);
   const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
   const perPage = Math.min(200, Math.max(10, query.perPage ?? 50));
-  const page = Math.min(400, Math.max(1, query.page ?? 1));
+  const page = Math.min(1000, Math.max(1, query.page ?? 1));
   const { results } = await db()
     .prepare(`SELECT ${LIST_COLUMNS} FROM servers ${whereSql} ORDER BY ${sort.order} LIMIT ? OFFSET ?`)
     .bind(...binds, perPage + 1, (page - 1) * perPage)

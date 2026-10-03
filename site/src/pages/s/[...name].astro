@@ -20,12 +20,45 @@ const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
 const badgeMd = `[![mcp-pulse](${site}/badge/${name}.svg)](${site}/s/${name})`;
 const reachable = history.filter((h) => h.status === 'ok' || h.status === 'auth' || h.status === 'payment').length;
 const heading = server.title ?? server.server_name ?? name;
+const ok = server.status === 'ok';
+const share = ok && server.tools_tokens ? ((server.tools_tokens / 200_000) * 100).toFixed(1) : null;
+const pageTitle = ok
+  ? `${name}: ${num(server.tools_tokens)} tokens of context, ${num(server.tool_count)} tools, alive`
+  : `${name}: ${label(server.status)}`;
+const answer = ok
+  ? `Adding ${name} to an MCP client costs ${num(server.tools_tokens)} tokens of context per session: ${num(server.tool_count)} tool definitions, ${share} % of a 200k window, measured ${date(server.probed_at)}.`
+  : `${name} did not answer the probe on ${date(server.probed_at)}: ${label(server.status)}${server.http_status ? ` (HTTP ${server.http_status})` : ''}.`;
+const pageUrl = `${site}/s/${name}`;
+const jsonld = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: heading,
+  identifier: name,
+  url: pageUrl,
+  applicationCategory: 'MCP server',
+  operatingSystem: 'Any',
+  ...(server.server_version ? { softwareVersion: server.server_version } : {}),
+  ...(server.description ? { description: server.description } : {}),
+  ...(server.repo ? { codeRepository: server.repo } : {}),
+  additionalProperty: [
+    { '@type': 'PropertyValue', name: 'status', value: label(server.status) },
+    ...(ok ? [
+      { '@type': 'PropertyValue', name: 'tool definitions token cost', value: server.tools_tokens, unitText: 'tokens (o200k_base)' },
+      { '@type': 'PropertyValue', name: 'tools', value: server.tool_count },
+      { '@type': 'PropertyValue', name: 'share of a 200k context window', value: Number(share), unitText: 'percent' }
+    ] : []),
+    ...(server.protocol_version ? [{ '@type': 'PropertyValue', name: 'MCP protocol version', value: server.protocol_version }] : [])
+  ],
+  dateModified: server.probed_at,
+  isPartOf: { '@type': 'Dataset', name: 'mcp-pulse: health and token cost of the MCP registry', url: site, license: 'https://opensource.org/license/mit' }
+};
 ---
 
-<Layout title={server.title && server.title !== name ? `${server.title} (${name})` : name} description={server.description ?? undefined}>
+<Layout title={pageTitle} description={answer} jsonld={jsonld}>
   <p class="kicker mono">{name}</p>
   <h1 class="poster">{heading}</h1>
-  {server.description && <p class="lede">{server.description}</p>}
+  <p class="answer">{answer}</p>
+  {server.description && <p class="muted">{server.description}</p>}
 
   <p style="margin-top:22px">
     <span class={`tag big ${bucket(server.status)}`}>{label(server.status)}</span>

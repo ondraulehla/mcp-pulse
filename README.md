@@ -35,6 +35,12 @@ It starts every configured server the way your client does, lists the tools and 
 - **Server page**: status, latency, protocol, capabilities, the most expensive tools, servers with the same tool set, history, and the badge
 - **Hosts**: the 500 biggest publishers with how many distinct tool sets they actually serve
 
+## For agents and scripts
+
+- JSON: `/api/s/<name>.json`, `/api/servers.json?q=…&status=ok&sort=tokens`, `/api/check.json?url=…`, `/api/summary.json`
+- MCP server over Streamable HTTP, no auth: `https://mcp-pulse.ulehla.dev/mcp` with the tools `lookup_server`, `search_servers`, `check_server`, `registry_summary`. The manifest for the registry is `site/server.json`.
+- `/llms.txt` lists all of it. `/tokens` answers the general question: how many context tokens does an MCP server cost.
+
 Each server on the board gets a page and a badge:
 
 ```markdown

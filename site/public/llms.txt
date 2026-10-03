@@ -1,0 +1,22 @@
+# mcp-pulse
+
+> Health and token cost of every remote server in the official MCP registry, probed daily. Answers "is this MCP server alive?" and "how many context tokens does it cost?" for 24 000+ servers.
+
+Token counts: each tool serialised as compact JSON (name, description, input_schema), counted with o200k_base. The same count for every server.
+
+## Pages
+- https://mcp-pulse.ulehla.dev/ : overview and a live check form
+- https://mcp-pulse.ulehla.dev/tokens : how many context tokens an MCP server costs, with current percentiles
+- https://mcp-pulse.ulehla.dev/s/<registry name> : one server, for example https://mcp-pulse.ulehla.dev/s/com.replynodes/mcp
+- https://mcp-pulse.ulehla.dev/servers?q=<words>&status=ok&sort=tokens : search and filters
+- https://mcp-pulse.ulehla.dev/check?target=<https url> : probe a server that is not in the registry
+- https://mcp-pulse.ulehla.dev/statistics, /hosts, /methodology
+
+## Machine access
+- JSON, one server: https://mcp-pulse.ulehla.dev/api/s/<registry name>.json
+- JSON, search: https://mcp-pulse.ulehla.dev/api/servers.json?q=<words>&status=ok&sort=tokens&page=1
+- JSON, live probe: https://mcp-pulse.ulehla.dev/api/check.json?url=<https url>
+- JSON, run summary: https://mcp-pulse.ulehla.dev/api/summary.json
+- MCP server (Streamable HTTP, no auth): https://mcp-pulse.ulehla.dev/mcp with tools lookup_server, search_servers, check_server, registry_summary
+- CLI for your own config: npx mcptop (https://www.npmjs.com/package/mcptop)
+- Source and raw data: https://github.com/ondraulehla/mcp-pulse (MIT)
