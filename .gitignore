@@ -9,3 +9,4 @@ site/worker-configuration.d.ts
 site/.astro
 data/latest/import.sql
 data/latest/servers.json
+data/latest/hosts.json

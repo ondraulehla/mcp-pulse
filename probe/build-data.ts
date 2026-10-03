@@ -159,6 +159,6 @@ const hosts = [...hostMap.entries()]
 await mkdir(args.out, { recursive: true });
 await writeFile(`${args.out}/servers.json`, JSON.stringify(rows));
 await writeFile(`${args.out}/summary.json`, JSON.stringify(summary, null, 2));
-await writeFile(`${args.out}/hosts.json`, JSON.stringify(hosts, null, 1));
+await writeFile(`${args.out}/hosts.json`, JSON.stringify(hosts));
 console.log(JSON.stringify({ ...summary, heaviest: summary.heaviest.slice(0, 5) }, null, 2));
 console.error(`wrote ${rows.length} rows to ${args.out}/`);
