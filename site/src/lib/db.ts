@@ -130,14 +130,20 @@ export type ListRow = Pick<
 >;
 
 /**
- * Turns free text into an FTS5 query: each word becomes a quoted prefix term,
- * so "git copilot" finds api.githubcopilot.com and "deep" finds DeepWiki.
- * Returns null when nothing searchable is left.
+ * Turns free text into an FTS5 query for the trigram tokenizer: every word of
+ * three or more characters must occur somewhere, inside words too, so "deep wiki"
+ * finds DeepWiki and "git copilot" finds api.githubcopilot.com. Shorter words
+ * cannot be matched by trigrams and are dropped. Returns null when nothing is left.
  */
 export function ftsQuery(q: string): string | null {
-  const tokens = q.toLowerCase().split(/[^\p{L}\p{N}_]+/u).filter(Boolean).slice(0, 6);
+  const tokens = q
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}_.\-]+/u)
+    .map((t) => t.replace(/"/g, ''))
+    .filter((t) => [...t].length >= 3)
+    .slice(0, 6);
   if (!tokens.length) return null;
-  return tokens.map((t) => `"${t.replace(/"/g, '')}"*`).join(' ');
+  return tokens.map((t) => `"${t}"`).join(' AND ');
 }
 
 /**
