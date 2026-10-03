@@ -14,6 +14,11 @@ function withCharset(type: string | null): string {
   return /charset=/i.test(t) || !/^(text\/|image\/svg)/.test(t) ? t : `${t}; charset=utf-8`;
 }
 
+/** What the browser may keep: a minute for pages, an hour for badges and sitemaps. The zone's own TTL must not leak through. */
+function browserCacheControl(contentType: string | null): string {
+  return /svg|xml/i.test(contentType ?? '') ? 'public, max-age=3600, must-revalidate' : 'public, max-age=60, must-revalidate';
+}
+
 function ttlOf(response: Response): number {
   const cc = response.headers.get('cache-control') ?? '';
   const m = /s-maxage=(\d+)/.exec(cc) ?? /max-age=(\d+)/.exec(cc);
@@ -40,7 +45,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const hit = memory.get(key);
   if (hit && hit.expires > now) {
-    return new Response(hit.body.slice(0), { status: hit.status, headers: [...hit.headers, ['x-cache', 'memory']] });
+    const h = new Headers(hit.headers);
+    h.set('cache-control', browserCacheControl(h.get('content-type')));
+    h.set('x-cache', 'memory');
+    return new Response(hit.body.slice(0), { status: hit.status, headers: h });
   }
 
   let edge: Cache | undefined;
@@ -49,6 +57,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const cached = edge ? await edge.match(new Request(key, { method: 'GET' })) : undefined;
     if (cached) {
       const h = new Headers(cached.headers);
+      h.set('cache-control', browserCacheControl(h.get('content-type')));
       h.set('x-cache', 'edge');
       return new Response(cached.body, { status: cached.status, headers: h });
     }
@@ -58,7 +67,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const response = await next();
   const ttl = ttlOf(response);
-  if (response.status !== 200 || ttl <= 0) return response;
+  if (response.status !== 200 || ttl <= 0) {
+    if (response.headers.has('cache-control') && response.status === 200) {
+      const h = new Headers(response.headers);
+      h.set('cache-control', browserCacheControl(h.get('content-type')));
+      return new Response(response.body, { status: response.status, headers: h });
+    }
+    return response;
+  }
 
   const body = await response.arrayBuffer();
   const headers: [string, string][] = [...response.headers.entries()];
@@ -81,5 +97,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
       edgeNote = `put-failed: ${(err as Error).message}`.slice(0, 80);
     }
   }
-  return new Response(body, { status: response.status, headers: [...headers, ['x-cache', 'miss'], ['x-edge', edgeNote]] });
+  const out = new Headers(headers);
+  out.set('cache-control', browserCacheControl(out.get('content-type')));
+  out.set('x-cache', 'miss');
+  out.set('x-edge', edgeNote);
+  return new Response(body, { status: response.status, headers: out });
 });
