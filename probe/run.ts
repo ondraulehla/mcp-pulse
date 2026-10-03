@@ -2,7 +2,7 @@
  * Probes a sample of remote servers from the MCP registry and writes the results
  * to data/. Usage:
  *   npm run probe -- --sample 200 --per-host 2 --concurrency 16
- *   npm run probe -- --all
+ *   npm run probe -- --all --out data/raw/probe-all.json
  */
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -18,7 +18,8 @@ const { values: args } = parseArgs({
     timeout: { type: 'string', default: '15000' },
     all: { type: 'boolean', default: false },
     seed: { type: 'string', default: '1' },
-    cache: { type: 'string', default: 'data/raw/registry-latest.json' }
+    cache: { type: 'string', default: 'data/raw/registry-latest.json' },
+    out: { type: 'string' }
   }
 });
 
@@ -152,7 +153,8 @@ const rows = await runAll(targets);
 const summary = summarize(rows);
 const stamp = new Date().toISOString().slice(0, 10);
 await mkdir('data/samples', { recursive: true });
-const file = `data/samples/probe-${stamp}${args.all ? '-all' : `-n${targets.length}`}.json`;
+const file = args.out ?? `data/samples/probe-${stamp}${args.all ? '-all' : `-n${targets.length}`}.json`;
+await mkdir(file.slice(0, file.lastIndexOf('/')), { recursive: true });
 await writeFile(file, JSON.stringify({ probedAt: new Date().toISOString(), options: { ...args }, summary, rows }, null, 1));
 console.log(JSON.stringify(summary, null, 2));
 console.error(`written ${file}`);
