@@ -2,9 +2,17 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.ondraulehla/mcp-pulse",
   "title": "mcp-pulse",
-  "description": "Health and token cost of every remote server in the official MCP registry, probed daily. Look up a server, search the board, or probe a URL live.",
+  "description": "Health and token cost of every remote MCP registry server, probed daily. Look up, search, or probe.",
   "version": "0.1.1",
   "websiteUrl": "https://mcp-pulse.ulehla.dev",
-  "repository": { "url": "https://github.com/ondraulehla/mcp-pulse", "source": "github" },
-  "remotes": [{ "type": "streamable-http", "url": "https://mcp-pulse.ulehla.dev/mcp" }]
+  "repository": {
+    "url": "https://github.com/ondraulehla/mcp-pulse",
+    "source": "github"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp-pulse.ulehla.dev/mcp"
+    }
+  ]
 }
