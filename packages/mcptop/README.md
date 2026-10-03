@@ -11,7 +11,7 @@ Every MCP server you configure hands your agent its tool definitions at the star
 ```
 $ npx mcptop --config .mcp.json --tools 3
 
-mcptop 0.1.0 · tool definitions your agent loads before the first prompt
+mcptop 0.1.1 · tool definitions your agent loads before the first prompt
   .mcp.json
 
   server      source     result               tools  tokens  of 200k
@@ -57,7 +57,7 @@ mcptop --stdio "<command args>"  measure one local server (repeatable)
 
 ## How tokens are counted
 
-Each tool is serialised as compact JSON with `name`, `description` and `input_schema`, and counted with the `o200k_base` tokenizer. Clients wrap tool definitions in their own way and models tokenise differently, so the number is a floor, not an invoice. It is the same count for every server, which makes servers comparable, and it is the same count the [public board](https://mcp-pulse.ondrejulehla.workers.dev) uses for every remote server in the official registry.
+Each tool is serialised as compact JSON with `name`, `description` and `input_schema`, and counted with the `o200k_base` tokenizer. Clients wrap tool definitions in their own way and models tokenise differently, so the number is a floor, not an invoice. It is the same count for every server, which makes servers comparable, and it is the same count the [public board](https://mcp-pulse.ulehla.dev) uses for every remote server in the official registry.
 
 ## Library
 

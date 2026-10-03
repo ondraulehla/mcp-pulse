@@ -4,10 +4,11 @@ export const prerender = true;
 ---
 
 <Layout title="Methodology">
-  <h1>How mcp-pulse measures</h1>
+  <p class="kicker">method</p>
+  <h1 class="poster">How mcp-pulse measures</h1>
   <p class="lede">Every number on this site comes from one open-source probe that treats every server the same way. This page says exactly what it does.</p>
 
-  <h2>What is probed</h2>
+  <h2 style="margin-top:40px">What is probed</h2>
   <p>
     The probe reads the <a href="https://registry.modelcontextprotocol.io" rel="noopener">official MCP registry</a>, latest version of each server only.
     It takes the first <code>streamable-http</code> remote, or the <code>sse</code> remote when that is the only one. Servers that ship only as packages (npm, PyPI, OCI, MCPB) are not probed yet.

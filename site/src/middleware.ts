@@ -14,8 +14,18 @@ function ttlOf(response: Response): number {
   return m ? Number(m[1]) : 0;
 }
 
+const CANONICAL_HOST = 'mcp-pulse.ulehla.dev';
+
 export const onRequest = defineMiddleware(async (context, next) => {
   const { request } = context;
+  const url = new URL(request.url);
+  // The workers.dev address stays as an alias and sends everyone to the real one.
+  if (url.hostname.endsWith('.workers.dev')) {
+    url.hostname = CANONICAL_HOST;
+    url.protocol = 'https:';
+    url.port = '';
+    return Response.redirect(url.toString(), 301);
+  }
   if (request.method !== 'GET') return next();
   const key = request.url;
   const now = Date.now();
@@ -28,7 +38,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   let edge: Cache | undefined;
   try {
     edge = (caches as unknown as { default?: Cache }).default;
-    const cached = edge ? await edge.match(request) : undefined;
+    const cached = edge ? await edge.match(new Request(key, { method: 'GET' })) : undefined;
     if (cached) {
       const h = new Headers(cached.headers);
       h.set('x-cache', 'edge');
@@ -49,15 +59,19 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (oldest) memory.delete(oldest);
   }
   memory.set(key, { expires: now + ttl * 1000, status: response.status, headers, body });
+  let edgeNote = 'none';
   if (edge) {
-    const copy = new Response(body.slice(0), { status: response.status, headers });
+    // Store a copy with only the headers the cache needs, keyed by the bare URL.
+    const copy = new Response(body.slice(0), {
+      status: response.status,
+      headers: { 'content-type': response.headers.get('content-type') ?? 'text/html; charset=utf-8', 'cache-control': `public, max-age=${ttl}` }
+    });
     try {
-      const ctx = (context.locals as { runtime?: { ctx?: { waitUntil(p: Promise<unknown>): void } } }).runtime?.ctx;
-      const put = edge.put(request, copy);
-      ctx ? ctx.waitUntil(put.catch(() => undefined)) : await put.catch(() => undefined);
-    } catch {
-      /* no edge cache here */
+      await edge.put(new Request(key, { method: 'GET' }), copy);
+      edgeNote = 'stored';
+    } catch (err) {
+      edgeNote = `put-failed: ${(err as Error).message}`.slice(0, 80);
     }
   }
-  return new Response(body, { status: response.status, headers: [...headers, ['x-cache', 'miss']] });
+  return new Response(body, { status: response.status, headers: [...headers, ['x-cache', 'miss'], ['x-edge', edgeNote]] });
 });

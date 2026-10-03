@@ -27,7 +27,7 @@ Options
 
 Config files it looks for: .mcp.json, ~/.claude.json, Claude Desktop, Cursor, VS Code, Windsurf, Gemini CLI.
 Tokens are counted with ${TOKENIZER} over name, description and input schema of each tool.
-The same probe runs the public board at https://mcp-pulse.ondrejulehla.workers.dev`;
+The same probe runs the public board at https://mcp-pulse.ulehla.dev`;
 
 interface Row {
   name: string;

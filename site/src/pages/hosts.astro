@@ -1,20 +1,21 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { listHosts } from '../lib/db';
+import { latestRun, listHosts } from '../lib/db';
 import { num, pct, tokens } from '../lib/format';
 
-const hosts = await listHosts(500);
-const total = hosts.reduce((a, h) => a + h.servers, 0);
+const [hosts, run] = await Promise.all([listHosts(500), latestRun()]);
+const total = run?.probed ?? hosts.reduce((a, h) => a + h.servers, 0);
 Astro.response.headers.set('cache-control', 'public, max-age=300, s-maxage=3600');
 ---
 
 <Layout title="Hosts">
-  <h1>Hosts</h1>
+  <p class="kicker">{run ? `${num(run.hosts)} hosts · probed ${run.probedAt.slice(0, 10)}` : ''}</p>
+  <h1 class="poster">Who publishes the registry</h1>
   <p class="lede">
     The registry lists servers by name, but a few hosts publish thousands of entries. This table groups the probed servers by hostname.
-    "Distinct tool sets" counts how many different tool lists a host actually serves.
+    “Distinct tool sets” counts how many different tool lists a host actually serves.
   </p>
-  <div class="table-wrap">
+  <div class="frame" style="margin-top:28px">
     <table>
       <thead>
         <tr><th>Host</th><th class="num">Servers</th><th class="num">Share</th><th class="num">Alive</th><th class="num">Gated</th><th class="num">Down</th><th class="num">Distinct tool sets</th><th class="num">Median tokens</th></tr>
@@ -35,4 +36,5 @@ Astro.response.headers.set('cache-control', 'public, max-age=300, s-maxage=3600'
       </tbody>
     </table>
   </div>
+  <p class="muted small">The 500 biggest hosts. The other {num(Math.max(0, (run?.hosts ?? 0) - hosts.length))} publish one or two servers each.</p>
 </Layout>

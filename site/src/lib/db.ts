@@ -100,13 +100,13 @@ export async function getSiblings(hash: string, except: string, limit = 12): Pro
 
 /** Sort keys. Directions match the indexes in schema.sql, so each page reads only its rows. */
 export const SORTS = {
-  tokens: { order: 'tools_tokens DESC, name', where: '' },
-  'tokens-asc': { order: 'tools_tokens ASC, name', where: 'tools_tokens IS NOT NULL' },
-  tools: { order: 'tool_count DESC, name', where: '' },
-  latency: { order: 'init_ms ASC, name', where: 'init_ms IS NOT NULL' },
-  'latency-desc': { order: 'init_ms DESC, name', where: 'init_ms IS NOT NULL' },
-  name: { order: 'name', where: '' },
-  updated: { order: 'registry_updated_at DESC, name', where: '' }
+  tokens: { order: 'tools_tokens DESC, name', where: '', label: 'most tokens' },
+  'tokens-asc': { order: 'tools_tokens ASC, name', where: 'tools_tokens IS NOT NULL', label: 'fewest tokens' },
+  tools: { order: 'tool_count DESC, name', where: '', label: 'most tools' },
+  latency: { order: 'init_ms ASC, name', where: 'init_ms IS NOT NULL', label: 'fastest' },
+  'latency-desc': { order: 'init_ms DESC, name', where: 'init_ms IS NOT NULL', label: 'slowest' },
+  name: { order: 'name', where: '', label: 'name' },
+  updated: { order: 'registry_updated_at DESC, name', where: '', label: 'recently updated' }
 } as const;
 export type SortKey = keyof typeof SORTS;
 
@@ -115,6 +115,7 @@ export interface ListQuery {
   status?: string;
   host?: string;
   protocol?: string;
+  transport?: string;
   sort?: SortKey;
   page?: number;
   perPage?: number;
@@ -129,17 +130,29 @@ export type ListRow = Pick<
 >;
 
 /**
+ * Turns free text into an FTS5 query: each word becomes a quoted prefix term,
+ * so "git copilot" finds api.githubcopilot.com and "deep" finds DeepWiki.
+ * Returns null when nothing searchable is left.
+ */
+export function ftsQuery(q: string): string | null {
+  const tokens = q.toLowerCase().split(/[^\p{L}\p{N}_]+/u).filter(Boolean).slice(0, 6);
+  if (!tokens.length) return null;
+  return tokens.map((t) => `"${t.replace(/"/g, '')}"*`).join(' ');
+}
+
+/**
  * Lists one page of servers. There is no COUNT(*): on the free tier every row a
  * query scans counts against the daily budget, so the page asks for one row more
- * than it shows to know whether a next page exists.
+ * than it shows to know whether a next page exists. Text search goes through the
+ * FTS5 table, so it reads only the matching rows.
  */
 export async function listServers(query: ListQuery): Promise<{ rows: ListRow[]; hasNext: boolean; page: number; perPage: number }> {
   const where: string[] = [];
   const binds: unknown[] = [];
-  if (query.q) {
-    where.push('(name LIKE ? OR title LIKE ? OR host LIKE ?)');
-    const like = `%${query.q.replace(/[%_]/g, '')}%`;
-    binds.push(like, like, like);
+  const match = query.q ? ftsQuery(query.q) : null;
+  if (match) {
+    where.push('servers.rowid IN (SELECT rowid FROM servers_fts WHERE servers_fts MATCH ?)');
+    binds.push(match);
   }
   if (query.status === 'down') {
     where.push("status NOT IN ('ok', 'auth', 'payment')");
@@ -154,6 +167,10 @@ export async function listServers(query: ListQuery): Promise<{ rows: ListRow[]; 
   if (query.protocol) {
     where.push('protocol_version = ?');
     binds.push(query.protocol);
+  }
+  if (query.transport === 'sse' || query.transport === 'streamable-http') {
+    where.push('transport = ?');
+    binds.push(query.transport);
   }
   const sort = SORTS[query.sort ?? 'tokens'] ?? SORTS.tokens;
   if (sort.where) where.push(sort.where);

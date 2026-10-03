@@ -4,13 +4,11 @@ import { latestRun, listHosts } from '../lib/db';
 import { bucket, label, num, pct, tokens, date, ms } from '../lib/format';
 
 const run = await latestRun();
-const hosts = run ? (await listHosts(10)) : [];
+const hosts = run ? await listHosts(10) : [];
 
 Astro.response.headers.set('cache-control', 'public, max-age=300, s-maxage=3600');
 
-const statusRows = run
-  ? Object.entries(run.byStatus).sort((a, b) => b[1] - a[1])
-  : [];
+const statusRows = run ? Object.entries(run.byStatus).sort((a, b) => b[1] - a[1]) : [];
 const up = run?.ok ?? 0;
 const gated = run ? (run.byStatus.auth ?? 0) + (run.byStatus.payment ?? 0) : 0;
 const down = run ? run.probed - up - gated : 0;
@@ -18,23 +16,24 @@ const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
 ---
 
 <Layout title="mcp-pulse">
-  <h1>Is that MCP server alive, and what does it cost your context window?</h1>
+  <p class="kicker">{run ? `${num(run.probed)} remote servers · probed ${date(run.probedAt)}` : 'no run yet'}</p>
+  <h1 class="poster">Is that MCP server alive, and what does it cost your context window?</h1>
   <p class="lede">
     Every day mcp-pulse connects to every remote server in the official MCP registry, lists its tools and counts
-    the tokens its tool definitions take before your agent says a word.
+    the tokens its tool definitions take before your agent says a word. For your own config, run <code>npx mcptop</code>.
   </p>
 
-  {!run && <p class="card">No probe run has been imported yet.</p>}
+  {!run && <p class="frame" style="padding:16px">No probe run has been imported yet.</p>}
 
   {run && (
     <>
-      <div class="cards">
-        <div class="card"><div class="big">{num(run.probed)}</div><div class="sub">remote servers probed on {date(run.probedAt)}</div></div>
-        <div class="card"><div class="big">{pct(up, run.probed)}</div><div class="sub">answer and list tools</div></div>
-        <div class="card"><div class="big">{pct(gated, run.probed)}</div><div class="sub">need auth or payment</div></div>
-        <div class="card"><div class="big">{pct(down, run.probed)}</div><div class="sub">are down or broken</div></div>
-        <div class="card"><div class="big">{tokens(run.toolsTokens.median)}</div><div class="sub">median tokens per server</div></div>
-        <div class="card"><div class="big">{tokens(run.toolsTokens.p90)}</div><div class="sub">90th percentile</div></div>
+      <div class="stats">
+        <div class="stat"><b>{pct(up, run.probed)}</b><span>answer and list tools</span></div>
+        <div class="stat"><b>{pct(gated, run.probed)}</b><span>need auth or payment</span></div>
+        <div class="stat"><b>{pct(down, run.probed)}</b><span>down or broken</span></div>
+        <div class="stat"><b>{tokens(run.toolsTokens.median)}</b><span>median tokens per server</span></div>
+        <div class="stat"><b>{tokens(run.toolsTokens.p90)}</b><span>90th percentile</span></div>
+        <div class="stat"><b>{tokens(run.toolsTokens.max)}</b><span>the heaviest server</span></div>
       </div>
 
       <div class="bar" role="img" aria-label={`${up} alive, ${gated} gated, ${down} down`}>
@@ -45,17 +44,17 @@ const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
       <div class="legend">
         <span><i style="background:var(--up)"></i>alive {num(up)}</span>
         <span><i style="background:var(--gated)"></i>needs auth or payment {num(gated)}</span>
-        <span><i style="background:var(--down)"></i>down or broken {num(down)}</span>
+        <span><i style="background:var(--accent)"></i>down or broken {num(down)}</span>
       </div>
 
       <h2>What happened when we knocked</h2>
-      <div class="table-wrap">
+      <div class="frame">
         <table>
           <thead><tr><th>Result</th><th class="num">Servers</th><th class="num">Share</th><th></th></tr></thead>
           <tbody>
             {statusRows.map(([status, n]) => (
               <tr>
-                <td><span class={`pill ${bucket(status)}`}>{label(status)}</span></td>
+                <td><span class={`tag ${bucket(status)}`}>{label(status)}</span></td>
                 <td class="num">{num(n)}</td>
                 <td class="num">{pct(n, run.probed)}</td>
                 <td><a href={`/servers?status=${status}`}>list</a></td>
@@ -67,14 +66,14 @@ const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
 
       <h2>The heaviest tool sets</h2>
       <p class="muted">Tokens the tool definitions alone take, counted with one tokenizer for every server. A 200k context window is the yardstick.</p>
-      <div class="table-wrap">
+      <div class="frame">
         <table>
           <thead><tr><th>Server</th><th>Host</th><th class="num">Tools</th><th class="num">Tokens</th><th class="num">Of 200k</th></tr></thead>
           <tbody>
             {run.heaviest.slice(0, 10).map((s) => (
               <tr>
                 <td class="break"><a href={`/s/${s.name}`}>{s.name}</a></td>
-                <td class="mono muted">{s.host}</td>
+                <td class="mono faint break">{s.host}</td>
                 <td class="num">{num(s.toolCount)}</td>
                 <td class="num">{num(s.toolsTokens)}</td>
                 <td class="num">{((s.toolsTokens / 200_000) * 100).toFixed(1)} %</td>
@@ -83,14 +82,14 @@ const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
           </tbody>
         </table>
       </div>
-      <p><a href="/servers?sort=tokens">All servers by token cost</a></p>
+      <p><a href="/servers?sort=tokens">All servers by token cost →</a></p>
 
       <h2>Who publishes the registry</h2>
       <p class="muted">
         {num(run.registryEntries)} entries in the registry, {num(run.registryWithRemote)} with a remote endpoint, on {num(run.hosts)} hosts.
         {run.duplicateServers > 0 && <> {num(run.duplicateServers)} of the servers that answered share their whole tool set with another server.</>}
       </p>
-      <div class="table-wrap">
+      <div class="frame">
         <table>
           <thead><tr><th>Host</th><th class="num">Servers</th><th class="num">Alive</th><th class="num">Gated</th><th class="num">Down</th><th class="num">Distinct tool sets</th></tr></thead>
           <tbody>
@@ -107,10 +106,10 @@ const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
           </tbody>
         </table>
       </div>
-      <p><a href="/hosts">All hosts</a></p>
+      <p><a href="/hosts">All hosts →</a></p>
 
       <h2>Protocol versions in the wild</h2>
-      <div class="table-wrap">
+      <div class="frame">
         <table>
           <thead><tr><th>Negotiated version</th><th class="num">Servers</th><th class="num">Share of alive</th></tr></thead>
           <tbody>

@@ -1,16 +1,25 @@
 ---
+import '@fontsource/anton/latin.css';
+import antonWoff2 from '@fontsource/anton/files/anton-latin-400-normal.woff2?url';
+import Emblem from '../components/Emblem.astro';
+
 interface Props {
   title: string;
   description?: string;
 }
-const { title, description = 'Is that MCP server alive, and what does it cost your context window? Live health and token cost of every remote server in the official MCP registry.' } = Astro.props;
+const {
+  title,
+  description = 'Is that MCP server alive, and what does it cost your context window? Daily health and token cost of every remote server in the official MCP registry.'
+} = Astro.props;
 const path = Astro.url.pathname;
-const nav = [
+const nav: Array<[string, string]> = [
   ['/', 'Overview'],
   ['/servers', 'Servers'],
   ['/hosts', 'Hosts'],
-  ['/methodology', 'Methodology']
+  ['/methodology', 'Method']
 ];
+const year = new Date().getFullYear();
+const canonical = new URL(path + Astro.url.search, Astro.site ?? Astro.url).toString();
 ---
 
 <!doctype html>
@@ -18,121 +27,197 @@ const nav = [
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title === 'mcp-pulse' ? title : `${title} · mcp-pulse`}</title>
+    <title>{title === 'mcp-pulse' ? 'mcp-pulse' : `${title} · mcp-pulse`}</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href={antonWoff2} as="font" type="font/woff2" crossorigin />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#f6f3ec" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1c1a17" media="(prefers-color-scheme: dark)" />
   </head>
   <body>
-    <header class="top">
-      <a class="brand" href="/"><span class="dot" aria-hidden="true"></span>mcp-pulse</a>
-      <nav>
-        {nav.map(([href, text]) => <a href={href} aria-current={path === href || (href !== '/' && path.startsWith(href)) ? 'page' : undefined}>{text}</a>)}
-        <a href="https://github.com/ondraulehla/mcp-pulse" rel="noopener">GitHub</a>
+    <header class="band">
+      <a href="/" class="brand cell" aria-label="mcp-pulse home">
+        <Emblem class="emblem" />
+        <span class="wordmark">mcp-pulse</span>
+      </a>
+      <nav aria-label="Main" class="cells">
+        {nav.map(([href, text]) => (
+          <a href={href} class="cell cell-flood" aria-current={path === href || (href !== '/' && path.startsWith(href)) ? 'page' : undefined}>{text}</a>
+        ))}
+        <a href="https://github.com/ondraulehla/mcp-pulse" rel="noopener" class="cell cell-flood">GitHub</a>
+        <a href="https://www.npmjs.com/package/mcptop" rel="noopener" class="cell cell-flood wide">npx mcptop</a>
       </nav>
     </header>
     <main>
       <slot />
     </main>
-    <footer>
-      <p>
-        mcp-pulse probes the remote servers listed in the <a href="https://registry.modelcontextprotocol.io" rel="noopener">official MCP registry</a> once a day.
-        Token counts are estimates with one tokenizer. See <a href="/methodology">how it is measured</a>. To exclude a server, <a href="https://github.com/ondraulehla/mcp-pulse/issues" rel="noopener">open an issue</a>.
-      </p>
+    <footer class="band foot">
+      <a href="https://ulehla.dev" rel="me noopener" class="brand cell">
+        <Emblem class="emblem small" />
+        <span class="wordmark">© {year} Ondřej Úlehla</span>
+      </a>
+      <p class="note">Probes once a day. Token counts are one estimate for every server. To exclude a server, open an issue.</p>
+      <nav aria-label="Footer" class="cells">
+        <a href="https://github.com/ondraulehla/mcp-pulse" rel="noopener" class="cell cell-flood">GitHub</a>
+        <a href="https://www.npmjs.com/package/mcptop" rel="noopener" class="cell cell-flood">npm</a>
+        <a href="https://ulehla.dev" rel="me noopener" class="cell cell-flood">ulehla.dev</a>
+      </nav>
     </footer>
   </body>
 </html>
 
 <style is:global>
   :root {
-    --bg: #fbfbf9;
-    --fg: #16181d;
-    --muted: #666b75;
-    --line: #e3e3dd;
-    --card: #ffffff;
-    --accent: #0f4ec4;
-    --up: #1d8a4a;
-    --up-bg: #e6f4ea;
-    --gated: #2d5bd1;
-    --gated-bg: #e8eefb;
-    --down: #c43a2f;
-    --down-bg: #fbe9e6;
-    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    --sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --surface: oklch(95.9% 0.023 84);
+    --panel: oklch(93.2% 0.027 83);
+    --ink: oklch(21% 0.012 55);
+    --ink-muted: oklch(43% 0.016 55);
+    --ink-faint: oklch(56% 0.016 62);
+    --line: oklch(86.5% 0.028 82);
+    --accent: oklch(55% 0.19 38);
+    --accent-strong: oklch(47% 0.19 38);
+    --accent-soft: oklch(90.5% 0.05 55);
+    --up: oklch(52% 0.13 150);
+    --up-soft: oklch(92% 0.05 150);
+    --gated: oklch(50% 0.09 250);
+    --gated-soft: oklch(92% 0.03 250);
+    --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-display: var(--font-sans);
+    --font-poster: 'Anton', Impact, 'Arial Narrow Bold', sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    --gutter: clamp(16px, 4vw, 40px);
+    color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #121317;
-      --fg: #e8e8e4;
-      --muted: #9a9ea8;
-      --line: #2a2c33;
-      --card: #1a1b20;
-      --accent: #7aa2ff;
-      --up: #4fc17c;
-      --up-bg: #15301f;
-      --gated: #8fb0ff;
-      --gated-bg: #1a2440;
-      --down: #ff7b6e;
-      --down-bg: #3a1d1a;
+      --surface: oklch(17% 0.008 65);
+      --panel: oklch(21% 0.01 65);
+      --ink: oklch(93% 0.012 80);
+      --ink-muted: oklch(70% 0.016 70);
+      --ink-faint: oklch(55% 0.016 65);
+      --line: oklch(29% 0.012 65);
+      --accent: oklch(70% 0.17 38);
+      --accent-strong: oklch(77% 0.15 45);
+      --accent-soft: oklch(27% 0.05 45);
+      --up: oklch(72% 0.14 150);
+      --up-soft: oklch(26% 0.05 150);
+      --gated: oklch(72% 0.09 250);
+      --gated-soft: oklch(26% 0.04 250);
+      color-scheme: dark;
     }
   }
   * { box-sizing: border-box; }
-  html { font-family: var(--sans); color: var(--fg); background: var(--bg); line-height: 1.5; font-size: 16px; }
-  body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
-  a { color: var(--accent); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  main { flex: 1; width: min(1100px, 100% - 32px); margin: 0 auto; padding: 24px 0 48px; }
-  header.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: min(1100px, 100% - 32px); margin: 0 auto; padding: 16px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
-  .brand { font-weight: 700; font-size: 18px; color: var(--fg); display: inline-flex; align-items: center; gap: 8px; letter-spacing: -0.01em; }
-  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--up); box-shadow: 0 0 0 3px var(--up-bg); }
-  header nav { display: flex; gap: 18px; flex-wrap: wrap; }
-  header nav a { color: var(--muted); font-size: 15px; }
-  header nav a[aria-current] { color: var(--fg); font-weight: 600; }
-  footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
-  footer p { width: min(1100px, 100% - 32px); margin: 0 auto; padding: 20px 0; }
-  h1 { font-size: clamp(26px, 4vw, 38px); letter-spacing: -0.02em; line-height: 1.15; margin: 8px 0 12px; }
-  h2 { font-size: 20px; margin: 32px 0 12px; letter-spacing: -0.01em; }
-  .lede { font-size: 18px; color: var(--muted); max-width: 70ch; margin: 0 0 24px; }
-  .mono { font-family: var(--mono); font-size: 0.93em; }
-  .muted { color: var(--muted); }
+  html { background: var(--surface); color: var(--ink); font-family: var(--font-sans); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  body { margin: 0; min-height: 100svh; display: flex; flex-direction: column; }
+  a { color: inherit; text-decoration: none; }
+  main a:not(.cell):not(.plain) { color: var(--accent); }
+  main a:not(.cell):not(.plain):hover { text-decoration: underline; text-underline-offset: 3px; }
+  ::selection { background: var(--accent); color: var(--surface); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  /* technical band: hairline cells, like the header of ulehla.dev */
+  .band { display: flex; align-items: stretch; justify-content: space-between; border-bottom: 1px solid var(--line); min-height: 4.25rem; }
+  .band.foot { border-bottom: 0; border-top: 1px solid var(--line); margin-top: auto; }
+  .cells { display: flex; align-items: stretch; }
+  .cell { display: inline-flex; align-items: center; justify-content: center; padding: 0 1.1rem; border-left: 1px solid var(--line); font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-muted); white-space: nowrap; }
+  .cell.wide { color: var(--accent); font-weight: 600; }
+  .cell[aria-current] { color: var(--ink); box-shadow: inset 0 -2px 0 var(--accent); }
+  .brand { border-left: 0; gap: 0.8rem; padding-left: var(--gutter); color: var(--ink); }
+  .wordmark { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600; }
+  .emblem { width: 2.1rem; height: 2.1rem; color: var(--accent); }
+  .emblem.small { width: 1.4rem; height: 1.4rem; }
+  .cell-flood:hover, .cell-flood:focus-visible { color: var(--surface); background: var(--ink); }
+  .note { display: none; align-items: center; margin: 0; padding: 0 1.5rem; font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-faint); }
+  @media (min-width: 900px) { .note { display: flex; } }
+  @media (max-width: 720px) {
+    .band { flex-wrap: wrap; }
+    .brand { width: 100%; padding: 0.9rem var(--gutter); border-bottom: 1px solid var(--line); }
+    .cells { width: 100%; overflow-x: auto; }
+    .cell { flex: 1 0 auto; padding: 0.8rem 0.9rem; }
+    .cell:first-child { border-left: 0; }
+  }
+
+  main { width: 100%; max-width: 1240px; margin: 0 auto; padding: clamp(28px, 5vw, 56px) var(--gutter) 64px; }
+
+  /* type */
+  .poster { font-family: var(--font-poster); text-transform: uppercase; letter-spacing: 0.01em; font-weight: 400; line-height: 0.92; margin: 0; }
+  h1.poster { font-size: clamp(2.6rem, 1.4rem + 5.2vw, 5.2rem); max-width: 18ch; }
+  .display { font-family: var(--font-display); letter-spacing: -0.01em; }
+  h2 { font-family: var(--font-display); font-size: clamp(1.35rem, 1.05rem + 1.2vw, 1.9rem); font-weight: 600; letter-spacing: -0.01em; margin: 56px 0 14px; }
+  h2:first-of-type { margin-top: 40px; }
+  .kicker { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); margin: 0 0 14px; }
+  .lede { font-size: 1.125rem; color: var(--ink-muted); max-width: 62ch; margin: 18px 0 0; line-height: 1.55; }
+  .muted { color: var(--ink-muted); }
+  .faint { color: var(--ink-faint); }
+  .mono { font-family: var(--font-mono); font-size: 0.9em; }
+  .small { font-size: 0.85rem; }
+  .break { overflow-wrap: anywhere; }
   .num { font-variant-numeric: tabular-nums; text-align: right; }
-  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 16px 0; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
-  .card .big { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
-  .card .sub { color: var(--muted); font-size: 13px; }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
-  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
-  th.num, td.num { text-align: right; }
-  tbody tr:hover { background: color-mix(in srgb, var(--card) 70%, var(--line)); }
-  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
-  .table-wrap table { min-width: 720px; }
-  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
-  .pill.up { background: var(--up-bg); color: var(--up); }
-  .pill.gated { background: var(--gated-bg); color: var(--gated); }
-  .pill.down { background: var(--down-bg); color: var(--down); }
-  .bar { display: flex; height: 14px; border-radius: 7px; overflow: hidden; background: var(--line); margin: 10px 0; }
+  p { margin: 10px 0; }
+
+  /* hairline stat cells: 1px gaps painted by the line colour */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); margin: 32px 0 0; }
+  .stat { background: var(--surface); padding: 18px 18px 16px; }
+  .stat b { display: block; font-family: var(--font-display); font-weight: 600; font-size: clamp(1.5rem, 0.9rem + 1.8vw, 2.4rem); line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .stat span { display: block; margin-top: 8px; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); line-height: 1.35; }
+
+  /* share bar */
+  .bar { display: flex; height: 10px; background: var(--line); margin: 20px 0 10px; }
   .bar span { display: block; height: 100%; }
   .bar .up { background: var(--up); }
   .bar .gated { background: var(--gated); }
-  .bar .down { background: var(--down); }
-  .legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
-  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
-  form.filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; margin: 12px 0 16px; }
-  form.filters label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
-  input, select, button { font: inherit; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--fg); }
-  button { cursor: pointer; }
-  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-  pre { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font-family: var(--mono); font-size: 13px; }
-  code { font-family: var(--mono); font-size: 0.93em; }
-  dl.facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; margin: 12px 0; font-size: 15px; }
-  dl.facts dt { color: var(--muted); }
-  dl.facts dd { margin: 0; overflow-wrap: anywhere; }
-  .pager { display: flex; gap: 12px; align-items: center; justify-content: space-between; margin: 14px 0; font-size: 14px; color: var(--muted); }
-  .break { overflow-wrap: anywhere; }
+  .bar .down { background: var(--accent); }
+  .legend { display: flex; gap: 20px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
+  .legend i { display: inline-block; width: 9px; height: 9px; margin-right: 7px; vertical-align: 0; }
+
+  /* tables */
+  .frame { border: 1px solid var(--line); overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  .frame table { min-width: 720px; }
+  th, td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  tbody tr:last-child td { border-bottom: 0; }
+  th { font-family: var(--font-mono); font-weight: 500; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); white-space: nowrap; background: var(--panel); }
+  th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tbody tr:hover { background: var(--panel); }
+  td .sub { display: block; font-size: 0.78rem; color: var(--ink-faint); margin-top: 2px; }
+
+  /* status tags: square, mono, a colour bar on the left */
+  .tag { display: inline-block; padding: 2px 8px 2px 7px; border: 1px solid var(--line); border-left-width: 3px; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; color: var(--ink-muted); }
+  .tag.up { border-left-color: var(--up); color: var(--up); background: var(--up-soft); }
+  .tag.gated { border-left-color: var(--gated); color: var(--gated); background: var(--gated-soft); }
+  .tag.down { border-left-color: var(--accent); color: var(--accent-strong); background: var(--accent-soft); }
+  .tag.big { font-size: 0.8rem; padding: 5px 12px 5px 10px; }
+
+  /* filters: a band of cells */
+  form.filters { display: grid; grid-template-columns: minmax(200px, 2fr) repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); margin: 24px 0 18px; }
+  form.filters label { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px 12px; background: var(--surface); font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); }
+  input, select, button { font: inherit; font-size: 0.95rem; padding: 6px 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 0; }
+  input::placeholder { color: var(--ink-faint); }
+  input:focus, select:focus { outline: none; border-bottom-color: var(--accent); }
+  select { -webkit-appearance: none; appearance: none; background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E") no-repeat right center; padding-right: 16px; cursor: pointer; }
+  form.filters .actions { display: flex; align-items: stretch; background: var(--surface); }
+  form.filters button { flex: 1; border: 0; padding: 0 16px; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-muted); cursor: pointer; }
+  form.filters button:hover { color: var(--surface); background: var(--ink); }
+  form.filters a.clear { display: inline-flex; align-items: center; padding: 0 14px; border-left: 1px solid var(--line); font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+
+  .pager { display: flex; gap: 16px; align-items: center; justify-content: space-between; margin: 14px 0; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); }
+  pre { background: var(--panel); border: 1px solid var(--line); padding: 12px 14px; overflow-x: auto; font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.5; margin: 10px 0; }
+  code { font-family: var(--font-mono); font-size: 0.9em; background: var(--panel); padding: 0 4px; }
+  pre code { background: none; padding: 0; }
+  dl.facts { display: grid; grid-template-columns: max-content 1fr; gap: 0; border: 1px solid var(--line); margin: 24px 0; font-size: 0.95rem; }
+  dl.facts dt { padding: 9px 14px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); background: var(--panel); display: flex; align-items: center; }
+  dl.facts dd { margin: 0; padding: 8px 14px; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+  dl.facts dt:nth-last-of-type(1), dl.facts dd:last-of-type { border-bottom: 0; }
+  ol, ul { padding-left: 1.2rem; }
+  li { margin: 4px 0; }
+  .hatch { height: 10px; background-image: repeating-linear-gradient(-45deg, transparent 0 5px, color-mix(in oklab, var(--ink-faint) 55%, transparent) 5px 6px); }
   @media (max-width: 640px) {
-    dl.facts { grid-template-columns: 1fr; gap: 2px; }
-    dl.facts dt { margin-top: 8px; }
+    dl.facts { grid-template-columns: 1fr; }
+    dl.facts dt { border-right: 0; }
+    .frame table { min-width: 640px; }
   }
 </style>

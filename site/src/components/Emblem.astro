@@ -1,0 +1,24 @@
+---
+/**
+ * The ulehla.dev emblem: four squares in the corners, four diamonds on the
+ * axes, an eight-point star with a small cross in the centre. Outlined in
+ * currentColor. A port of "rosette-1" from lynnandtonic's a-single-div.
+ */
+interface Props {
+  class?: string;
+}
+const { class: cls = '' } = Astro.props;
+---
+
+<svg class={cls} viewBox="-5 -5 160 160" fill="none" stroke="currentColor" stroke-width="4.5" aria-hidden="true">
+  <rect x="22" y="22" width="30" height="30"></rect>
+  <rect x="98" y="22" width="30" height="30"></rect>
+  <rect x="22" y="98" width="30" height="30"></rect>
+  <rect x="98" y="98" width="30" height="30"></rect>
+  <rect x="60" y="6" width="30" height="30" transform="rotate(45 75 21)"></rect>
+  <rect x="114" y="60" width="30" height="30" transform="rotate(45 129 75)"></rect>
+  <rect x="60" y="114" width="30" height="30" transform="rotate(45 75 129)"></rect>
+  <rect x="6" y="60" width="30" height="30" transform="rotate(45 21 75)"></rect>
+  <polygon points="75,51 78.6,66.2 92,58 83.8,71.4 99,75 83.8,78.6 92,92 78.6,83.8 75,99 71.4,83.8 58,92 66.2,78.6 51,75 66.2,71.4 58,58 71.4,66.2"></polygon>
+  <path d="M75 68v14M68 75h14"></path>
+</svg>

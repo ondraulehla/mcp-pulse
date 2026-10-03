@@ -4,7 +4,7 @@
 
 **Is that MCP server alive, and what does it cost your context window?**
 
-**Live board: [mcp-pulse.ondrejulehla.workers.dev](https://mcp-pulse.ondrejulehla.workers.dev)**
+**Live board: [mcp-pulse.ulehla.dev](https://mcp-pulse.ulehla.dev)**
 
 mcp-pulse probes every remote server in the [official MCP registry](https://registry.modelcontextprotocol.io) and records, for each one:
 
@@ -27,7 +27,7 @@ It starts every configured server the way your client does, lists the tools and 
 Each server on the board gets a page and a badge:
 
 ```markdown
-[![mcp-pulse](https://mcp-pulse.ondrejulehla.workers.dev/badge/io.github.you/your-server.svg)](https://mcp-pulse.ondrejulehla.workers.dev/s/io.github.you/your-server)
+[![mcp-pulse](https://mcp-pulse.ulehla.dev/badge/io.github.you/your-server.svg)](https://mcp-pulse.ulehla.dev/s/io.github.you/your-server)
 ```
 
 ## First full run, 2026-10-03

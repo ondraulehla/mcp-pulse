@@ -75,3 +75,27 @@ CREATE INDEX IF NOT EXISTS servers_status_init ON servers (status, init_ms, name
 CREATE INDEX IF NOT EXISTS servers_updated_name ON servers (registry_updated_at DESC, name);
 CREATE INDEX IF NOT EXISTS servers_status_updated ON servers (status, registry_updated_at DESC, name);
 DROP INDEX IF EXISTS servers_tokens;
+
+-- Full-text search over the columns people search by. The content table is
+-- servers, so the FTS index stores only tokens. Triggers keep it in step; the
+-- importer uses INSERT ... ON CONFLICT DO UPDATE, because REPLACE would not fire
+-- the delete trigger. After creating it on a database that already has rows, run
+-- once: INSERT INTO servers_fts(servers_fts) VALUES ('rebuild');
+CREATE VIRTUAL TABLE IF NOT EXISTS servers_fts USING fts5(
+  name, title, description, host, server_name,
+  content='servers', content_rowid='rowid', tokenize='unicode61'
+);
+CREATE TRIGGER IF NOT EXISTS servers_ai AFTER INSERT ON servers BEGIN
+  INSERT INTO servers_fts(rowid, name, title, description, host, server_name)
+  VALUES (new.rowid, new.name, new.title, new.description, new.host, new.server_name);
+END;
+CREATE TRIGGER IF NOT EXISTS servers_ad AFTER DELETE ON servers BEGIN
+  INSERT INTO servers_fts(servers_fts, rowid, name, title, description, host, server_name)
+  VALUES ('delete', old.rowid, old.name, old.title, old.description, old.host, old.server_name);
+END;
+CREATE TRIGGER IF NOT EXISTS servers_au AFTER UPDATE ON servers BEGIN
+  INSERT INTO servers_fts(servers_fts, rowid, name, title, description, host, server_name)
+  VALUES ('delete', old.rowid, old.name, old.title, old.description, old.host, old.server_name);
+  INSERT INTO servers_fts(rowid, name, title, description, host, server_name)
+  VALUES (new.rowid, new.name, new.title, new.description, new.host, new.server_name);
+END;

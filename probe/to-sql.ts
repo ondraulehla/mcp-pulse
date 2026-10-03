@@ -50,13 +50,18 @@ function lit(v: Value): string {
   return `'${s.replace(/'/g, "''")}'`;
 }
 
-function multiInsert(table: string, columns: string[], rows: Value[][], verb = 'INSERT OR REPLACE'): string[] {
+function multiInsert(table: string, columns: string[], rows: Value[][], verb = 'INSERT OR REPLACE', suffix = ''): string[] {
   const out: string[] = [];
   for (let i = 0; i < rows.length; i += rowsPerInsert) {
     const chunk = rows.slice(i, i + rowsPerInsert).map((r) => `(${r.map(lit).join(',')})`);
-    out.push(`${verb} INTO ${table} (${columns.join(',')}) VALUES\n${chunk.join(',\n')};`);
+    out.push(`${verb} INTO ${table} (${columns.join(',')}) VALUES\n${chunk.join(',\n')}${suffix};`);
   }
   return out;
+}
+
+/** An upsert fires the UPDATE trigger that keeps the FTS index in step; REPLACE would not. */
+function upsertSuffix(key: string, columns: string[]): string {
+  return `\nON CONFLICT(${key}) DO UPDATE SET ${columns.filter((c) => c !== key).map((c) => `${c}=excluded.${c}`).join(', ')}`;
 }
 
 const serverColumns = [
@@ -78,7 +83,7 @@ const hostRows = hosts
 
 const statements = [
   `INSERT OR REPLACE INTO runs (probed_at, summary) VALUES (${lit(summary.probedAt)}, ${lit(JSON.stringify(summary))});`,
-  ...multiInsert('servers', serverColumns, serverRows),
+  ...multiInsert('servers', serverColumns, serverRows, 'INSERT', upsertSuffix('name', serverColumns)),
   ...multiInsert('probes', ['name', 'probed_at', 'status', 'init_ms', 'tool_count', 'tools_tokens'], probeRows, 'INSERT OR IGNORE'),
   ...(removed.length ? [`DELETE FROM servers WHERE name IN (${removed.map(lit).join(',')});`] : []),
   ...(previous ? [] : ['DELETE FROM hosts;']),

@@ -1,6 +1,6 @@
 {
   "name": "mcptop",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "top for your MCP servers: how many tokens do their tool definitions cost before the first prompt?",
   "keywords": [
     "mcp",
@@ -13,7 +13,7 @@
     "cursor",
     "top"
   ],
-  "homepage": "https://mcp-pulse.ondrejulehla.workers.dev",
+  "homepage": "https://mcp-pulse.ulehla.dev",
   "bugs": "https://github.com/ondraulehla/mcp-pulse/issues",
   "repository": {
     "type": "git",
