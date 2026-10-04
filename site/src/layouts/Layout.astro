@@ -41,6 +41,7 @@ const canonical = new URL(path + Astro.url.search, Astro.site ?? Astro.url).toSt
     <meta property="og:type" content="website" />
     <meta name="theme-color" content="#f6f3ec" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#1c1a17" media="(prefers-color-scheme: dark)" />
+    <meta name="msvalidate.01" content="4F4EE13471EED503A00DC72F10CE2BB9" />
     {jsonld && <script type="application/ld+json" set:html={JSON.stringify(jsonld)} />}
   </head>
   <body>
