@@ -1,36 +1,37 @@
 {
-  "probedAt": "2026-10-03T18:07:44.862Z",
-  "registryEntries": 38942,
-  "registryWithRemote": 24294,
-  "probed": 24294,
+  "probedAt": "2026-10-04T08:05:52.520Z",
+  "registryEntries": 39138,
+  "registryWithRemote": 24449,
+  "probed": 24449,
   "byStatus": {
-    "ok": 12975,
-    "auth": 5836,
-    "protocol_error": 1800,
-    "not_found": 881,
-    "dns": 728,
-    "rate_limited": 500,
-    "payment": 434,
-    "server_error": 349,
-    "error": 307,
-    "tls": 259,
-    "timeout": 204,
-    "refused": 21
+    "ok": 13092,
+    "auth": 6113,
+    "protocol_error": 1646,
+    "not_found": 914,
+    "dns": 794,
+    "rate_limited": 480,
+    "payment": 437,
+    "server_error": 262,
+    "tls": 260,
+    "timeout": 181,
+    "newer_protocol": 126,
+    "error": 116,
+    "refused": 28
   },
-  "reachable": 19245,
-  "ok": 12975,
-  "uniqueToolsets": 12405,
-  "duplicateServers": 570,
+  "reachable": 19768,
+  "ok": 13092,
+  "uniqueToolsets": 12509,
+  "duplicateServers": 583,
   "protocols": {
-    "2025-11-25": 7732,
-    "2025-03-26": 3108,
-    "2025-06-18": 1634,
-    "2024-11-05": 500,
-    "unknown": 1
+    "2025-11-25": 7779,
+    "2025-03-26": 3140,
+    "2025-06-18": 1631,
+    "2024-11-05": 490,
+    "unknown": 52
   },
   "authSchemes": {
-    "Bearer": 5109,
-    "none": 706,
+    "Bearer": 5170,
+    "none": 922,
     "ApiKey": 8,
     "AzureApiManagementKey": 6,
     "OAuth": 2,
@@ -41,26 +42,26 @@
     "RoseMember": 1
   },
   "transports": {
-    "streamable-http": 23554,
+    "streamable-http": 23709,
     "sse": 740
   },
   "toolsTokens": {
-    "median": 1727,
+    "median": 1709,
     "p90": 7429,
-    "p99": 28200,
+    "p99": 28482,
     "max": 431925,
-    "total": 56275131
+    "total": 56710779
   },
   "toolCount": {
     "median": 8,
     "p90": 31,
-    "max": 1385
+    "max": 1378
   },
   "initMs": {
-    "median": 455,
-    "p90": 1458
+    "median": 739,
+    "p90": 2217
   },
-  "hosts": 16534,
+  "hosts": 16678,
   "heaviest": [
     {
       "name": "com.replynodes/mcp",
@@ -69,16 +70,16 @@
       "host": "mcp.replynodes.com"
     },
     {
-      "name": "io.github.whiteknightonhorse/apibase",
-      "toolCount": 1385,
-      "toolsTokens": 343770,
-      "host": "apibase.pro"
-    },
-    {
       "name": "co.ainumbers/tools",
       "toolCount": 725,
       "toolsTokens": 343011,
       "host": "mcp.ainumbers.co"
+    },
+    {
+      "name": "io.github.whiteknightonhorse/apibase",
+      "toolCount": 1378,
+      "toolsTokens": 341509,
+      "host": "apibase.pro"
     },
     {
       "name": "ai.oobeprotocol.sap.mcp/sap-mcp",
@@ -130,8 +131,8 @@
     },
     {
       "name": "io.github.yzlee/opcmenu",
-      "toolCount": 288,
-      "toolsTokens": 93654,
+      "toolCount": 349,
+      "toolsTokens": 94119,
       "host": "mcp.opcmenu.com"
     },
     {
@@ -143,7 +144,7 @@
     {
       "name": "io.github.hermoso-ai/hermoso",
       "toolCount": 185,
-      "toolsTokens": 88777,
+      "toolsTokens": 89396,
       "host": "app.hermoso.ai"
     },
     {
@@ -157,12 +158,6 @@
       "toolCount": 381,
       "toolsTokens": 77261,
       "host": "livedatalink.ai"
-    },
-    {
-      "name": "io.github.pedro381/gover-mcp",
-      "toolCount": 102,
-      "toolsTokens": 73831,
-      "host": "mcp.gover.phs.tec.br"
     },
     {
       "name": "io.github.tresor4k/macalc-mcp",
@@ -181,6 +176,12 @@
       "toolCount": 80,
       "toolsTokens": 70926,
       "host": "pulse.theaslangroupllc.com"
+    },
+    {
+      "name": "io.github.BigRedCloud/red-mcp-server",
+      "toolCount": 159,
+      "toolsTokens": 68543,
+      "host": "red.bigredcloud.com"
     }
   ]
 }
