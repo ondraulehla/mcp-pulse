@@ -66,7 +66,7 @@ const canonical = new URL(path + Astro.url.search, Astro.site ?? Astro.url).toSt
         <Emblem class="emblem small" />
         <span class="wordmark">© {year} Ondřej Úlehla</span>
       </a>
-      <p class="note">Probed each day. One tokenizer for all servers. To exclude a server, open an issue.</p>
+      <p class="note">Probed each day. Exact token counts from the Anthropic count_tokens endpoint. To exclude a server, open an issue.</p>
       <nav aria-label="Footer" class="cells">
         <a href="https://github.com/ondraulehla/mcp-pulse" rel="noopener" class="cell cell-flood">GitHub</a>
         <a href="https://www.npmjs.com/package/mcptop" rel="noopener" class="cell cell-flood">npm</a>

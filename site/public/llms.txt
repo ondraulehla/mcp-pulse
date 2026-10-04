@@ -2,19 +2,19 @@
 
 > Health and token cost of every remote server in the official MCP registry. We probe each server each day. The site answers two questions for 24 000+ servers: Is this MCP server alive? How many context tokens does it cost?
 
-Token counts: we serialize each tool as compact JSON (name, description, input_schema). We count with o200k_base. We use the same count for every server.
+Token counts: claudeTokens is exact. It comes from the Anthropic count_tokens endpoint for claude-opus-5-5: one request with the server's tools plus a marker tool, one with the marker only, the difference is the cost of the tools. claudeTokensClaudeCode is the same with the Claude Code prefix mcp__<server>__ on each tool name. toolsTokens is an estimate: compact JSON of each tool (name, description, input_schema) counted with o200k_base. The exact count is about 1.9 times the estimate. A tool-use system prompt (286 tokens on Claude Opus 5.5) is added one time per request and is not in any number.
 
 ## Pages
 - https://mcp-pulse.ulehla.dev/ : overview and a live check form
 - https://mcp-pulse.ulehla.dev/tokens : how many context tokens an MCP server costs, with current percentiles
 - https://mcp-pulse.ulehla.dev/s/<registry name> : one server, for example https://mcp-pulse.ulehla.dev/s/com.replynodes/mcp
-- https://mcp-pulse.ulehla.dev/servers?q=<words>&status=ok&sort=tokens : search and filters
+- https://mcp-pulse.ulehla.dev/servers?q=<words>&status=ok&sort=claude : search and filters (sort=tokens for the estimate)
 - https://mcp-pulse.ulehla.dev/check?target=<https url> : probe a server that is not in the registry
 - https://mcp-pulse.ulehla.dev/statistics, /hosts, /methodology
 
 ## Machine access
 - JSON, one server: https://mcp-pulse.ulehla.dev/api/s/<registry name>.json
-- JSON, search: https://mcp-pulse.ulehla.dev/api/servers.json?q=<words>&status=ok&sort=tokens&page=1
+- JSON, search: https://mcp-pulse.ulehla.dev/api/servers.json?q=<words>&status=ok&sort=claude&page=1
 - JSON, live probe: https://mcp-pulse.ulehla.dev/api/check.json?url=<https url>
 - JSON, run summary: https://mcp-pulse.ulehla.dev/api/summary.json
 - MCP server (Streamable HTTP, no auth): https://mcp-pulse.ulehla.dev/mcp with tools lookup_server, search_servers, check_server, registry_summary
