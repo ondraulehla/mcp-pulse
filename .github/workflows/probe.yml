@@ -40,7 +40,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p data/previous
-          id=$(gh run list --workflow "Daily probe" --status success --limit 1 --json databaseId -q '.[0].databaseId' || true)
+          # Any finished run that got as far as uploading its artifact will do, even if a later step failed.
+          id=$(gh run list --workflow "Daily probe" --status completed --limit 5 --json databaseId,conclusion -q '[.[] | select(.conclusion == "success" or .conclusion == "failure")][0].databaseId' || true)
           if [ -n "$id" ]; then
             gh run download "$id" --name "probe-$id" --dir data/previous && ls -la data/previous || echo "no artifact in run $id"
           fi
