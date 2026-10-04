@@ -1,6 +1,6 @@
 {
   "name": "mcptop",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "top for your MCP servers: how many tokens do their tool definitions cost before the first prompt?",
   "keywords": [
     "mcp",

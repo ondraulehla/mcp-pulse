@@ -11,7 +11,7 @@ Every MCP server you configure hands your agent its tool definitions at the star
 ```
 $ npx mcptop --config .mcp.json --tools 3
 
-mcptop 0.1.1 · tool definitions your agent loads before the first prompt
+mcptop 0.1.2 · tool definitions your agent loads before the first prompt
   .mcp.json
 
   server      source     result               tools  tokens  of 200k

@@ -10,7 +10,7 @@ import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import type { jsonSchemaValidator, JsonSchemaValidator, JsonSchemaValidatorResult } from '@modelcontextprotocol/sdk/validation/types.js';
 import type { ProbeResult, ProbeStatus, RemoteTransport } from './types.js';
 
-export const VERSION = '0.1.1';
+export const VERSION = '0.1.2';
 export const USER_AGENT = `mcp-pulse/${VERSION} (mcptop; +https://github.com/ondraulehla/mcp-pulse)`;
 
 export interface RawTool {

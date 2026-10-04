@@ -15,7 +15,7 @@ const SITE = 'https://mcp-pulse.ulehla.dev';
  */
 function build(): McpServer {
   const server = new McpServer(
-    { name: 'mcp-pulse', version: '0.1.1' },
+    { name: 'mcp-pulse', version: '0.1.2' },
     {
       instructions:
         'Health and token cost of every remote server in the official MCP registry, probed daily. Use lookup_server for a registry name or URL, search_servers to find servers, check_server to probe a URL that is not in the registry. Token counts use the o200k_base tokenizer over each tool definition.'

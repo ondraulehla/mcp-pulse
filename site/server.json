@@ -3,7 +3,7 @@
   "name": "io.github.ondraulehla/mcp-pulse",
   "title": "mcp-pulse",
   "description": "Health and token cost of every remote MCP registry server, probed daily. Look up, search, or probe.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "websiteUrl": "https://mcp-pulse.ulehla.dev",
   "repository": {
     "url": "https://github.com/ondraulehla/mcp-pulse",
