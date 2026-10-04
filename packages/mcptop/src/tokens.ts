@@ -8,8 +8,15 @@ export type { ToolLike } from './payload.js';
 /** The tokenizer used for every count. Stated in the methodology. */
 export const TOKENIZER = 'o200k_base';
 
+/**
+ * Tool descriptions can contain strings such as <|im_start|> that look like
+ * special tokens. They are plain text here, so no special token is allowed
+ * and nothing is disallowed: the tokenizer encodes them as ordinary text.
+ */
+const PLAIN_TEXT = { allowedSpecial: new Set<string>(), disallowedSpecial: new Set<string>() };
+
 export function countTokens(text: string): number {
-  return encode(text).length;
+  return encode(text, PLAIN_TEXT).length;
 }
 
 export function toolCost(tool: ToolLike): ToolCost {

@@ -121,7 +121,8 @@ const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
     (async () => {
       const payloads = JSON.parse(el.textContent || '[]') as string[];
       const { encode } = await import('gpt-tokenizer/encoding/o200k_base');
-      const counts = payloads.map((p) => ({ name: (JSON.parse(p) as { name: string }).name, tokens: encode(p).length }));
+      const plain = { allowedSpecial: new Set<string>(), disallowedSpecial: new Set<string>() };
+      const counts = payloads.map((p) => ({ name: (JSON.parse(p) as { name: string }).name, tokens: encode(p, plain).length }));
       const total = counts.reduce((a, c) => a + c.tokens, 0);
       const fmt = (n: number) => n.toLocaleString('en-US').replace(/,/g, ' ');
       const tok = document.getElementById('tok');
