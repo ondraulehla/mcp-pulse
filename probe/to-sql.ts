@@ -28,9 +28,12 @@ const rowsPerInsert = Number(args['rows-per-insert']);
 const allServers = JSON.parse(await readFile(`${args.in}/servers.json`, 'utf8')) as ServerRow[];
 const previous = args.previous ? ((JSON.parse(await readFile(args.previous, 'utf8')) as ServerRow[])) : null;
 
-/** What counts as a change: everything except the probe timestamp. */
+/**
+ * What counts as a change: everything except the probe timestamp and the two
+ * latencies, which differ on every run and would turn every row into a write.
+ */
 function fingerprint(s: ServerRow): string {
-  const { probedAt: _probedAt, ...rest } = s;
+  const { probedAt: _probedAt, initMs: _initMs, toolsMs: _toolsMs, ...rest } = s;
   return JSON.stringify(rest);
 }
 const previousByName = new Map((previous ?? []).map((s) => [s.name, fingerprint(s)]));
