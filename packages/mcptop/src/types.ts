@@ -83,5 +83,19 @@ export interface ProbeResult {
   toolsTokens?: number;
   toolsBytes?: number;
   tools?: ToolCost[];
+  /** Exact count from the Anthropic count_tokens endpoint, when a key was available. */
+  claude?: ClaudeTokens;
+  error?: string;
+}
+
+export interface ClaudeTokens {
+  /** Model id the count was made for, for example claude-opus-5-5. */
+  model: string;
+  /** Tokens the tool definitions add, with the tool names as the server publishes them. */
+  tokens?: number;
+  /** The same with Claude Code's mcp__<server>__ prefix on every tool name. */
+  tokensClaudeCode?: number;
+  measuredAt: string;
+  /** Why the count failed, for example a schema the API does not accept. */
   error?: string;
 }

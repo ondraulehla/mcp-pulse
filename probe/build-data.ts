@@ -29,6 +29,7 @@ interface RawRow {
   updatedAt: string;
   status: string;
   result: ProbeResult;
+  payloadHash?: string;
 }
 
 export interface ServerRow {
@@ -53,7 +54,18 @@ export interface ServerRow {
   initMs?: number;
   toolsMs?: number;
   toolCount?: number;
+  /** o200k_base tokens over the compact JSON of the tool definitions: the estimate, the same for every server. */
   toolsTokens?: number;
+  /** Hash of the full tool payloads. The next run reuses the Claude count when it is unchanged. */
+  payloadHash?: string;
+  /** Exact count from the Anthropic count_tokens endpoint, tool names as published. */
+  claudeTokens?: number;
+  /** The same with Claude Code's mcp__<server>__ prefix on each tool name. */
+  claudeTokensCc?: number;
+  claudeModel?: string;
+  claudeMeasuredAt?: string;
+  /** Why Claude refused to count, for example a schema the API does not accept. */
+  claudeError?: string;
   instructionsChars?: number;
   /** Hash of the sorted tool names and schema sizes. Equal hashes mean the same tool set. */
   toolsetHash?: string;
@@ -96,6 +108,12 @@ const rows: ServerRow[] = run.rows.map((r) => {
     toolsMs: res.latencyMs.toolsList,
     toolCount: res.toolCount,
     toolsTokens: res.toolsTokens,
+    payloadHash: r.payloadHash,
+    claudeTokens: res.claude?.tokens,
+    claudeTokensCc: res.claude?.tokensClaudeCode,
+    claudeModel: res.claude?.model,
+    claudeMeasuredAt: res.claude?.measuredAt,
+    claudeError: res.claude?.error,
     instructionsChars: res.instructionsChars,
     toolsetHash,
     topTools: res.tools ? [...res.tools].sort((a, b) => b.tokens - a.tokens).slice(0, 5).map((t) => ({ name: t.name, tokens: t.tokens })) : undefined,
@@ -123,7 +141,13 @@ const quantile = (xs: number[], q: number) => {
 
 const ok = rows.filter((r) => r.status === 'ok');
 const tokens = ok.map((r) => r.toolsTokens ?? 0);
+const counted = ok.filter((r) => r.claudeTokens != null);
+const claude = counted.map((r) => r.claudeTokens!);
+const claudeCc = counted.map((r) => r.claudeTokensCc ?? r.claudeTokens!);
+const claudeModel = counted[0]?.claudeModel;
 const uniqueToolsets = new Set(ok.map((r) => r.toolsetHash)).size;
+/** Ranks by the exact Claude count when the run has one, else by the estimate. */
+const weight = (r: ServerRow) => r.claudeTokens ?? (counted.length ? -1 : (r.toolsTokens ?? 0));
 const summary = {
   probedAt: run.probedAt,
   registryEntries: registryRaw.length,
@@ -138,10 +162,21 @@ const summary = {
   authSchemes: count(rows.filter((r) => r.status === 'auth'), (r) => r.authScheme ?? 'none'),
   transports: count(rows, (r) => r.transport),
   toolsTokens: { median: quantile(tokens, 0.5), p90: quantile(tokens, 0.9), p99: quantile(tokens, 0.99), max: Math.max(0, ...tokens), total: tokens.reduce((a, b) => a + b, 0) },
+  claudeTokens: counted.length
+    ? {
+        model: claudeModel,
+        counted: counted.length,
+        refused: ok.filter((r) => r.claudeError).length,
+        median: quantile(claude, 0.5), p90: quantile(claude, 0.9), p99: quantile(claude, 0.99), max: Math.max(0, ...claude), total: claude.reduce((a, b) => a + b, 0),
+        claudeCode: { median: quantile(claudeCc, 0.5), p90: quantile(claudeCc, 0.9), p99: quantile(claudeCc, 0.99), max: Math.max(0, ...claudeCc), total: claudeCc.reduce((a, b) => a + b, 0) },
+        /** Exact count divided by the estimate, over the counted servers. */
+        ratioToEstimate: { median: quantile(counted.map((r) => r.claudeTokens! / Math.max(1, r.toolsTokens ?? 1)), 0.5), p10: quantile(counted.map((r) => r.claudeTokens! / Math.max(1, r.toolsTokens ?? 1)), 0.1), p90: quantile(counted.map((r) => r.claudeTokens! / Math.max(1, r.toolsTokens ?? 1)), 0.9) }
+      }
+    : undefined,
   toolCount: { median: quantile(ok.map((r) => r.toolCount ?? 0), 0.5), p90: quantile(ok.map((r) => r.toolCount ?? 0), 0.9), max: Math.max(0, ...ok.map((r) => r.toolCount ?? 0)) },
   initMs: { median: quantile(ok.map((r) => r.initMs ?? 0), 0.5), p90: quantile(ok.map((r) => r.initMs ?? 0), 0.9) },
   hosts: new Set(rows.map((r) => r.host)).size,
-  heaviest: [...ok].sort((a, b) => (b.toolsTokens ?? 0) - (a.toolsTokens ?? 0)).slice(0, 20).map((r) => ({ name: r.name, toolCount: r.toolCount, toolsTokens: r.toolsTokens, host: r.host }))
+  heaviest: [...ok].sort((a, b) => weight(b) - weight(a)).slice(0, 20).map((r) => ({ name: r.name, toolCount: r.toolCount, toolsTokens: r.toolsTokens, claudeTokens: r.claudeTokens, claudeTokensCc: r.claudeTokensCc, host: r.host }))
 };
 
 const hostMap = new Map<string, ServerRow[]>();

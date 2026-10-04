@@ -51,6 +51,13 @@ export function date(iso: string | null | undefined): string {
   return iso.slice(0, 10);
 }
 
+/** Short name of the model behind the exact counts. */
+export function modelName(id: string | null | undefined): string {
+  if (!id) return 'Claude';
+  const m = /^claude-([a-z]+)-(\d+)-(\d+)/.exec(id);
+  return m ? `Claude ${m[1][0].toUpperCase()}${m[1].slice(1)} ${m[2]}.${m[3]}` : id;
+}
+
 /** Share of a 200k context window, as text. */
 export function windowShare(tokensCount: number | null | undefined, window = 200_000): string {
   if (!tokensCount) return '';

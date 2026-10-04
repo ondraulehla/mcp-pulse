@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { latestRun, listHosts } from '../lib/db';
-import { bucket, label, num, pct, tokens, date, ms } from '../lib/format';
+import { bucket, label, num, pct, tokens, date, ms, modelName } from '../lib/format';
 
 const run = await latestRun();
 const hosts = run ? await listHosts(15) : [];
@@ -43,7 +43,22 @@ const statusRows = run ? Object.entries(run.byStatus).sort((a, b) => b[1] - a[1]
         </table>
       </div>
 
-      <h2>Token cost of tool definitions, alive servers</h2>
+      {run.claudeTokens && (
+        <>
+          <h2>Token cost of tool definitions in {modelName(run.claudeTokens.model)}, alive servers</h2>
+          <p class="muted small">Exact counts from the Anthropic count_tokens endpoint. {num(run.claudeTokens.counted)} servers counted. {num(run.claudeTokens.refused)} servers have a schema the API refuses.</p>
+          <div class="stats">
+            <div class="stat"><b>{num(run.claudeTokens.median)}</b><span>median</span></div>
+            <div class="stat"><b>{num(run.claudeTokens.p90)}</b><span>90th percentile</span></div>
+            <div class="stat"><b>{num(run.claudeTokens.p99)}</b><span>99th percentile</span></div>
+            <div class="stat"><b>{tokens(run.claudeTokens.max)}</b><span>maximum</span></div>
+            <div class="stat"><b>{num(run.claudeTokens.claudeCode.median)}</b><span>median in Claude Code (mcp__ prefix)</span></div>
+            <div class="stat"><b>{run.claudeTokens.ratioToEstimate.median.toFixed(2)}×</b><span>exact count over the o200k estimate, median</span></div>
+          </div>
+        </>
+      )}
+
+      <h2>o200k_base estimate, alive servers</h2>
       <div class="stats">
         <div class="stat"><b>{num(run.toolsTokens.median)}</b><span>median</span></div>
         <div class="stat"><b>{num(run.toolsTokens.p90)}</b><span>90th percentile</span></div>
@@ -56,21 +71,23 @@ const statusRows = run ? Object.entries(run.byStatus).sort((a, b) => b[1] - a[1]
       <h2>Heaviest tool sets</h2>
       <div class="frame">
         <table>
-          <thead><tr><th>Server</th><th>Host</th><th class="num">Tools</th><th class="num">Tokens</th><th class="num">Of 200k</th></tr></thead>
+          <thead><tr><th>Server</th><th>Host</th><th class="num">Tools</th><th class="num">Claude</th><th class="num">Claude Code</th><th class="num">o200k</th><th class="num">Of 200k</th></tr></thead>
           <tbody>
             {run.heaviest.map((s) => (
               <tr>
                 <td class="break"><a href={`/s/${s.name}`}>{s.name}</a></td>
                 <td class="mono faint break">{s.host}</td>
                 <td class="num">{num(s.toolCount)}</td>
-                <td class="num">{num(s.toolsTokens)}</td>
-                <td class="num">{((s.toolsTokens / 200_000) * 100).toFixed(1)} %</td>
+                <td class="num">{num(s.claudeTokens)}</td>
+                <td class="num">{num(s.claudeTokensCc)}</td>
+                <td class="num faint">{num(s.toolsTokens)}</td>
+                <td class="num">{(((s.claudeTokens ?? s.toolsTokens) / 200_000) * 100).toFixed(1)} %</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <p><a href="/servers?sort=tokens">All servers by token cost →</a></p>
+      <p><a href="/servers?sort=claude">All servers by token cost →</a></p>
 
       <h2>Latency</h2>
       <div class="stats">

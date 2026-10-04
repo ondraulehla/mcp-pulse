@@ -48,6 +48,8 @@ mcptop --stdio "<command args>"  measure one local server (repeatable)
 --window <tokens>    context window for the percentages (default 200000)
 --budget <tokens>    exit with code 1 when the total is above this
 --tools <n>          list the n most expensive tools of each server
+--claude             exact counts from the Anthropic count_tokens endpoint (free, needs ANTHROPIC_API_KEY)
+--model <id>         model for --claude (default claude-opus-5-5)
 --timeout <ms>       per server (default 15000)
 --no-stdio           do not start local servers, only measure remote ones
 --json               machine-readable output
@@ -57,17 +59,32 @@ mcptop --stdio "<command args>"  measure one local server (repeatable)
 
 ## How tokens are counted
 
-Each tool is serialised as compact JSON with `name`, `description` and `input_schema`, and counted with the `o200k_base` tokenizer. Clients wrap tool definitions in their own way and models tokenise differently, so the number is a floor, not an invoice. It is the same count for every server, which makes servers comparable, and it is the same count the [public board](https://mcp-pulse.ulehla.dev) uses for every remote server in the official registry.
+Two ways.
+
+**Exact, with `--claude`.** mcptop asks the Anthropic `count_tokens` endpoint. It sends one request with the server's tools and one request without them. The difference is what the tools cost, as the model sees them. The endpoint is free and calls no model. It needs `ANTHROPIC_API_KEY` in the environment. You get two numbers: the tools as published, and the tools as Claude Code names them (`mcp__<server>__<tool>`, where `<server>` is the key in your config). The default model is `claude-opus-5-5`. `--budget` then applies to the exact total.
+
+```bash
+ANTHROPIC_API_KEY=sk-ant-… npx mcptop --claude
+```
+
+**Estimate, by default.** Each tool is serialised as compact JSON with `name`, `description` and `input_schema`, and counted with the `o200k_base` tokenizer. No key is needed. The exact Claude count is about 1.9 times this estimate at the median, because Claude renders schemas in its own format and tokenises prose in its own way. The estimate is the same for every server, so servers stay comparable.
+
+The [public board](https://mcp-pulse.ulehla.dev) shows both numbers for every remote server in the official registry.
 
 ## Library
 
 ```ts
 import { probeRemote, probeStdio, discoverConfigs } from 'mcptop';
 
-const r = await probeRemote({ url: 'https://mcp.deepwiki.com/mcp', type: 'streamable-http' });
-r.status;       // 'ok' | 'auth' | 'payment' | 'not_found' | 'timeout' | ...
-r.toolsTokens;  // 239
-r.tools;        // [{ name, tokens, bytes, descriptionChars }, ...]
+const r = await probeRemote(
+  { url: 'https://mcp.deepwiki.com/mcp', type: 'streamable-http' },
+  { claude: { apiKey: process.env.ANTHROPIC_API_KEY!, serverName: 'deepwiki' } } // optional
+);
+r.status;                   // 'ok' | 'auth' | 'payment' | 'not_found' | 'timeout' | ...
+r.toolsTokens;              // 239, the o200k_base estimate
+r.claude?.tokens;           // 438, exact for claude-opus-5-5
+r.claude?.tokensClaudeCode; // 462, with the mcp__deepwiki__ prefix
+r.tools;                    // [{ name, tokens, bytes, descriptionChars }, ...]
 ```
 
 ## Licence

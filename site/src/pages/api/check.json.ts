@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { findByUrl } from '../../lib/db';
 import { probeRemoteRaw } from '../../../../packages/mcptop/src/core.ts';
 import { payloadBytes, BYTES_PER_TOKEN } from '../../../../packages/mcptop/src/payload.ts';
+import { liveClaudeCount } from '../../lib/claude';
 
 const g = globalThis as unknown as { __apiChecks?: { minute: number; n: number } };
 function allowed(): boolean {
@@ -11,9 +12,10 @@ function allowed(): boolean {
 }
 
 /**
- * Probes one server live and returns the result as JSON. Token counts are an
- * estimate from the schema size (the exact count needs the tokenizer, which the
- * Worker cannot afford); the per-tool byte sizes let a caller count exactly.
+ * Probes one server live and returns the result as JSON. claudeTokens is the
+ * exact count from the Anthropic count_tokens endpoint, when the Worker has a
+ * key. toolsTokensEstimate comes from the schema size; the per-tool byte sizes
+ * let a caller count o200k exactly.
  */
 export const GET: APIRoute = async ({ url, site }) => {
   const target = (url.searchParams.get('url') ?? '').trim().slice(0, 500);
@@ -33,6 +35,7 @@ export const GET: APIRoute = async ({ url, site }) => {
   const { result, tools } = await probeRemoteRaw({ url: u.toString(), type }, { timeoutMs: 10_000 });
   const sized = tools.map((t) => ({ name: t.name, bytes: payloadBytes(t) }));
   const bytes = sized.reduce((a, t) => a + t.bytes, 0);
+  const claude = result.status === 'ok' ? await liveClaudeCount(tools, u.hostname) : null;
   return Response.json(
     {
       inRegistry: false,
@@ -45,9 +48,13 @@ export const GET: APIRoute = async ({ url, site }) => {
       capabilities: result.capabilities,
       latencyMs: result.latencyMs,
       toolCount: result.toolCount,
+      claudeTokens: claude?.tokens,
+      claudeTokensClaudeCode: claude?.tokensClaudeCode,
+      claudeModel: claude?.model,
+      claudeError: claude?.error,
       toolsBytes: bytes,
       toolsTokensEstimate: Math.round(bytes / BYTES_PER_TOKEN),
-      estimateNote: `bytes / ${BYTES_PER_TOKEN}, the registry median; exact counts: npx mcptop --url ${result.url}`,
+      estimateNote: `bytes / ${BYTES_PER_TOKEN}, the registry median; exact o200k count: npx mcptop --url ${result.url}`,
       tools: sized,
       error: result.error,
       probedAt: result.probedAt

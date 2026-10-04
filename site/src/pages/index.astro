@@ -1,9 +1,11 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { latestRun } from '../lib/db';
-import { num, pct, tokens, date } from '../lib/format';
+import { latestRun, headline } from '../lib/db';
+import { num, pct, tokens, date, modelName } from '../lib/format';
 
 const run = await latestRun();
+const cost = run ? headline(run) : null;
+const inModel = cost?.exact ? ` in ${modelName(cost.model)}` : '';
 Astro.response.headers.set('cache-control', 'public, max-age=300, s-maxage=3600');
 const up = run?.ok ?? 0;
 const gated = run ? (run.byStatus.auth ?? 0) + (run.byStatus.payment ?? 0) + (run.byStatus.newer_protocol ?? 0) : 0;
@@ -12,7 +14,7 @@ const down = run ? run.probed - up - gated : 0;
 
 <Layout title="mcp-pulse">
   <h1 class="poster">Health and token cost of the MCP registry</h1>
-  <p class="lede">mcp-pulse probes every remote server in the official MCP registry each day. It records if the server answers. It counts the tokens that the tool definitions use.</p>
+  <p class="lede">mcp-pulse probes every remote server in the official MCP registry each day. It records if the server answers. It counts the tokens that the tool definitions take from the context window, as Claude counts them.</p>
 
   <section class="panel check-panel" aria-labelledby="check-h">
     <h2 id="check-h" class="poster panel-title">Check a server</h2>
@@ -36,9 +38,9 @@ const down = run ? run.probed - up - gated : 0;
         <div class="stat"><b>{pct(up, run.probed)}</b><span>alive</span></div>
         <div class="stat"><b>{pct(gated, run.probed)}</b><span>need auth or payment</span></div>
         <div class="stat"><b>{pct(down, run.probed)}</b><span>down or broken</span></div>
-        <div class="stat"><b>{tokens(run.toolsTokens.median)}</b><span>median tokens per server</span></div>
-        <div class="stat"><b>{tokens(run.toolsTokens.p90)}</b><span>90th percentile</span></div>
-        <div class="stat"><b>{tokens(run.toolsTokens.max)}</b><span>heaviest server</span></div>
+        <div class="stat"><b>{tokens(cost!.stats.median)}</b><span>median tokens per server{inModel}</span></div>
+        <div class="stat"><b>{tokens(cost!.stats.p90)}</b><span>90th percentile</span></div>
+        <div class="stat"><b>{tokens(cost!.stats.max)}</b><span>heaviest server</span></div>
       </div>
       <div class="bar" role="img" aria-label={`${up} alive, ${gated} gated, ${down} down`}>
         <span class="up" style={`width:${(up / run.probed) * 100}%`}></span>

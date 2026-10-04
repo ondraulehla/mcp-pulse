@@ -1,5 +1,5 @@
 import { StdioClientTransport, getDefaultEnvironment } from '@modelcontextprotocol/sdk/client/stdio.js';
-import { emptyResult, measure, priceTools, type ProbeOptions } from './probe.js';
+import { emptyResult, measure, priceTools, attachClaude, type ProbeOptions } from './probe.js';
 import type { ProbeResult } from './types.js';
 
 export interface StdioTarget {
@@ -27,6 +27,7 @@ export async function probeStdio(target: StdioTarget, options: ProbeOptions = {}
 
   const tools = await measure(transport, result, options.timeoutMs ?? 15_000);
   priceTools(result, tools, options.includeTools ?? true);
+  await attachClaude(result, tools, options.claude);
 
   if (result.status !== 'ok') {
     const stderr = stderrChunks.join('').trim();

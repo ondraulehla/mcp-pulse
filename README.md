@@ -20,6 +20,7 @@ mcp-pulse probes every remote server in the [official MCP registry](https://regi
 npx mcptop                     # reads Claude Code, Claude Desktop, Cursor, VS Code, Windsurf and Gemini CLI configs
 npx mcptop --config .mcp.json  # one file
 npx mcptop --budget 30000      # exit 1 when the total is above the budget, for CI
+npx mcptop --claude            # exact counts from the Anthropic count_tokens endpoint (free, needs ANTHROPIC_API_KEY)
 ```
 
 It starts every configured server the way your client does, lists the tools and prints the token cost per server and in total. See [packages/mcptop](packages/mcptop/README.md).
@@ -102,7 +103,8 @@ registry ──▶ probe/run.ts ──▶ data/raw/probe-run.json
 
 - **Transport.** The probe uses the official TypeScript SDK as a client. Streamable HTTP first, SSE when that is the only remote.
 - **No GET stream.** The probe answers 405 to the SDK's standalone GET, so it never opens a server-to-client stream. The probe needs no server-initiated messages, and some servers stall `tools/list` while that stream is open (DeepWiki held it for 15 s and never answered the POST meanwhile).
-- **Token count.** Each tool is serialised as compact JSON with `name`, `description` and `input_schema`, and counted with the `o200k_base` tokenizer. Clients wrap tool definitions differently, so this is an estimate. It is the same estimate for every server, which makes the numbers comparable.
+- **Exact token count.** The daily run asks the Anthropic `count_tokens` endpoint for every alive server: one request with the server's tools plus a marker tool, one with the marker tool only, and the difference is what the tools cost in `claude-opus-5-5`. A second count uses Claude Code's `mcp__<server>__` prefix on each tool name. The endpoint is free and calls no model. A server is counted again only when its tool definitions change. About 5 % of servers publish a schema the endpoint refuses; they show the estimate and the reason.
+- **Estimate.** Each tool is serialised as compact JSON with `name`, `description` and `input_schema`, and counted with the `o200k_base` tokenizer. The exact count is about 1.9 times the estimate at the median. The estimate needs no key and is the same for every server.
 - **Same tool set.** A hash of the sorted tool names and schema sizes marks servers that serve identical tools under different names.
 - **Timeouts.** 15 seconds per request. At most one probe runs against a host at a time.
 - **Identification.** Every request carries the User-Agent `mcp-pulse/<version> (+https://github.com/ondraulehla/mcp-pulse)`. To exclude a server, open an issue with its registry name.

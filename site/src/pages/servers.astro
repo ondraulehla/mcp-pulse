@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Pager from '../components/Pager.astro';
-import { latestRun, listServers, SORTS, type SortKey } from '../lib/db';
+import { latestRun, listServers, SORTS, DEFAULT_SORT, type SortKey } from '../lib/db';
 import { bucket, label, ms, num, tokens, STATUS_LABEL } from '../lib/format';
 
 const p = Astro.url.searchParams;
@@ -10,7 +10,7 @@ const status = p.get('status') ?? '';
 const host = p.get('host') ?? '';
 const protocol = p.get('protocol') ?? '';
 const transport = p.get('transport') ?? '';
-const sort = (Object.keys(SORTS).includes(p.get('sort') ?? '') ? p.get('sort') : 'tokens') as SortKey;
+const sort = (Object.keys(SORTS).includes(p.get('sort') ?? '') ? p.get('sort') : DEFAULT_SORT) as SortKey;
 const page = Math.min(1000, Math.max(1, Number(p.get('page') ?? '1') || 1));
 
 const [{ rows, hasNext, perPage }, run] = await Promise.all([
@@ -38,7 +38,8 @@ const columns: Array<{ label: string; first: SortKey; second: SortKey; num?: boo
   { label: 'Server', first: 'name', second: 'name-desc' },
   { label: 'Result', first: 'status', second: 'status-desc' },
   { label: 'Tools', first: 'tools', second: 'tools-asc', num: true },
-  { label: 'Tokens', first: 'tokens', second: 'tokens-asc', num: true },
+  { label: 'Claude', first: 'claude', second: 'claude-asc', num: true },
+  { label: 'o200k', first: 'tokens', second: 'tokens-asc', num: true },
   { label: 'Init', first: 'latency', second: 'latency-desc', num: true },
   { label: 'Protocol', first: 'protocol-desc', second: 'protocol' },
   { label: 'Host', first: 'host', second: 'host-desc' }
@@ -136,13 +137,14 @@ const title = host ? `Servers on ${host}` : status ? `${label(status)} servers` 
               {(r.toolset_siblings ?? 0) > 0 && <span class="sub">same tools as {num(r.toolset_siblings)} other{r.toolset_siblings === 1 ? '' : 's'}</span>}
             </td>
             <td class="num">{num(r.tool_count)}</td>
-            <td class="num">{tokens(r.tools_tokens)}</td>
+            <td class="num" title={r.claude_tokens_cc != null ? `${num(r.claude_tokens_cc)} in Claude Code` : undefined}>{tokens(r.claude_tokens)}</td>
+            <td class="num faint">{tokens(r.tools_tokens)}</td>
             <td class="num">{ms(r.init_ms)}</td>
             <td class="mono faint">{r.protocol_version ?? ''}</td>
             <td class="mono break"><a class="plain muted" href={`/servers?host=${encodeURIComponent(r.host)}`}>{r.host}</a></td>
           </tr>
         ))}
-        {rows.length === 0 && <tr><td colspan="7" class="muted">Nothing matches.</td></tr>}
+        {rows.length === 0 && <tr><td colspan="8" class="muted">Nothing matches.</td></tr>}
       </tbody>
     </table>
   </div>

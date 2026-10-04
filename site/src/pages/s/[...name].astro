@@ -1,7 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { getHistory, getServer, getSiblings } from '../../lib/db';
-import { bucket, label, ms, num, tokens, date, windowShare } from '../../lib/format';
+import { bucket, label, ms, num, tokens, date, windowShare, modelName } from '../../lib/format';
 
 const name = Astro.params.name ?? '';
 const server = await getServer(name);
@@ -21,12 +21,18 @@ const badgeMd = `[![mcp-pulse](${site}/badge/${name}.svg)](${site}/s/${name})`;
 const reachable = history.filter((h) => h.status === 'ok' || h.status === 'auth' || h.status === 'payment').length;
 const heading = server.title ?? server.server_name ?? name;
 const ok = server.status === 'ok';
-const share = ok && server.tools_tokens ? ((server.tools_tokens / 200_000) * 100).toFixed(1) : null;
+const exact = ok && server.claude_tokens != null;
+const model = modelName(server.claude_model);
+/** The number the page leads with: the exact Claude count, else the estimate. */
+const cost = exact ? server.claude_tokens : server.tools_tokens;
+const share = ok && cost ? ((cost / 200_000) * 100).toFixed(1) : null;
 const pageTitle = ok
-  ? `${name}: ${num(server.tools_tokens)} tokens of context, ${num(server.tool_count)} tools, alive`
+  ? `${name}: ${num(cost)} tokens of context${exact ? ` in ${model}` : ''}, ${num(server.tool_count)} tools, alive`
   : `${name}: ${label(server.status)}`;
 const answer = ok
-  ? `${name} costs ${num(server.tools_tokens)} tokens of context per session. It has ${num(server.tool_count)} tool definitions. That is ${share} % of a 200k window. Measured ${date(server.probed_at)}.`
+  ? exact
+    ? `${name} costs ${num(server.claude_tokens)} tokens of context per session in ${model}. In Claude Code it costs ${num(server.claude_tokens_cc ?? server.claude_tokens)} tokens. It has ${num(server.tool_count)} tool definitions. That is ${share} % of a 200k window. The o200k_base estimate is ${num(server.tools_tokens)} tokens. Measured ${date(server.claude_measured_at ?? server.probed_at)}.`
+    : `${name} costs about ${num(server.tools_tokens)} tokens of context per session (o200k_base estimate${server.claude_error ? ', Claude refused the schema' : ''}). It has ${num(server.tool_count)} tool definitions. That is ${share} % of a 200k window. Measured ${date(server.probed_at)}.`
   : `${name} did not answer the probe on ${date(server.probed_at)}. Result: ${label(server.status)}${server.http_status ? ` (HTTP ${server.http_status})` : ''}.`;
 const pageUrl = `${site}/s/${name}`;
 const jsonld = {
@@ -43,13 +49,17 @@ const jsonld = {
   additionalProperty: [
     { '@type': 'PropertyValue', name: 'status', value: label(server.status) },
     ...(ok ? [
-      { '@type': 'PropertyValue', name: 'tool definitions token cost', value: server.tools_tokens, unitText: 'tokens (o200k_base)' },
+      ...(exact ? [
+        { '@type': 'PropertyValue', name: `tool definitions token cost in ${model}`, value: server.claude_tokens, unitText: 'tokens (Anthropic count_tokens)' },
+        { '@type': 'PropertyValue', name: 'tool definitions token cost in Claude Code', value: server.claude_tokens_cc, unitText: 'tokens (Anthropic count_tokens, mcp__ prefix)' }
+      ] : []),
+      { '@type': 'PropertyValue', name: 'tool definitions token cost estimate', value: server.tools_tokens, unitText: 'tokens (o200k_base)' },
       { '@type': 'PropertyValue', name: 'tools', value: server.tool_count },
       { '@type': 'PropertyValue', name: 'share of a 200k context window', value: Number(share), unitText: 'percent' }
     ] : []),
     ...(server.protocol_version ? [{ '@type': 'PropertyValue', name: 'MCP protocol version', value: server.protocol_version }] : [])
   ],
-  dateModified: server.probed_at,
+  dateModified: server.claude_measured_at && server.claude_measured_at > server.probed_at ? server.claude_measured_at : server.probed_at,
   isPartOf: { '@type': 'Dataset', name: 'mcp-pulse: health and token cost of the MCP registry', url: site, license: 'https://opensource.org/license/mit' }
 };
 ---
@@ -68,8 +78,10 @@ const jsonld = {
   {server.status === 'ok' && (
     <div class="stats">
       <div class="stat"><b>{num(server.tool_count)}</b><span>tools</span></div>
-      <div class="stat"><b>{tokens(server.tools_tokens)}</b><span>tokens for the tool definitions</span></div>
-      <div class="stat"><b>{windowShare(server.tools_tokens)}</b><span>of a 200k context window</span></div>
+      {exact && <div class="stat"><b>{tokens(server.claude_tokens)}</b><span>tokens in {model}</span></div>}
+      {exact && <div class="stat"><b>{tokens(server.claude_tokens_cc ?? server.claude_tokens)}</b><span>tokens in Claude Code</span></div>}
+      <div class="stat"><b>{windowShare(cost)}</b><span>of a 200k context window</span></div>
+      <div class="stat"><b>{tokens(server.tools_tokens)}</b><span>{exact ? 'o200k_base estimate' : 'tokens, o200k_base estimate'}</span></div>
       <div class="stat"><b>{ms(server.init_ms)}</b><span>to initialize</span></div>
       <div class="stat"><b>{ms(server.tools_ms)}</b><span>to list tools</span></div>
     </div>
@@ -83,6 +95,8 @@ const jsonld = {
     {server.server_name && <><dt>Reports itself as</dt><dd>{server.server_name} {server.server_version}</dd></>}
     {capabilities.length > 0 && <><dt>Capabilities</dt><dd class="mono">{capabilities.join(', ')}</dd></>}
     {server.instructions_chars != null && server.status === 'ok' && <><dt>Instructions</dt><dd>{server.instructions_chars ? `${num(server.instructions_chars)} characters` : 'none'}</dd></>}
+    {ok && server.claude_error && <><dt>Claude count</dt><dd>The count_tokens endpoint refused the tool schemas: <span class="mono">{server.claude_error}</span>. The estimate stands in.</dd></>}
+    {exact && <><dt>Claude count</dt><dd>{model}, measured {date(server.claude_measured_at)}. Counted again when the tool definitions change. <a href="/methodology#tokens">Method</a>.</dd></>}
     {server.repo && <><dt>Repository</dt><dd><a href={server.repo} rel="noopener" class="break">{server.repo}</a></dd></>}
     {server.website && <><dt>Website</dt><dd><a href={server.website} rel="noopener" class="break">{server.website}</a></dd></>}
     <dt>Registry</dt><dd>{server.registry_status}, updated {date(server.registry_updated_at)} · <a href={`https://registry.modelcontextprotocol.io/v0/servers?search=${encodeURIComponent(name)}`} rel="noopener">registry entry</a></dd>
@@ -94,7 +108,7 @@ const jsonld = {
       <h2>Most expensive tools</h2>
       <div class="frame">
         <table>
-          <thead><tr><th>Tool</th><th class="num">Tokens</th><th class="num">Share of this server</th></tr></thead>
+          <thead><tr><th>Tool</th><th class="num">Tokens (o200k)</th><th class="num">Share of this server</th></tr></thead>
           <tbody>
             {topTools.map((t) => (
               <tr><td class="mono break">{t.name}</td><td class="num">{num(t.tokens)}</td><td class="num">{server.tools_tokens ? Math.round((t.tokens / server.tools_tokens) * 100) : 0} %</td></tr>
@@ -122,10 +136,10 @@ const jsonld = {
       <p class="muted small">We add a row when the result changes. A server with no change keeps its last row.</p>
       <div class="frame">
         <table>
-          <thead><tr><th>Probed</th><th>Result</th><th class="num">Init</th><th class="num">Tools</th><th class="num">Tokens</th></tr></thead>
+          <thead><tr><th>Probed</th><th>Result</th><th class="num">Init</th><th class="num">Tools</th><th class="num">Claude</th><th class="num">o200k</th></tr></thead>
           <tbody>
             {history.map((h) => (
-              <tr><td class="mono">{h.probed_at.slice(0, 16).replace('T', ' ')}</td><td><span class={`tag ${bucket(h.status)}`}>{label(h.status)}</span></td><td class="num">{ms(h.init_ms)}</td><td class="num">{num(h.tool_count)}</td><td class="num">{tokens(h.tools_tokens)}</td></tr>
+              <tr><td class="mono">{h.probed_at.slice(0, 16).replace('T', ' ')}</td><td><span class={`tag ${bucket(h.status)}`}>{label(h.status)}</span></td><td class="num">{ms(h.init_ms)}</td><td class="num">{num(h.tool_count)}</td><td class="num">{tokens(h.claude_tokens)}</td><td class="num faint">{tokens(h.tools_tokens)}</td></tr>
             ))}
           </tbody>
         </table>

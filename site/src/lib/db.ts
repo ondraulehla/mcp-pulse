@@ -28,6 +28,13 @@ export interface ServerRecord {
   toolset_siblings: number | null;
   top_tools: string | null;
   error: string | null;
+  /** Exact count from the Anthropic count_tokens endpoint, names as published. */
+  claude_tokens: number | null;
+  /** The same with Claude Code's mcp__<server>__ prefix. */
+  claude_tokens_cc: number | null;
+  claude_model: string | null;
+  claude_measured_at: string | null;
+  claude_error: string | null;
 }
 
 export interface HostRecord {
@@ -47,6 +54,15 @@ export interface ProbeRecord {
   init_ms: number | null;
   tool_count: number | null;
   tools_tokens: number | null;
+  claude_tokens: number | null;
+}
+
+export interface TokenStats {
+  median: number;
+  p90: number;
+  p99: number;
+  max: number;
+  total: number;
 }
 
 export interface RunSummary {
@@ -62,11 +78,25 @@ export interface RunSummary {
   protocols: Record<string, number>;
   authSchemes: Record<string, number>;
   transports: Record<string, number>;
-  toolsTokens: { median: number; p90: number; p99: number; max: number; total: number };
+  /** o200k_base estimate. */
+  toolsTokens: TokenStats;
+  /** Exact counts, present once a run had an API key. */
+  claudeTokens?: TokenStats & {
+    model?: string;
+    counted: number;
+    refused: number;
+    claudeCode: TokenStats;
+    ratioToEstimate: { median: number; p10: number; p90: number };
+  };
   toolCount: { median: number; p90: number; max: number };
   initMs: { median: number; p90: number };
   hosts: number;
-  heaviest: Array<{ name: string; toolCount: number; toolsTokens: number; host: string }>;
+  heaviest: Array<{ name: string; toolCount: number; toolsTokens: number; claudeTokens?: number; claudeTokensCc?: number; host: string }>;
+}
+
+/** The headline numbers: exact Claude counts when the run has them, else the estimate. */
+export function headline(run: RunSummary): { stats: TokenStats; exact: boolean; model?: string } {
+  return run.claudeTokens ? { stats: run.claudeTokens, exact: true, model: run.claudeTokens.model } : { stats: run.toolsTokens, exact: false };
 }
 
 function db(): D1Database {
@@ -90,7 +120,7 @@ export async function findByUrl(url: string): Promise<string | null> {
 
 export async function getHistory(name: string, limit = 60): Promise<ProbeRecord[]> {
   const { results } = await db()
-    .prepare('SELECT probed_at, status, init_ms, tool_count, tools_tokens FROM probes WHERE name = ? ORDER BY probed_at DESC LIMIT ?')
+    .prepare('SELECT probed_at, status, init_ms, tool_count, tools_tokens, claude_tokens FROM probes WHERE name = ? ORDER BY probed_at DESC LIMIT ?')
     .bind(name, limit)
     .all<ProbeRecord>();
   return results;
@@ -106,8 +136,11 @@ export async function getSiblings(hash: string, except: string, limit = 12): Pro
 
 /** Sort keys. Directions match the indexes in schema.sql, so each page reads only its rows. */
 export const SORTS = {
-  tokens: { order: 'tools_tokens DESC, name', where: '', label: 'most tokens' },
-  'tokens-asc': { order: 'tools_tokens ASC, name', where: 'tools_tokens IS NOT NULL', label: 'fewest tokens' },
+  claude: { order: 'claude_tokens DESC, name', where: '', label: 'most Claude tokens' },
+  // Reads servers_claude backwards, so no second index is needed.
+  'claude-asc': { order: 'claude_tokens ASC, name DESC', where: 'claude_tokens IS NOT NULL', label: 'fewest Claude tokens' },
+  tokens: { order: 'tools_tokens DESC, name', where: '', label: 'largest estimate' },
+  'tokens-asc': { order: 'tools_tokens ASC, name', where: 'tools_tokens IS NOT NULL', label: 'smallest estimate' },
   tools: { order: 'tool_count DESC, name', where: '', label: 'most tools' },
   'tools-asc': { order: 'tool_count ASC, name', where: 'tool_count IS NOT NULL', label: 'fewest tools' },
   latency: { order: 'init_ms ASC, name', where: 'init_ms IS NOT NULL', label: 'fastest' },
@@ -136,12 +169,13 @@ export interface ListQuery {
 }
 
 export const LIST_COLUMNS =
-  'name, title, host, transport, status, http_status, auth_scheme, protocol_version, init_ms, tool_count, tools_tokens, toolset_siblings, registry_updated_at';
+  'name, title, host, transport, status, http_status, auth_scheme, protocol_version, init_ms, tool_count, tools_tokens, claude_tokens, claude_tokens_cc, toolset_siblings, registry_updated_at';
 export type ListRow = Pick<
   ServerRecord,
   | 'name' | 'title' | 'host' | 'transport' | 'status' | 'http_status' | 'auth_scheme' | 'protocol_version'
-  | 'init_ms' | 'tool_count' | 'tools_tokens' | 'toolset_siblings' | 'registry_updated_at'
+  | 'init_ms' | 'tool_count' | 'tools_tokens' | 'claude_tokens' | 'claude_tokens_cc' | 'toolset_siblings' | 'registry_updated_at'
 >;
+export const DEFAULT_SORT: SortKey = 'claude';
 
 /**
  * Turns free text into an FTS5 query for the trigram tokenizer: every word of
@@ -192,7 +226,7 @@ export async function listServers(query: ListQuery): Promise<{ rows: ListRow[]; 
     where.push('transport = ?');
     binds.push(query.transport);
   }
-  const sort = SORTS[query.sort ?? 'tokens'] ?? SORTS.tokens;
+  const sort = SORTS[query.sort ?? DEFAULT_SORT] ?? SORTS[DEFAULT_SORT];
   if (sort.where) where.push(sort.where);
   const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
   const perPage = Math.min(200, Math.max(10, query.perPage ?? 50));

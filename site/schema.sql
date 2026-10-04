@@ -34,7 +34,13 @@ CREATE TABLE IF NOT EXISTS servers (
   toolset_hash TEXT,
   toolset_siblings INTEGER,
   top_tools TEXT,
-  error TEXT
+  error TEXT,
+  -- Exact counts from the Anthropic count_tokens endpoint. See migrations/002-claude.sql for an existing database.
+  claude_model TEXT,
+  claude_tokens INTEGER,
+  claude_tokens_cc INTEGER,
+  claude_measured_at TEXT,
+  claude_error TEXT
 );
 CREATE INDEX IF NOT EXISTS servers_status ON servers (status);
 CREATE INDEX IF NOT EXISTS servers_host ON servers (host);
@@ -48,6 +54,7 @@ CREATE TABLE IF NOT EXISTS probes (
   init_ms INTEGER,
   tool_count INTEGER,
   tools_tokens INTEGER,
+  claude_tokens INTEGER,
   PRIMARY KEY (name, probed_at)
 );
 
@@ -94,7 +101,11 @@ CREATE TRIGGER IF NOT EXISTS servers_ad AFTER DELETE ON servers BEGIN
   INSERT INTO servers_fts(servers_fts, rowid, name, title, description, host, server_name)
   VALUES ('delete', old.rowid, old.name, old.title, old.description, old.host, old.server_name);
 END;
-CREATE TRIGGER IF NOT EXISTS servers_au AFTER UPDATE ON servers BEGIN
+-- The WHEN clause skips the two FTS writes when none of the indexed columns
+-- changed. Most daily updates touch only numbers.
+CREATE TRIGGER IF NOT EXISTS servers_au AFTER UPDATE ON servers
+WHEN old.name IS NOT new.name OR old.title IS NOT new.title OR old.description IS NOT new.description OR old.host IS NOT new.host OR old.server_name IS NOT new.server_name
+BEGIN
   INSERT INTO servers_fts(servers_fts, rowid, name, title, description, host, server_name)
   VALUES ('delete', old.rowid, old.name, old.title, old.description, old.host, old.server_name);
   INSERT INTO servers_fts(rowid, name, title, description, host, server_name)
@@ -115,3 +126,6 @@ CREATE INDEX IF NOT EXISTS servers_init_desc ON servers (init_ms DESC, name);
 CREATE INDEX IF NOT EXISTS servers_status_desc ON servers (status DESC, name);
 CREATE INDEX IF NOT EXISTS servers_protocol_desc ON servers (protocol_version DESC, name);
 CREATE INDEX IF NOT EXISTS servers_host_desc ON servers (host DESC, name);
+
+-- Sort by the exact Claude count. The ascending sort reads the same index backwards.
+CREATE INDEX IF NOT EXISTS servers_claude ON servers (claude_tokens DESC, name);

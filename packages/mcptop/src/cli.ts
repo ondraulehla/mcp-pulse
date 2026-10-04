@@ -21,13 +21,16 @@ Options
   --window <tokens>    context window for the percentages (default 200000)
   --budget <tokens>    exit with code 1 when the total is above this
   --tools <n>          list the n most expensive tools of each server (default 0)
+  --claude             exact counts from the Anthropic count_tokens endpoint (free, needs ANTHROPIC_API_KEY)
+  --model <id>         model for --claude (default claude-opus-5-5)
   --timeout <ms>       per server (default 15000)
   --no-stdio           do not start local servers, only measure remote ones
   --json               machine-readable output
   --help, --version
 
 Config files it looks for: .mcp.json, ~/.claude.json, Claude Desktop, Cursor, VS Code, Windsurf, Gemini CLI.
-Tokens are counted with ${TOKENIZER} over name, description and input schema of each tool.
+Without --claude, tokens are an estimate: ${TOKENIZER} over name, description and input schema of each tool.
+With --claude, the exact count for the model is shown too, as published and with the Claude Code mcp__<server>__ prefix.
 The same probe runs the public board at https://mcp-pulse.ulehla.dev`;
 
 interface Row {
@@ -51,6 +54,8 @@ export async function main(argv: string[]): Promise<number> {
       tools: { type: 'string', default: '0' },
       timeout: { type: 'string', default: '15000' },
       'no-stdio': { type: 'boolean', default: false },
+      claude: { type: 'boolean', default: false },
+      model: { type: 'string' },
       json: { type: 'boolean', default: false },
       help: { type: 'boolean', default: false },
       version: { type: 'boolean', default: false }
@@ -69,6 +74,12 @@ export async function main(argv: string[]): Promise<number> {
   const timeoutMs = Number(values.timeout) || 15_000;
   const topTools = Number(values.tools) || 0;
   const budget = values.budget ? Number(values.budget) : undefined;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (values.claude && !apiKey) {
+    console.error('--claude needs ANTHROPIC_API_KEY in the environment. Only the free count_tokens endpoint is called.');
+    return 2;
+  }
+  const claudeFor = (serverName: string) => (values.claude && apiKey ? { apiKey, model: values.model, serverName } : undefined);
 
   const servers: ConfiguredServer[] = [];
   const sources: string[] = [];
@@ -117,16 +128,21 @@ export async function main(argv: string[]): Promise<number> {
     }
     const job =
       s.kind === 'remote'
-        ? probeRemote({ url: s.url!, type: s.type ?? 'streamable-http' }, { timeoutMs, headers: s.headers })
-        : probeStdio({ command: s.command!, args: s.args, env: s.env, cwd: s.cwd }, { timeoutMs });
+        ? probeRemote({ url: s.url!, type: s.type ?? 'streamable-http' }, { timeoutMs, headers: s.headers, claude: claudeFor(s.name) })
+        : probeStdio({ command: s.command!, args: s.args, env: s.env, cwd: s.cwd }, { timeoutMs, claude: claudeFor(s.name) });
     running.push(job.then((r) => void (row.result = r)));
   }
   await Promise.all(running);
 
   const measured = rows.filter((r) => r.result?.status === 'ok');
-  const total = measured.reduce((a, r) => a + (r.result?.toolsTokens ?? 0), 0);
+  const exact = values.claude;
+  /** The number a row is ranked and budgeted by: the exact Claude count with --claude, else the estimate. */
+  const cost = (r: Row) => (exact ? r.result?.claude?.tokens : r.result?.toolsTokens);
+  const total = measured.reduce((a, r) => a + (cost(r) ?? 0), 0);
+  const totalEstimate = measured.reduce((a, r) => a + (r.result?.toolsTokens ?? 0), 0);
   const totalTools = measured.reduce((a, r) => a + (r.result?.toolCount ?? 0), 0);
-  rows.sort((a, b) => (b.result?.toolsTokens ?? -1) - (a.result?.toolsTokens ?? -1));
+  const model = measured.find((r) => r.result?.claude?.model)?.result?.claude?.model ?? values.model ?? 'claude-opus-5-5';
+  rows.sort((a, b) => (cost(b) ?? -1) - (cost(a) ?? -1));
 
   if (values.json) {
     console.log(
@@ -134,9 +150,10 @@ export async function main(argv: string[]): Promise<number> {
         {
           version: VERSION,
           tokenizer: TOKENIZER,
+          exact: exact ? { endpoint: 'count_tokens', model } : null,
           window,
           sources,
-          total: { servers: measured.length, tools: totalTools, tokens: total, shareOfWindow: total / window },
+          total: { servers: measured.length, tools: totalTools, tokens: total, tokensEstimate: totalEstimate, shareOfWindow: total / window },
           servers: rows.map((r) => ({
             name: r.name,
             source: r.source,
@@ -147,7 +164,10 @@ export async function main(argv: string[]): Promise<number> {
             error: r.result?.error,
             toolCount: r.result?.toolCount,
             toolsTokens: r.result?.toolsTokens,
-            shareOfWindow: r.result?.toolsTokens != null ? r.result.toolsTokens / window : undefined,
+            claudeTokens: r.result?.claude?.tokens,
+            claudeTokensClaudeCode: r.result?.claude?.tokensClaudeCode,
+            claudeError: r.result?.claude?.error,
+            shareOfWindow: cost(r) != null ? cost(r)! / window : undefined,
             initializeMs: r.result?.latencyMs.initialize,
             toolsListMs: r.result?.latencyMs.toolsList,
             protocolVersion: r.result?.protocolVersion,
@@ -159,7 +179,7 @@ export async function main(argv: string[]): Promise<number> {
       )
     );
   } else {
-    console.log(render(rows, { window, total, totalTools, topTools, sources }));
+    console.log(render(rows, { window, total, totalTools, topTools, sources, exact, model, cost }));
   }
 
   if (budget !== undefined && total > budget) {
@@ -195,7 +215,7 @@ function statusText(r: Row): string {
   return s.replace('_', ' ');
 }
 
-function render(rows: Row[], o: { window: number; total: number; totalTools: number; topTools: number; sources: string[] }): string {
+function render(rows: Row[], o: { window: number; total: number; totalTools: number; topTools: number; sources: string[]; exact: boolean; model: string; cost: (r: Row) => number | undefined }): string {
   const lines: string[] = [];
   lines.push(`mcptop ${VERSION} · tool definitions your agent loads before the first prompt`);
   if (o.sources.length) lines.push(o.sources.map((s) => `  ${shortSource(s)}`).join('\n'));
@@ -204,21 +224,33 @@ function render(rows: Row[], o: { window: number; total: number; totalTools: num
     lines.push('  No servers in these configs.');
     return lines.join('\n');
   }
-  const table: string[][] = [['server', 'source', 'result', 'tools', 'tokens', `of ${Math.round(o.window / 1000)}k`]];
+  const table: string[][] = [
+    o.exact
+      ? ['server', 'source', 'result', 'tools', 'claude', 'claude code', 'o200k', `of ${Math.round(o.window / 1000)}k`]
+      : ['server', 'source', 'result', 'tools', 'tokens', `of ${Math.round(o.window / 1000)}k`]
+  ];
   for (const r of rows) {
     const ok = r.result?.status === 'ok';
+    const c = r.result?.claude;
     table.push([
       r.name.length > 28 ? r.name.slice(0, 27) + '…' : r.name,
       shortSource(r.source).replace(/^.*\//, ''),
       statusText(r),
       ok ? fmt(r.result?.toolCount) : '',
+      ...(o.exact ? [ok ? (c?.tokens != null ? fmt(c.tokens) : c?.error ? 'refused' : '') : '', ok ? fmt(c?.tokensClaudeCode) : ''] : []),
       ok ? fmt(r.result?.toolsTokens) : '',
-      ok ? pct(r.result?.toolsTokens ?? 0, o.window) : ''
+      ok && o.cost(r) != null ? pct(o.cost(r)!, o.window) : ''
     ]);
   }
-  table.push(['total', '', `${rows.filter((r) => r.result?.status === 'ok').length} of ${rows.length} measured`, fmt(o.totalTools), fmt(o.total), pct(o.total, o.window)]);
+  const totalEstimate = rows.reduce((a, r) => a + (r.result?.status === 'ok' ? (r.result.toolsTokens ?? 0) : 0), 0);
+  const totalCc = rows.reduce((a, r) => a + (r.result?.claude?.tokensClaudeCode ?? 0), 0);
+  table.push([
+    'total', '', `${rows.filter((r) => r.result?.status === 'ok').length} of ${rows.length} measured`, fmt(o.totalTools),
+    ...(o.exact ? [fmt(o.total), fmt(totalCc)] : []),
+    fmt(totalEstimate), pct(o.total, o.window)
+  ]);
   const widths = table[0].map((_, i) => Math.max(...table.map((row) => row[i].length)));
-  const right = new Set([3, 4, 5]);
+  const right = new Set(table[0].map((_, i) => i).filter((i) => i >= 3));
   const line = (row: string[]) => '  ' + row.map((cell, i) => (right.has(i) ? cell.padStart(widths[i]) : cell.padEnd(widths[i]))).join('  ').trimEnd();
   lines.push(line(table[0]));
   lines.push('  ' + widths.map((w) => '─'.repeat(w)).join('  '));
@@ -240,7 +272,14 @@ function render(rows: Row[], o: { window: number; total: number; totalTools: num
       }
     }
   }
-  lines.push('', `  Counted with ${TOKENIZER} over name, description and input schema of each tool. Clients add their own wrapping, so treat this as a floor.`);
+  if (o.exact) {
+    lines.push('', `  claude: exact count from the Anthropic count_tokens endpoint for ${o.model}. claude code: the same with the mcp__<server>__ prefix on each tool name.`);
+    lines.push(`  o200k: the estimate without a key, ${TOKENIZER} over name, description and input schema. "refused": the endpoint did not accept the schema.`);
+    const refused = rows.filter((r) => r.result?.claude?.error);
+    for (const r of refused) lines.push(`  ${r.name}: ${r.result!.claude!.error!.slice(0, 160)}`);
+  } else {
+    lines.push('', `  Estimated with ${TOKENIZER} over name, description and input schema of each tool. Claude counts about 1.9 times this. Add --claude for the exact count.`);
+  }
   return lines.join('\n');
 }
 

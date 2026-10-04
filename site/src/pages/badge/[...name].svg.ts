@@ -37,7 +37,7 @@ export const GET: APIRoute = async ({ params }) => {
     const b = bucket(server.status);
     color = COLORS[b];
     if (server.status === 'ok') {
-      text = `alive · ${server.tool_count} tools · ${tokens(server.tools_tokens)} tokens`;
+      text = `alive · ${server.tool_count} tools · ${tokens(server.claude_tokens ?? server.tools_tokens)} tokens`;
     } else {
       text = label(server.status);
     }

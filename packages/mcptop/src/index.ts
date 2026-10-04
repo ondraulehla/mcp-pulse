@@ -1,10 +1,12 @@
 export { fetchRegistry, primaryRemote, hostOf, REGISTRY_URL } from './registry.js';
 export { probeRemote, USER_AGENT, VERSION } from './probe.js';
-export type { ProbeOptions } from './probe.js';
+export type { ProbeOptions, ClaudeOptions } from './probe.js';
 export { probeStdio } from './stdio.js';
 export type { StdioTarget } from './stdio.js';
 export { discoverConfigs, readConfigFile, normalizeServers, knownConfigPaths, expand } from './configs.js';
 export type { ConfiguredServer, ConfigFile, DiscoverOptions } from './configs.js';
 export { toolCost, toolsCost, toolPayload, countTokens, TOKENIZER } from './tokens.js';
 export type { ToolLike } from './tokens.js';
+export { countClaudeTokens, countForServer, claudeCodePrefix, toApiTools, ClaudeCountError, CLAUDE_MODEL } from './claude.js';
+export type { ClaudeCountOptions, ClaudeCount } from './claude.js';
 export type * from './types.js';

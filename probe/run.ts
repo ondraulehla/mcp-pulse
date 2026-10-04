@@ -7,8 +7,11 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { parseArgs } from 'node:util';
-import { fetchRegistry, hostOf, primaryRemote, probeRemote } from '../packages/mcptop/src/index.js';
-import type { ProbeResult, RegistryEntry } from '../packages/mcptop/src/index.js';
+import { createHash } from 'node:crypto';
+import { fetchRegistry, hostOf, primaryRemote, countForServer, ClaudeCountError, CLAUDE_MODEL, toolPayload } from '../packages/mcptop/src/index.js';
+import { probeRemoteRaw, type RawTool } from '../packages/mcptop/src/core.js';
+import { priceTools } from '../packages/mcptop/src/probe.js';
+import type { ProbeResult, RegistryEntry, ClaudeTokens } from '../packages/mcptop/src/index.js';
 
 const { values: args } = parseArgs({
   options: {
@@ -19,7 +22,10 @@ const { values: args } = parseArgs({
     all: { type: 'boolean', default: false },
     seed: { type: 'string', default: '1' },
     cache: { type: 'string', default: 'data/raw/registry-latest.json' },
-    out: { type: 'string' }
+    out: { type: 'string' },
+    /** servers.json of the previous run. Servers whose tools did not change keep their Claude count from it. */
+    'claude-cache': { type: 'string' },
+    'claude-model': { type: 'string', default: CLAUDE_MODEL }
   }
 });
 
@@ -35,6 +41,55 @@ interface Target {
   host: string;
   updatedAt: string;
   status: string;
+}
+
+/**
+ * Exact Claude counts come from the free count_tokens endpoint. The key is
+ * optional: without it the run records only the o200k estimate. A count is
+ * reused from the previous run when the server name and the full tool payload
+ * are the same, so a daily run asks only about servers that changed.
+ */
+const apiKey = process.env.ANTHROPIC_API_KEY;
+const claudeModel = args['claude-model'];
+type CachedClaude = ClaudeTokens & { payloadHash?: string };
+const claudeCache = new Map<string, CachedClaude>();
+if (args['claude-cache'] && existsSync(args['claude-cache'])) {
+  const prev = JSON.parse(await readFile(args['claude-cache'], 'utf8')) as Array<{ name: string; payloadHash?: string; claudeModel?: string; claudeTokens?: number; claudeTokensCc?: number; claudeMeasuredAt?: string; claudeError?: string }>;
+  for (const p of prev) {
+    if (p.payloadHash && p.claudeModel === claudeModel && p.claudeMeasuredAt && (p.claudeTokens != null || p.claudeError)) {
+      claudeCache.set(p.name, { payloadHash: p.payloadHash, model: p.claudeModel, tokens: p.claudeTokens, tokensClaudeCode: p.claudeTokensCc, measuredAt: p.claudeMeasuredAt, error: p.claudeError });
+    }
+  }
+  console.error(`${claudeCache.size} Claude counts loaded from ${args['claude-cache']}`);
+}
+let claudeRequests = 0;
+let claudeReused = 0;
+
+/** Hash of the full tool payloads. Equal hashes mean the same definitions, byte for byte. */
+export function payloadHash(tools: RawTool[]): string {
+  return createHash('sha1').update(tools.map(toolPayload).join('\u0000')).digest('hex').slice(0, 16);
+}
+
+async function claudeCount(name: string, tools: RawTool[], hash: string): Promise<ClaudeTokens | undefined> {
+  if (!apiKey) return undefined;
+  const cached = claudeCache.get(name);
+  if (cached && cached.payloadHash === hash) {
+    claudeReused++;
+    const { payloadHash: _h, ...rest } = cached;
+    return rest;
+  }
+  claudeRequests++;
+  const measuredAt = new Date().toISOString();
+  try {
+    const c = await countForServer(tools, name, { apiKey, model: claudeModel });
+    return { model: c.model, tokens: c.tokens, tokensClaudeCode: c.tokensClaudeCode, measuredAt };
+  } catch (e) {
+    const message = e instanceof ClaudeCountError ? e.message : String(e);
+    // A refused schema is a stable fact about the server; a transport failure is not, so leave it out and retry next run.
+    if (e instanceof ClaudeCountError && e.status >= 400 && e.status < 500 && e.status !== 429) return { model: claudeModel, measuredAt, error: message };
+    console.error(`  count_tokens failed for ${name}: ${message}`);
+    return undefined;
+  }
 }
 
 async function loadRegistry(): Promise<RegistryEntry[]> {
@@ -85,8 +140,8 @@ function pickTargets(entries: RegistryEntry[]): Target[] {
 }
 
 /** Runs probes with a global concurrency limit and at most one in flight per host. */
-async function runAll(targets: Target[]): Promise<Array<Target & { result: ProbeResult }>> {
-  const out: Array<Target & { result: ProbeResult }> = [];
+async function runAll(targets: Target[]): Promise<Array<Target & { result: ProbeResult; payloadHash?: string }>> {
+  const out: Array<Target & { result: ProbeResult; payloadHash?: string }> = [];
   const busyHosts = new Set<string>();
   const queue = [...targets];
   let done = 0;
@@ -102,8 +157,15 @@ async function runAll(targets: Target[]): Promise<Array<Target & { result: Probe
       const [target] = queue.splice(idx, 1);
       busyHosts.add(target.host);
       try {
-        const result = await probeRemote({ url: target.url, type: target.type }, { timeoutMs });
-        out.push({ ...target, result });
+        const { result, tools } = await probeRemoteRaw({ url: target.url, type: target.type }, { timeoutMs });
+        priceTools(result, tools);
+        let hash: string | undefined;
+        if (result.status === 'ok' && tools.length) {
+          hash = payloadHash(tools);
+          busyHosts.delete(target.host);
+          result.claude = await claudeCount(target.name, tools, hash);
+        }
+        out.push({ ...target, result, payloadHash: hash });
       } finally {
         busyHosts.delete(target.host);
         done++;
@@ -151,6 +213,8 @@ const targets = pickTargets(entries);
 console.error(`${entries.length} registry entries, ${targets.length} targets, concurrency ${concurrency}, timeout ${timeoutMs}ms`);
 const rows = await runAll(targets);
 const summary = summarize(rows);
+if (apiKey) console.error(`Claude counts: ${claudeRequests} servers counted now, ${claudeReused} reused from the previous run`);
+else console.error('ANTHROPIC_API_KEY is not set: no exact Claude counts in this run.');
 const stamp = new Date().toISOString().slice(0, 10);
 await mkdir('data/samples', { recursive: true });
 const file = args.out ?? `data/samples/probe-${stamp}${args.all ? '-all' : `-n${targets.length}`}.json`;

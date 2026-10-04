@@ -36,11 +36,20 @@ export const prerender = true;
     <dt>timeout, no DNS, TLS error, refused, server error, rate limited</dt><dd>Transport failures. We name each one after its cause.</dd>
   </dl>
 
-  <h2>Token counts</h2>
+  <h2 id="tokens">Token counts</h2>
   <p>
-    We serialize each tool as compact JSON with <code>name</code>, <code>description</code> and <code>input_schema</code>. We count the tokens with the <code>o200k_base</code> tokenizer.
-    Clients wrap tool definitions in different ways. Models also tokenize in different ways. The count is an estimate. It is the same estimate for every server. This makes servers comparable.
-    “Of a 200k context window” divides the count by 200 000.
+    Each server page shows up to three numbers for the tool definitions.
+  </p>
+  <dl class="facts">
+    <dt>Claude</dt><dd>The exact count from the Anthropic <code>count_tokens</code> endpoint, model <code>claude-opus-5-5</code>, tool names as the server publishes them. We send one request with the server's tools and a small marker tool, and one request with the marker tool only. The difference is what the server's tools cost. The tool-use system prompt is in both requests, so it falls out. The endpoint is free and calls no model.</dd>
+    <dt>Claude Code</dt><dd>The same count with the prefix <code>mcp__&lt;server&gt;__</code> on each tool name, as Claude Code sends it. The server part is the last segment of the registry name. In your own config it is the key you chose, so your number can differ by a few tokens.</dd>
+    <dt>o200k</dt><dd>An estimate. We serialize each tool as compact JSON with <code>name</code>, <code>description</code> and <code>input_schema</code> and count with the <code>o200k_base</code> tokenizer. It is the same estimate for every server and it needs no API key. The exact Claude count is about 1.9 times this estimate at the median, because Claude renders the schemas in its own format and tokenizes prose in its own way.</dd>
+  </dl>
+  <p>
+    “Of a 200k context window” divides the Claude count by 200 000. A request with tools also carries a tool-use system prompt one time: 286 tokens for Claude Opus 5.5. We do not add it to any server. Claude Code can defer MCP tools when they take more than 10 % of the context; the count then applies only to the tools it loads.
+  </p>
+  <p>
+    We count a server again only when its tool definitions change. The date next to the Claude count is the date of that count. About 5 % of alive servers publish a schema the endpoint refuses, for example a top-level <code>oneOf</code>. These servers show the estimate and the reason.
   </p>
 
   <h2>Same tool set</h2>
@@ -50,7 +59,7 @@ export const prerender = true;
 
   <h2>Live check</h2>
   <p>
-    <a href="/check">/check</a> probes one server on demand. It uses the same steps and a timeout of 10 seconds. The Worker does the network part. Your browser counts the tokens with the same tokenizer, because the Worker has a small CPU budget. We keep a result for ten minutes. A URL that is already in the registry opens its page.
+    <a href="/check">/check</a> probes one server on demand. It uses the same steps and a timeout of 10 seconds. The Worker does the network part and asks <code>count_tokens</code> for the exact Claude count. Your browser counts the o200k estimate, because the Worker has a small CPU budget. We keep a result for ten minutes. A URL that is already in the registry opens its page.
   </p>
 
   <h2>Machine access</h2>

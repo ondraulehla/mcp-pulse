@@ -1,9 +1,11 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getServer, findByUrl } from '../lib/db';
-import { bucket, label, ms, num } from '../lib/format';
+import { bucket, label, ms, num, modelName } from '../lib/format';
 import { probeRemoteRaw } from '../../../packages/mcptop/src/core.ts';
 import { payloadBytes, toolPayload, BYTES_PER_TOKEN } from '../../../packages/mcptop/src/payload.ts';
+import { liveClaudeCount, type LiveClaudeCount } from '../lib/claude';
+import { claudeCodePrefix } from '../../../packages/mcptop/src/claude.ts';
 
 const raw = (Astro.url.searchParams.get('target') ?? '').trim().slice(0, 500);
 const headers = Astro.response.headers;
@@ -14,7 +16,7 @@ type View =
   | { kind: 'not-found'; name: string }
   | { kind: 'invalid'; reason: string }
   | { kind: 'busy' }
-  | { kind: 'probed'; url: string; result: Awaited<ReturnType<typeof probeRemoteRaw>>['result']; payloads: string[]; bytes: number; estimate: number; embed: boolean };
+  | { kind: 'probed'; url: string; result: Awaited<ReturnType<typeof probeRemoteRaw>>['result']; payloads: string[]; bytes: number; estimate: number; embed: boolean; claude: LiveClaudeCount | null };
 
 // A small per-isolate budget keeps the live probe from being used as a free proxy.
 const g = globalThis as unknown as { __checks?: { minute: number; n: number } };
@@ -51,7 +53,8 @@ if (raw) {
         const { result, tools } = await probeRemoteRaw({ url: url.toString(), type }, { timeoutMs: 10_000 });
         const payloads = tools.map(toolPayload);
         const bytes = tools.reduce((a, t) => a + payloadBytes(t), 0);
-        view = { kind: 'probed', url: url.toString(), result, payloads, bytes, estimate: Math.round(bytes / BYTES_PER_TOKEN), embed: bytes <= 1_500_000 };
+        const claude = result.status === 'ok' ? await liveClaudeCount(tools, url.hostname) : null;
+        view = { kind: 'probed', url: url.toString(), result, payloads, bytes, estimate: Math.round(bytes / BYTES_PER_TOKEN), embed: bytes <= 1_500_000, claude };
         if (result.status !== 'ok') headers.set('cache-control', 'public, max-age=30, s-maxage=120');
       }
     }
@@ -67,7 +70,7 @@ const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
     <input type="text" name="target" value={raw} placeholder="https://mcp.example.com/mcp or io.github.you/server" required autocomplete="off" aria-label="Server URL or registry name" />
     <button type="submit">Check</button>
   </form>
-  <p class="muted small">A registry server opens its page. Other servers are probed now: initialize, tools/list, no credentials. We keep a result for ten minutes.</p>
+  <p class="muted small">A registry server opens its page. Other servers are probed now: initialize, tools/list, no credentials. Claude counts the tool definitions through the free count_tokens endpoint. We keep a result for ten minutes.</p>
 
   {view.kind === 'not-found' && <p class="frame pad">The registry has no server named <code>{view.name}</code>. Enter the server URL to probe it now.</p>}
   {view.kind === 'invalid' && <p class="frame pad">{view.reason}</p>}
@@ -83,8 +86,12 @@ const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
         <>
           <div class="stats">
             <div class="stat"><b>{num(view.result.toolCount)}</b><span>tools</span></div>
-            <div class="stat"><b id="tok">≈ {num(view.estimate)}</b><span id="tok-label">tokens, estimated from size</span></div>
-            <div class="stat"><b id="share">≈ {((view.estimate / 200_000) * 100).toFixed(1)} %</b><span>of a 200k window</span></div>
+            {view.claude?.tokens != null && <div class="stat"><b>{num(view.claude.tokens)}</b><span>tokens in {modelName(view.claude.model)}</span></div>}
+            {view.claude?.tokens != null && <div class="stat"><b>{num(view.claude.tokensClaudeCode)}</b><span>tokens in Claude Code</span></div>}
+            {view.claude?.tokens != null
+              ? <div class="stat"><b>{((view.claude.tokens / 200_000) * 100).toFixed(1)} %</b><span>of a 200k window</span></div>
+              : <div class="stat"><b id="share">≈ {((view.estimate / 200_000) * 100).toFixed(1)} %</b><span>of a 200k window</span></div>}
+            <div class="stat"><b id="tok">≈ {num(view.estimate)}</b><span id="tok-label">o200k_base, estimated from size</span></div>
             <div class="stat"><b>{ms(view.result.latencyMs.initialize)}</b><span>to initialize</span></div>
             <div class="stat"><b>{ms(view.result.latencyMs.toolsList)}</b><span>to list tools</span></div>
           </div>
@@ -93,13 +100,15 @@ const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
             {view.result.serverInfo?.name && <><dt>Reports itself as</dt><dd>{view.result.serverInfo.name} {view.result.serverInfo.version}</dd></>}
             {view.result.capabilities?.length ? <><dt>Capabilities</dt><dd class="mono">{view.result.capabilities.join(', ')}</dd></> : null}
             <dt>Schema size</dt><dd>{num(view.bytes)} bytes of tool definitions</dd>
+            {view.claude?.error && <><dt>Claude count</dt><dd>Not available: <span class="mono">{view.claude.error}</span></dd></>}
+            {view.claude?.tokens != null && <><dt>Claude count</dt><dd>Exact, from the Anthropic count_tokens endpoint. Claude Code adds a prefix like <span class="mono">{claudeCodePrefix(new URL(view.url).hostname)}</span> to each tool name. <a href="/methodology#tokens">Method</a>.</dd></>}
             <dt>Not in the registry</dt><dd><a href="https://registry.modelcontextprotocol.io" rel="noopener">Publish the server</a>. The daily probe then tracks it.</dd>
           </dl>
           <div id="tools-table" hidden>
             <h2>Most expensive tools</h2>
             <div class="frame"><table><thead><tr><th>Tool</th><th class="num">Tokens</th></tr></thead><tbody></tbody></table></div>
           </div>
-          <p class="muted small" id="exact-note">The exact count needs the tokenizer. Your browser loads it (1 MB). Without it, we estimate {BYTES_PER_TOKEN} bytes per token, the registry median.</p>
+          <p class="muted small" id="exact-note">The o200k_base count needs the tokenizer. Your browser loads it (1 MB). Without it, we estimate {BYTES_PER_TOKEN} bytes per token, the registry median.</p>
           {view.embed && <script type="application/json" id="payloads" set:html={JSON.stringify(view.payloads)} />}
         </>
       )}
@@ -131,8 +140,8 @@ const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
       const note = document.getElementById('exact-note');
       if (tok) tok.textContent = fmt(total);
       if (share) share.textContent = `${((total / 200_000) * 100).toFixed(1)} %`;
-      if (lbl) lbl.textContent = 'tokens for the tool definitions (o200k_base)';
-      if (note) note.textContent = 'Your browser counted the tokens with o200k_base. The board uses the same tokenizer.';
+      if (lbl) lbl.textContent = 'o200k_base estimate';
+      if (note) note.textContent = 'Your browser counted the o200k_base estimate. The board shows the same estimate next to the exact Claude count.';
       const table = document.getElementById('tools-table');
       const body = table?.querySelector('tbody');
       if (table && body) {

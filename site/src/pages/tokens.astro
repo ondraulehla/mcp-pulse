@@ -1,38 +1,52 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { latestRun } from '../lib/db';
-import { num, pct, date } from '../lib/format';
+import { latestRun, headline } from '../lib/db';
+import { num, pct, date, modelName } from '../lib/format';
 
 const run = await latestRun();
 Astro.response.headers.set('cache-control', 'public, max-age=300, s-maxage=3600');
 const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
-const median = run?.toolsTokens.median ?? 0;
-const p90 = run?.toolsTokens.p90 ?? 0;
-const p99 = run?.toolsTokens.p99 ?? 0;
-const max = run?.toolsTokens.max ?? 0;
+const cost = run ? headline(run) : null;
+const stats = cost?.stats;
+const exact = cost?.exact ?? false;
+const model = modelName(cost?.model);
+const cc = run?.claudeTokens?.claudeCode;
+const median = stats?.median ?? 0;
+const p90 = stats?.p90 ?? 0;
+const p99 = stats?.p99 ?? 0;
+const max = stats?.max ?? 0;
 const heaviest = run?.heaviest[0];
 const measured = run ? date(run.probedAt) : '';
+const counted = run?.claudeTokens?.counted ?? run?.ok ?? 0;
+const ratio = run?.claudeTokens?.ratioToEstimate;
+const weight = (s: { claudeTokens?: number; toolsTokens: number }) => s.claudeTokens ?? s.toolsTokens;
 
 const faq = [
   {
     q: 'How many context tokens does an MCP server cost?',
-    a: `The median remote server in the official MCP registry costs ${num(median)} tokens of context per session. This is the cost of its tool definitions only. The 90th percentile is ${num(p90)} tokens. The 99th percentile is ${num(p99)} tokens. The heaviest server costs ${num(max)} tokens. That is more than two full 200k windows. We measured ${num(run?.ok ?? 0)} servers on ${measured}.`
+    a: exact
+      ? `The median remote server in the official MCP registry costs ${num(median)} tokens of context per session in ${model}. This is the cost of its tool definitions only. The 90th percentile is ${num(p90)} tokens. The 99th percentile is ${num(p99)} tokens. The heaviest server costs ${num(max)} tokens. That is more than ${Math.floor(max / 200_000)} full 200k windows. In Claude Code the median is ${num(cc?.median)} tokens, because each tool name gets an mcp__ prefix. We counted ${num(counted)} servers with the Anthropic count_tokens endpoint on ${measured}.`
+      : `The median remote server in the official MCP registry costs about ${num(median)} tokens of context per session (o200k_base estimate). This is the cost of its tool definitions only. The 90th percentile is ${num(p90)} tokens. The 99th percentile is ${num(p99)} tokens. The heaviest server costs ${num(max)} tokens. We measured ${num(counted)} servers on ${measured}.`
   },
   {
     q: 'Why does an MCP server cost tokens before I send a prompt?',
     a: 'A client sends the model the name, the description and the input schema of each tool. It does this for each connected server at the start of a session. It does this again in each turn. These definitions are part of the prompt. You pay for them in each request. This is true also when the model calls no tool.'
   },
   {
-    q: 'How do we measure the cost?',
-    a: 'We serialize each tool as compact JSON with name, description and input_schema. We count the tokens with the o200k_base tokenizer. Clients wrap tool definitions in different ways. Models tokenize in different ways. The count is a minimum. It is the same minimum for every server. This makes servers comparable.'
+    q: 'How do we count the tokens?',
+    a: `We ask the Anthropic count_tokens endpoint. It returns the exact number of input tokens for a request, as the model will see it. We send one request with the server's tools and one request without them. The difference is what the tools cost. The endpoint is free and calls no model. The number is exact for ${model}. Other models count in a different way. We also show an o200k_base estimate over the compact JSON of each tool. ${ratio ? `The exact count is ${ratio.median.toFixed(2)} times the estimate at the median (${ratio.p10.toFixed(2)} to ${ratio.p90.toFixed(2)} for 80 % of servers).` : ''}`
+  },
+  {
+    q: 'What does Claude Code add?',
+    a: `Claude Code names each tool mcp__<server>__<tool>. The longer name costs more tokens. We count that variant too. ${cc ? `The median server costs ${num(cc.median)} tokens in Claude Code against ${num(median)} with the published names.` : ''} Claude Code also adds a tool-use system prompt one time per request. For ${model} it is 286 tokens. When MCP tools take more than 10 % of the context, Claude Code can defer them and load them on demand through tool search.`
   },
   {
     q: 'How many tokens does one specific MCP server cost?',
-    a: `Each remote server in the registry has a page at ${site}/s/<registry name>. The page shows the measured cost, the tool count and the status. For a server that is not in the registry, ${site}/check probes it now. In a terminal, npx mcptop measures the servers in your own Claude Code, Claude Desktop, Cursor, VS Code or Windsurf config.`
+    a: `Each remote server in the registry has a page at ${site}/s/<registry name>. The page shows the exact cost in ${model}, the cost in Claude Code, the estimate, the tool count and the status. For a server that is not in the registry, ${site}/check probes it now and counts it the same way. In a terminal, npx mcptop measures the servers in your own Claude Code, Claude Desktop, Cursor, VS Code or Windsurf config. With ANTHROPIC_API_KEY set and --claude, mcptop asks the same endpoint.`
   },
   {
     q: 'What is a good budget?',
-    a: `Half of all servers cost less than ${num(median)} tokens. A config with a total of a few thousand tokens is cheap. If one server costs more than 20 000 tokens, ask if you need all of its tools. ${num(run ? run.heaviest.filter((h) => h.toolsTokens > 20_000).length : 0)} of the 20 heaviest servers are above that limit. The command npx mcptop --budget 30000 fails a CI run when a config grows past the budget.`
+    a: `Half of all servers cost less than ${num(median)} tokens. A config with a total of a few thousand tokens is cheap. If one server costs more than 20 000 tokens, ask if you need all of its tools. ${num(run ? run.heaviest.filter((h) => weight(h) > 20_000).length : 0)} of the 20 heaviest servers are above that limit. The command npx mcptop --budget 30000 fails a CI run when a config grows past the budget.`
   },
   {
     q: 'Does a server that needs auth also cost tokens?',
@@ -48,17 +62,17 @@ const jsonld = {
 ---
 
 <Layout title="How many context tokens does an MCP server cost?" description={faq[0].a} jsonld={jsonld}>
-  <p class="kicker">{run ? `${num(run.ok)} servers measured · ${measured}` : ''}</p>
+  <p class="kicker">{run ? `${num(counted)} servers counted · ${measured}` : ''}</p>
   <h1 class="poster">How many context tokens does an MCP server cost?</h1>
   <p class="answer">{faq[0].a}</p>
 
-  {run && (
+  {run && stats && (
     <div class="stats">
-      <div class="stat"><b>{num(median)}</b><span>median tokens per server</span></div>
+      <div class="stat"><b>{num(median)}</b><span>median tokens per server{exact ? ` in ${model}` : ''}</span></div>
       <div class="stat"><b>{num(p90)}</b><span>90th percentile</span></div>
       <div class="stat"><b>{num(p99)}</b><span>99th percentile</span></div>
       <div class="stat"><b>{num(max)}</b><span>heaviest server</span></div>
-      <div class="stat"><b>{num(run.toolCount.median)}</b><span>median tools per server</span></div>
+      {cc ? <div class="stat"><b>{num(cc.median)}</b><span>median in Claude Code</span></div> : <div class="stat"><b>{num(run.toolCount.median)}</b><span>median tools per server</span></div>}
       <div class="stat"><b>{pct(run.ok, run.probed)}</b><span>of registry servers answer at all</span></div>
     </div>
   )}
@@ -75,20 +89,21 @@ const jsonld = {
       <h2>The heaviest servers today</h2>
       <div class="frame">
         <table>
-          <thead><tr><th>Server</th><th class="num">Tools</th><th class="num">Tokens</th><th class="num">Of 200k</th></tr></thead>
+          <thead><tr><th>Server</th><th class="num">Tools</th><th class="num">{exact ? 'Claude' : 'Tokens'}</th>{exact && <th class="num">Claude Code</th>}<th class="num">Of 200k</th></tr></thead>
           <tbody>
             {run!.heaviest.slice(0, 10).map((s) => (
               <tr>
                 <td class="break"><a href={`/s/${s.name}`}>{s.name}</a></td>
                 <td class="num">{num(s.toolCount)}</td>
-                <td class="num">{num(s.toolsTokens)}</td>
-                <td class="num">{((s.toolsTokens / 200_000) * 100).toFixed(1)} %</td>
+                <td class="num">{num(weight(s))}</td>
+                {exact && <td class="num">{num(s.claudeTokensCc)}</td>}
+                <td class="num">{((weight(s) / 200_000) * 100).toFixed(1)} %</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <p><a href="/servers?sort=tokens">All servers by token cost →</a> · <a href="/statistics">Statistics →</a> · <a href="/methodology">Method →</a></p>
+      <p><a href="/servers?sort=claude">All servers by token cost →</a> · <a href="/statistics">Statistics →</a> · <a href="/methodology">Method →</a></p>
     </>
   )}
 </Layout>
