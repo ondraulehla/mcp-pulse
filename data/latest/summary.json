@@ -1,37 +1,37 @@
 {
-  "probedAt": "2026-10-04T08:05:52.520Z",
-  "registryEntries": 39138,
-  "registryWithRemote": 24449,
-  "probed": 24449,
+  "probedAt": "2026-10-04T10:11:45.288Z",
+  "registryEntries": 39159,
+  "registryWithRemote": 24460,
+  "probed": 24460,
   "byStatus": {
-    "ok": 13092,
-    "auth": 6113,
-    "protocol_error": 1646,
-    "not_found": 914,
-    "dns": 794,
-    "rate_limited": 480,
-    "payment": 437,
-    "server_error": 262,
-    "tls": 260,
-    "timeout": 181,
+    "ok": 13106,
+    "auth": 6117,
+    "protocol_error": 1639,
+    "not_found": 917,
+    "dns": 795,
+    "rate_limited": 473,
+    "payment": 438,
+    "server_error": 268,
+    "tls": 261,
+    "timeout": 176,
     "newer_protocol": 126,
     "error": 116,
     "refused": 28
   },
-  "reachable": 19768,
-  "ok": 13092,
-  "uniqueToolsets": 12509,
-  "duplicateServers": 583,
+  "reachable": 19787,
+  "ok": 13106,
+  "uniqueToolsets": 12524,
+  "duplicateServers": 582,
   "protocols": {
-    "2025-11-25": 7779,
-    "2025-03-26": 3140,
-    "2025-06-18": 1631,
-    "2024-11-05": 490,
-    "unknown": 52
+    "2025-11-25": 7775,
+    "2025-03-26": 3145,
+    "2025-06-18": 1642,
+    "2024-11-05": 493,
+    "unknown": 51
   },
   "authSchemes": {
-    "Bearer": 5170,
-    "none": 922,
+    "Bearer": 5171,
+    "none": 925,
     "ApiKey": 8,
     "AzureApiManagementKey": 6,
     "OAuth": 2,
@@ -42,15 +42,15 @@
     "RoseMember": 1
   },
   "transports": {
-    "streamable-http": 23709,
+    "streamable-http": 23720,
     "sse": 740
   },
   "toolsTokens": {
-    "median": 1709,
+    "median": 1717,
     "p90": 7429,
     "p99": 28482,
     "max": 431925,
-    "total": 56710779
+    "total": 56778999
   },
   "toolCount": {
     "median": 8,
@@ -58,10 +58,10 @@
     "max": 1378
   },
   "initMs": {
-    "median": 739,
-    "p90": 2217
+    "median": 852,
+    "p90": 2281
   },
-  "hosts": 16678,
+  "hosts": 16688,
   "heaviest": [
     {
       "name": "com.replynodes/mcp",
