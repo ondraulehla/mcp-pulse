@@ -39,21 +39,21 @@ const last = pages ?? (hasNext ? page + 1 : page);
 
 <nav class={`pager pager-${position}`} aria-label={`Pagination ${position}`}>
   <div class="pager-arrows">
-    <a class={`pbtn${page > 1 ? '' : ' disabled'}`} href={page > 1 ? href(1) : undefined} aria-label="First page" aria-disabled={page > 1 ? undefined : 'true'}>«</a>
-    <a class={`pbtn${page > 1 ? '' : ' disabled'}`} href={page > 1 ? href(page - 1) : undefined} aria-label="Previous page" aria-disabled={page > 1 ? undefined : 'true'}>‹ prev</a>
+    <a class={`pbtn${page > 1 ? '' : ' disabled'}`} href={page > 1 ? href(1) : undefined} rel="nofollow" aria-label="First page" aria-disabled={page > 1 ? undefined : 'true'}>«</a>
+    <a class={`pbtn${page > 1 ? '' : ' disabled'}`} href={page > 1 ? href(page - 1) : undefined} rel="nofollow" aria-label="Previous page" aria-disabled={page > 1 ? undefined : 'true'}>‹ prev</a>
   </div>
   {numbers.length > 0 ? (
     <ol class="pager-numbers">
       {numbers.map((n) =>
-        n === '…' ? <li class="gap">…</li> : <li><a class={`pbtn${n === page ? ' current' : ''}`} href={href(n)} aria-current={n === page ? 'page' : undefined}>{n}</a></li>
+        n === '…' ? <li class="gap">…</li> : <li><a class={`pbtn${n === page ? ' current' : ''}`} href={href(n)} rel="nofollow" aria-current={n === page ? 'page' : undefined}>{n}</a></li>
       )}
     </ol>
   ) : (
     <span class="pager-label">page {page}</span>
   )}
   <div class="pager-arrows">
-    <a class={`pbtn${hasNext ? '' : ' disabled'}`} href={hasNext ? href(page + 1) : undefined} aria-label="Next page" aria-disabled={hasNext ? undefined : 'true'}>next ›</a>
-    {pages !== null && <a class={`pbtn${page < pages ? '' : ' disabled'}`} href={page < pages ? href(pages) : undefined} aria-label="Last page" aria-disabled={page < pages ? undefined : 'true'}>»</a>}
+    <a class={`pbtn${hasNext ? '' : ' disabled'}`} href={hasNext ? href(page + 1) : undefined} rel="nofollow" aria-label="Next page" aria-disabled={hasNext ? undefined : 'true'}>next ›</a>
+    {pages !== null && <a class={`pbtn${page < pages ? '' : ' disabled'}`} href={page < pages ? href(pages) : undefined} rel="nofollow" aria-label="Last page" aria-disabled={page < pages ? undefined : 'true'}>»</a>}
   </div>
   <form class="pager-goto" method="get" action={url.pathname}>
     {hidden.map(([k, v]) => <input type="hidden" name={k} value={v} />)}

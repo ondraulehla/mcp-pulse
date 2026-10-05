@@ -119,6 +119,9 @@ CREATE INDEX IF NOT EXISTS servers_status_name ON servers (status, name);
 CREATE INDEX IF NOT EXISTS servers_protocol_name ON servers (protocol_version, name);
 CREATE INDEX IF NOT EXISTS servers_host_name ON servers (host, name);
 
+-- The statistics page lists the biggest hosts; without this the query read the whole table.
+CREATE INDEX IF NOT EXISTS hosts_servers ON hosts (servers DESC);
+
 -- Indexes from earlier versions that a reverse scan or a prefix now covers.
 DROP INDEX IF EXISTS servers_tokens;
 DROP INDEX IF EXISTS servers_status;

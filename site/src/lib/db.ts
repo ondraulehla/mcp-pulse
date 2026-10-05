@@ -253,6 +253,21 @@ export async function listServers(query: ListQuery): Promise<{ rows: ListRow[]; 
   return { rows: results.slice(0, perPage), hasNext: results.length > perPage, page, perPage };
 }
 
+/** The highest rowid in servers. Sitemap chunks are rowid windows, so each chunk reads only its own rows. */
+export async function maxServerRowid(): Promise<number> {
+  const row = await db().prepare('SELECT max(rowid) AS m FROM servers').first<{ m: number | null }>();
+  return row?.m ?? 0;
+}
+
+/** Servers in one rowid window, for a sitemap chunk. */
+export async function serversInRowidWindow(from: number, to: number): Promise<Array<{ name: string; probed_at: string }>> {
+  const { results } = await db()
+    .prepare('SELECT name, probed_at FROM servers WHERE rowid > ? AND rowid <= ? ORDER BY rowid')
+    .bind(from, to)
+    .all<{ name: string; probed_at: string }>();
+  return results;
+}
+
 export async function listHosts(limit = 300): Promise<HostRecord[]> {
   const { results } = await db().prepare('SELECT * FROM hosts ORDER BY servers DESC LIMIT ?').bind(limit).all<HostRecord>();
   return results;

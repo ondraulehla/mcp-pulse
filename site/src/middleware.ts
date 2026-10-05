@@ -27,6 +27,26 @@ function ttlOf(response: Response): number {
 
 const CANONICAL_HOST = 'mcp-pulse.ulehla.dev';
 
+/** Seconds until the next midnight UTC, when the D1 free tier counters reset. */
+function secondsToMidnightUtc(): number {
+  const now = new Date();
+  const next = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1);
+  return Math.max(60, Math.ceil((next - now.getTime()) / 1000));
+}
+
+function limitResponse(url: URL, message: string): Response {
+  const retry = secondsToMidnightUtc();
+  const headers = { 'cache-control': 'no-store', 'retry-after': String(retry) };
+  if (url.pathname.startsWith('/api/') || url.pathname === '/mcp') {
+    return Response.json({ error: 'The database read budget for today is spent. The board is back at 00:00 UTC.', retryAfterSeconds: retry, detail: message.slice(0, 160) }, { status: 503, headers });
+  }
+  const minutes = Math.round(retry / 60);
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta name="robots" content="noindex"><title>Back at 00:00 UTC · mcp-pulse</title>
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#120f0c;color:#eee7d8;font:16px/1.5 system-ui,sans-serif}main{max-width:36rem;padding:32px}h1{font-size:1.4rem;margin:0 0 12px}p{margin:8px 0;color:#b8ae9c}a{color:#e8571f}code{color:#eee7d8}</style></head>
+<body><main><h1>The board is resting until 00:00 UTC</h1><p>The free database tier allows a fixed number of row reads a day, and today's budget is spent. Pages are back in about ${minutes} minutes.</p><p>Until then: <a href="https://www.npmjs.com/package/mcptop">npx mcptop</a> measures the servers in your own config, and the <a href="https://github.com/ondraulehla/mcp-pulse">repository</a> has the method and the data.</p></main></body></html>`;
+  return new Response(html, { status: 503, headers: { ...headers, 'content-type': 'text/html; charset=utf-8' } });
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
   const { request } = context;
   const url = new URL(request.url);
@@ -65,7 +85,15 @@ export const onRequest = defineMiddleware(async (context, next) => {
     edge = undefined;
   }
 
-  const response = await next();
+  let response: Response;
+  try {
+    response = await next();
+  } catch (err) {
+    // D1 on the free tier stops answering when the day's row budget is spent. Say so instead of a blank 500.
+    const message = err instanceof Error ? err.message : String(err);
+    if (/daily row (read|write) limit|D1_/i.test(message)) return limitResponse(url, message);
+    throw err;
+  }
   const ttl = ttlOf(response);
   if (response.status !== 200 || ttl <= 0) {
     if (response.headers.has('cache-control') && response.status === 200) {

@@ -54,9 +54,11 @@ function arrow(key: SortKey): string {
   return /-asc$|^latency$|^name$|^status$|^host$|^protocol$/.test(key) ? '▲' : '▼';
 }
 const title = host ? `Servers on ${host}` : status ? `${label(status)} servers` : q ? `Servers matching “${q}”` : 'Servers';
+// Every sort, filter and page is its own database read, so crawlers index only the first page of the default view.
+const robots = filtered || page > 1 || sort !== DEFAULT_SORT ? 'noindex, follow' : undefined;
 ---
 
-<Layout title={title}>
+<Layout title={title} robots={robots}>
   <p class="kicker">{run ? `probed ${run.probedAt.slice(0, 10)}` : ''}</p>
   <h1 class="poster">{host ? host : status ? `${label(status)} servers` : q ? `Servers matching “${q}”` : 'Every remote server'}</h1>
 
@@ -118,7 +120,7 @@ const title = host ? `Servers on ${host}` : status ? `${label(status)} servers` 
             const next = sort === c.first ? c.second : c.first;
             return (
               <th class={c.num ? 'num' : ''} aria-sort={active ? (arrow(sort) === '▲' ? 'ascending' : 'descending') : undefined}>
-                <a class={`sort${active ? ' active' : ''}`} href={sortHref(next)} title={`Sort by ${SORTS[next].label}`}>{c.label}{active && <span class="arrow">{arrow(sort)}</span>}</a>
+                <a class={`sort${active ? ' active' : ''}`} href={sortHref(next)} rel="nofollow" title={`Sort by ${SORTS[next].label}`}>{c.label}{active && <span class="arrow">{arrow(sort)}</span>}</a>
               </th>
             );
           })}

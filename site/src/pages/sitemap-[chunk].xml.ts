@@ -1,6 +1,5 @@
 import type { APIRoute } from 'astro';
-import { env } from 'cloudflare:workers';
-import { latestRun } from '../lib/db';
+import { latestRun, serversInRowidWindow } from '../lib/db';
 import { CHUNK } from './sitemap.xml';
 
 const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -17,11 +16,8 @@ export const GET: APIRoute = async ({ params, site }) => {
   } else {
     const n = Number(params.chunk);
     if (!Number.isInteger(n) || n < 1 || n > 100) return new Response('Not found', { status: 404 });
-    const db = (env as unknown as { DB: D1Database }).DB;
-    const { results } = await db
-      .prepare('SELECT name, probed_at FROM servers ORDER BY name LIMIT ? OFFSET ?')
-      .bind(CHUNK, (n - 1) * CHUNK)
-      .all<{ name: string; probed_at: string }>();
+    // A rowid window reads only its own rows; OFFSET would read every row before it.
+    const results = await serversInRowidWindow((n - 1) * CHUNK, n * CHUNK);
     if (!results.length) return new Response('Not found', { status: 404 });
     entries = results.map((r) => ({ loc: `${base}/s/${r.name}`, lastmod: r.probed_at.slice(0, 10) }));
   }

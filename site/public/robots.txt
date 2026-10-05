@@ -1,3 +1,8 @@
 User-agent: *
 Allow: /
+# The list is one page of fifty servers at a time; every sort, filter and page is a separate database read.
+# Crawlers get the first page and every server's own page (all in the sitemap), not the thousands of list variants.
+Disallow: /servers?
+Disallow: /api/
+Disallow: /check?
 Sitemap: https://mcp-pulse.ulehla.dev/sitemap.xml
