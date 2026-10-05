@@ -2,6 +2,7 @@
 import '@fontsource/anton/latin.css';
 import antonWoff2 from '@fontsource/anton/files/anton-latin-400-normal.woff2?url';
 import Emblem from '../components/Emblem.astro';
+import BarMark from '../components/BarMark.astro';
 
 interface Props {
   title: string;
@@ -48,7 +49,7 @@ const canonical = new URL(path + Astro.url.search, Astro.site ?? Astro.url).toSt
     <header class="band">
       <a href="/" class="brand cell" aria-label="mcp-pulse home">
         <Emblem class="emblem" />
-        <span class="wordmark">mcp-pulse</span>
+        <BarMark text="mcp-pulse" />
       </a>
       <nav aria-label="Main" class="cells">
         {nav.map(([href, text]) => (
