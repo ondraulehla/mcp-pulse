@@ -2,6 +2,7 @@
 import '@fontsource/anton/latin.css';
 import antonWoff2 from '@fontsource/anton/files/anton-latin-400-normal.woff2?url';
 import Emblem from '../components/Emblem.astro';
+import PulseMark from '../components/PulseMark.astro';
 
 interface Props {
   title: string;
@@ -47,7 +48,7 @@ const canonical = new URL(path + Astro.url.search, Astro.site ?? Astro.url).toSt
   <body>
     <header class="band">
       <a href="/" class="brand cell" aria-label="mcp-pulse home">
-        <Emblem class="emblem" />
+        <PulseMark class="mark" />
         <span class="wordmark">mcp-pulse</span>
       </a>
       <nav aria-label="Main" class="cells">
@@ -135,9 +136,20 @@ const canonical = new URL(path + Astro.url.search, Astro.site ?? Astro.url).toSt
   .brand { border-left: 0; gap: 0.8rem; padding-left: var(--gutter); color: var(--ink); }
   .wordmark { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600; }
   .brand .wordmark { font-size: 1.05rem; letter-spacing: 0.2em; }
-  .emblem { width: 2.1rem; height: 2.1rem; color: var(--accent); transition: transform 0.5s ease-out; }
-  /* the same turn the emblem makes on ulehla.dev: a hover transition, no script, nothing moves on its own */
-  @media (hover: hover) and (prefers-reduced-motion: no-preference) { .brand:hover .emblem { transform: rotate(45deg); } }
+  .emblem { width: 2.1rem; height: 2.1rem; color: var(--accent); }
+  /* the mark: the pulse line draws itself, holds, fades, and starts again */
+  .mark { width: 2.1rem; height: 2.1rem; color: var(--accent); }
+  .mark polyline { stroke-dasharray: 100; stroke-dashoffset: 0; }
+  @media (prefers-reduced-motion: no-preference) {
+    .mark polyline { animation: pulse-trace 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+  }
+  @keyframes pulse-trace {
+    0% { stroke-dashoffset: 100; opacity: 1; }
+    45% { stroke-dashoffset: 0; opacity: 1; }
+    70% { stroke-dashoffset: 0; opacity: 1; }
+    92% { stroke-dashoffset: 0; opacity: 0.15; }
+    100% { stroke-dashoffset: 100; opacity: 0.15; }
+  }
   .emblem.small { width: 1.4rem; height: 1.4rem; }
   .cell-flood:hover, .cell-flood:focus-visible { color: var(--surface); background: var(--ink); }
   .note { display: none; align-items: center; margin: 0; padding: 0 1.5rem; font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-faint); }
