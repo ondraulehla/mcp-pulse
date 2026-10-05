@@ -67,8 +67,7 @@ const jsonld = {
 <Layout title={pageTitle} description={answer} jsonld={jsonld}>
   <p class="kicker mono">{name}</p>
   <h1 class="poster">{heading}</h1>
-  <p class="answer">{answer}</p>
-  {server.description && <p class="muted">{server.description}</p>}
+  {server.description && <p class="lede">{server.description}</p>}
 
   <p style="margin-top:22px">
     <span class={`tag big ${bucket(server.status)}`}>{label(server.status)}</span>

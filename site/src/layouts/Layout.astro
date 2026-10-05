@@ -174,13 +174,6 @@ const canonical = new URL(path + Astro.url.search, Astro.site ?? Astro.url).toSt
   .stat span { display: block; margin-top: 8px; font-family: var(--font-sans); font-size: 0.9rem; color: var(--ink-muted); line-height: 1.4; }
 
   /* share bar */
-  .bar { display: flex; height: 10px; background: var(--line); margin: 20px 0 10px; }
-  .bar span { display: block; height: 100%; }
-  .bar .up { background: var(--up); }
-  .bar .gated { background: var(--gated); }
-  .bar .down { background: var(--accent); }
-  .legend { display: flex; gap: 20px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
-  .legend i { display: inline-block; width: 9px; height: 9px; margin-right: 7px; vertical-align: 0; }
 
   /* tables */
   .frame { border: 1px solid var(--line); overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -213,7 +206,6 @@ const canonical = new URL(path + Astro.url.search, Astro.site ?? Astro.url).toSt
   .checkform input { flex: 1; min-width: 0; border: 0; padding: 12px 14px; font-size: 1rem; font-family: var(--font-mono); background: transparent; color: var(--ink); }
   .checkform button { border: 0; border-left: 1px solid var(--line); padding: 0 22px; background: var(--accent); color: #fff; font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; cursor: pointer; }
   .checkform button:hover { background: var(--accent-strong); }
-  .legend-note { margin-left: auto; color: var(--ink-faint); }
   h2.poster { text-transform: uppercase; }
 
   /* section links on the overview */

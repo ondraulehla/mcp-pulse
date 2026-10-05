@@ -42,17 +42,7 @@ const down = run ? run.probed - up - gated : 0;
         <div class="stat"><b>{tokens(cost!.stats.p90)}</b><span>90th percentile</span></div>
         <div class="stat"><b>{tokens(cost!.stats.max)}</b><span>heaviest server</span></div>
       </div>
-      <div class="bar" role="img" aria-label={`${up} alive, ${gated} gated, ${down} down`}>
-        <span class="up" style={`width:${(up / run.probed) * 100}%`}></span>
-        <span class="gated" style={`width:${(gated / run.probed) * 100}%`}></span>
-        <span class="down" style={`width:${(down / run.probed) * 100}%`}></span>
-      </div>
-      <div class="legend">
-        <span><i style="background:var(--up)"></i>alive {num(up)}</span>
-        <span><i style="background:var(--gated)"></i>needs auth or payment {num(gated)}</span>
-        <span><i style="background:var(--accent)"></i>down or broken {num(down)}</span>
-        <span class="legend-note">{num(run.probed)} remote servers · probed {date(run.probedAt)}</span>
-      </div>
+      <p class="muted small" style="margin:10px 0 0">{num(run.probed)} remote servers · probed {date(run.probedAt)} · <a href="/statistics">statistics</a></p>
     </>
   )}
 
