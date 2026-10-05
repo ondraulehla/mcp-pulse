@@ -8,7 +8,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import { createHash } from 'node:crypto';
-import { fetchRegistry, hostOf, primaryRemote, countForServer, ClaudeCountError, CLAUDE_MODEL, toolPayload } from '../packages/mcptop/src/index.js';
+import { fetchRegistry, hostOf, primaryRemote, countForServer, createLimiter, ClaudeCountError, CLAUDE_MODEL, toolPayload } from '../packages/mcptop/src/index.js';
 import { probeRemoteRaw, type RawTool } from '../packages/mcptop/src/core.js';
 import { priceTools } from '../packages/mcptop/src/probe.js';
 import type { ProbeResult, RegistryEntry, ClaudeTokens } from '../packages/mcptop/src/index.js';
@@ -25,9 +25,14 @@ const { values: args } = parseArgs({
     out: { type: 'string' },
     /** servers.json of the previous run. Servers whose tools did not change keep their Claude count from it. */
     'claude-cache': { type: 'string' },
-    'claude-model': { type: 'string', default: CLAUDE_MODEL }
+    'claude-model': { type: 'string', default: CLAUDE_MODEL },
+    /** count_tokens requests a minute. Small organisations get 100. */
+    'claude-rpm': { type: 'string', default: '90' },
+    /** Minutes after start when counting stops. Servers left over are counted next run. */
+    'claude-deadline-min': { type: 'string', default: '270' }
   }
 });
+const started = Date.now();
 
 const sampleSize = Number(args.sample);
 const perHost = Number(args['per-host']);
@@ -64,6 +69,9 @@ if (args['claude-cache'] && existsSync(args['claude-cache'])) {
 }
 let claudeRequests = 0;
 let claudeReused = 0;
+let claudeSkipped = 0;
+const limiter = createLimiter(Number(args['claude-rpm']) || 90);
+const claudeDeadline = started + (Number(args['claude-deadline-min']) || 270) * 60_000;
 
 /** Hash of the full tool payloads. Equal hashes mean the same definitions, byte for byte. */
 export function payloadHash(tools: RawTool[]): string {
@@ -78,10 +86,14 @@ async function claudeCount(name: string, tools: RawTool[], hash: string): Promis
     const { payloadHash: _h, ...rest } = cached;
     return rest;
   }
+  if (Date.now() > claudeDeadline) {
+    claudeSkipped++;
+    return undefined;
+  }
   claudeRequests++;
   const measuredAt = new Date().toISOString();
   try {
-    const c = await countForServer(tools, name, { apiKey, model: claudeModel });
+    const c = await countForServer(tools, name, { apiKey, model: claudeModel, limiter });
     return { model: c.model, tokens: c.tokens, tokensClaudeCode: c.tokensClaudeCode, measuredAt };
   } catch (e) {
     const message = e instanceof ClaudeCountError ? e.message : String(e);
@@ -145,7 +157,6 @@ async function runAll(targets: Target[]): Promise<Array<Target & { result: Probe
   const busyHosts = new Set<string>();
   const queue = [...targets];
   let done = 0;
-  const started = Date.now();
 
   async function worker() {
     while (queue.length) {
@@ -213,7 +224,7 @@ const targets = pickTargets(entries);
 console.error(`${entries.length} registry entries, ${targets.length} targets, concurrency ${concurrency}, timeout ${timeoutMs}ms`);
 const rows = await runAll(targets);
 const summary = summarize(rows);
-if (apiKey) console.error(`Claude counts: ${claudeRequests} servers counted now, ${claudeReused} reused from the previous run`);
+if (apiKey) console.error(`Claude counts: ${claudeRequests} servers counted now, ${claudeReused} reused from the previous run, ${claudeSkipped} left for the next run (deadline)`);
 else console.error('ANTHROPIC_API_KEY is not set: no exact Claude counts in this run.');
 const stamp = new Date().toISOString().slice(0, 10);
 await mkdir('data/samples', { recursive: true });

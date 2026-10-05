@@ -76,12 +76,52 @@ const serverColumns = [
   'init_ms', 'tools_ms', 'tool_count', 'tools_tokens', 'instructions_chars', 'toolset_hash', 'toolset_siblings', 'top_tools', 'error',
   'claude_model', 'claude_tokens', 'claude_tokens_cc', 'claude_measured_at', 'claude_error'
 ];
-const serverRows = servers.map((s) => [
-  s.name, s.title, s.description, s.url, s.host, s.transport, s.repo, s.website, s.registryStatus, s.registryUpdatedAt,
-  s.probedAt, s.status, s.httpStatus, s.authScheme, s.protocolVersion, s.serverName, s.serverVersion, s.capabilities ? JSON.stringify(s.capabilities) : null,
-  s.initMs, s.toolsMs, s.toolCount, s.toolsTokens, s.instructionsChars, s.toolsetHash, s.toolsetSiblings, s.topTools ? JSON.stringify(s.topTools) : null, s.error,
-  s.claudeModel, s.claudeTokens, s.claudeTokensCc, s.claudeMeasuredAt, s.claudeError
-]);
+function serverValues(s: ServerRow): Value[] {
+  return [
+    s.name, s.title, s.description, s.url, s.host, s.transport, s.repo, s.website, s.registryStatus, s.registryUpdatedAt,
+    s.probedAt, s.status, s.httpStatus, s.authScheme, s.protocolVersion, s.serverName, s.serverVersion, s.capabilities ? JSON.stringify(s.capabilities) : null,
+    s.initMs, s.toolsMs, s.toolCount, s.toolsTokens, s.instructionsChars, s.toolsetHash, s.toolsetSiblings, s.topTools ? JSON.stringify(s.topTools) : null, s.error,
+    s.claudeModel, s.claudeTokens, s.claudeTokensCc, s.claudeMeasuredAt, s.claudeError
+  ];
+}
+const previousRows = new Map((previous ?? []).map((s) => [s.name, s]));
+const newServers = servers.filter((s) => !previousRows.has(s.name));
+const changedServers = servers.filter((s) => previousRows.has(s.name));
+
+/**
+ * SQLite rewrites every index whose column is in the SET list, whether the
+ * value changed or not, and D1 counts each index entry as a row written. So a
+ * changed server gets an UPDATE that names only the columns that differ from
+ * the previous run. Rows with the same set of changed columns share one
+ * statement through UPDATE ... FROM (VALUES ...).
+ */
+function narrowUpdates(rows: ServerRow[]): string[] {
+  const groups = new Map<string, { columns: string[]; values: Value[][] }>();
+  for (const s of rows) {
+    const before = serverValues(previousRows.get(s.name)!);
+    const after = serverValues(s);
+    const changed = serverColumns.filter((c, i) => c !== 'name' && lit(before[i]) !== lit(after[i]));
+    if (!changed.length) continue;
+    const key = changed.join(',');
+    const g = groups.get(key) ?? groups.set(key, { columns: changed, values: [] }).get(key)!;
+    g.values.push([s.name, ...changed.map((c) => after[serverColumns.indexOf(c)])]);
+  }
+  const out: string[] = [];
+  for (const { columns, values } of groups.values()) {
+    const cols = ['name', ...columns].map((c) => `c_${c}`);
+    for (let i = 0; i < values.length; i += rowsPerInsert) {
+      const chunk = values.slice(i, i + rowsPerInsert).map((r) => `(${r.map(lit).join(',')})`);
+      out.push(
+        `UPDATE servers SET ${columns.map((c) => `${c}=v.c_${c}`).join(', ')}\nFROM (SELECT * FROM (VALUES\n${chunk.join(',\n')}) AS t(${cols.join(',')})) AS v\nWHERE servers.name = v.c_name;`
+      );
+    }
+  }
+  return out;
+}
+const serverStatements = [
+  ...multiInsert('servers', serverColumns, newServers.map(serverValues), 'INSERT', upsertSuffix('name', serverColumns)),
+  ...narrowUpdates(changedServers)
+];
 const probeRows = servers.map((s) => [s.name, s.probedAt, s.status, s.initMs, s.toolCount, s.toolsTokens, s.claudeTokens]);
 const dead = (b: Record<string, number>) => Object.entries(b).filter(([k]) => !['ok', 'auth', 'payment', 'newer_protocol'].includes(k)).reduce((a, [, n]) => a + n, 0);
 const changedHosts = new Set(servers.map((s) => s.host));
@@ -95,7 +135,7 @@ const hostRows = hosts
 
 const statements = [
   `INSERT OR REPLACE INTO runs (probed_at, summary) VALUES (${lit(summary.probedAt)}, ${lit(JSON.stringify(summary))});`,
-  ...multiInsert('servers', serverColumns, serverRows, 'INSERT', upsertSuffix('name', serverColumns)),
+  ...serverStatements,
   ...multiInsert('probes', ['name', 'probed_at', 'status', 'init_ms', 'tool_count', 'tools_tokens', 'claude_tokens'], probeRows, 'INSERT OR IGNORE'),
   ...(removed.length ? [`DELETE FROM servers WHERE name IN (${removed.map(lit).join(',')});`] : []),
   ...(previous ? [] : ['DELETE FROM hosts;']),
@@ -107,6 +147,6 @@ await writeFile(args.out, statements.join('\n') + '\n');
 await writeFile(`${args.in}/changed.json`, JSON.stringify({ changed: servers.map((s) => s.name), removed }));
 console.error(
   previous
-    ? `wrote ${statements.length} statements: ${servers.length} of ${allServers.length} servers changed, ${removed.length} removed, ${hostRows.length} hosts touched, to ${args.out}`
+    ? `wrote ${statements.length} statements: ${newServers.length} new and ${changedServers.length} changed of ${allServers.length} servers, ${removed.length} removed, ${hostRows.length} hosts touched, to ${args.out}`
     : `wrote ${statements.length} statements for ${servers.length} servers and ${hosts.length} hosts to ${args.out}`
 );

@@ -26,6 +26,37 @@ export interface ClaudeCountOptions {
   retries?: number;
   /** Timeout for one request. Default 30 s. */
   timeoutMs?: number;
+  /** Shared rate limiter from createLimiter, for many servers in one process. */
+  limiter?: Limiter;
+}
+
+export interface Limiter {
+  /** Resolves when the next request may start. */
+  wait(): Promise<void>;
+}
+
+/**
+ * Lets at most `rpm` requests start in any sliding minute. Organisations have a
+ * count_tokens limit of their own (100 a minute on a small one), and a 429
+ * costs more time than waiting for a slot.
+ */
+export function createLimiter(rpm: number): Limiter {
+  const starts: number[] = [];
+  let chain = Promise.resolve();
+  return {
+    wait() {
+      chain = chain.then(async () => {
+        for (;;) {
+          const now = Date.now();
+          while (starts.length && now - starts[0] >= 60_000) starts.shift();
+          if (starts.length < rpm) break;
+          await new Promise((r) => setTimeout(r, starts[0] + 60_000 - now + 20));
+        }
+        starts.push(Date.now());
+      });
+      return chain;
+    }
+  };
 }
 
 export interface ClaudeCount {
@@ -50,19 +81,27 @@ const MESSAGES = [{ role: 'user', content: 'hi' }];
 
 const safeName = (name: string) => name.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 128) || 'tool';
 
-/** The tool list as the Messages API takes it. */
+/** The tool list as the Messages API takes it. Names are made safe and unique, because the API refuses duplicates. */
 export function toApiTools(tools: ToolLike[], prefix = ''): Array<{ name: string; description: string; input_schema: unknown }> {
-  return tools.map((t) => ({
-    name: safeName(prefix + t.name),
-    description: t.description ?? '',
-    input_schema: (t.inputSchema as object | undefined) ?? { type: 'object', properties: {} }
-  }));
+  const seen = new Map<string, number>();
+  return tools.map((t) => {
+    let name = safeName(prefix + t.name);
+    const n = seen.get(name) ?? 0;
+    seen.set(name, n + 1);
+    if (n) name = `${name.slice(0, 124)}_${n + 1}`;
+    return {
+      name,
+      description: t.description ?? '',
+      input_schema: (t.inputSchema as object | undefined) ?? { type: 'object', properties: {} }
+    };
+  });
 }
 
 async function countRequest(body: object, options: ClaudeCountOptions): Promise<number> {
   const doFetch = options.fetch ?? fetch;
   const retries = options.retries ?? 5;
   for (let attempt = 0; ; attempt++) {
+    if (options.limiter) await options.limiter.wait();
     let res: Response;
     try {
       res = await doFetch(COUNT_TOKENS_URL, {

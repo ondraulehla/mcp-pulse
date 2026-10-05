@@ -7,7 +7,7 @@ ALTER TABLE servers ADD COLUMN claude_tokens_cc INTEGER;
 ALTER TABLE servers ADD COLUMN claude_measured_at TEXT;
 ALTER TABLE servers ADD COLUMN claude_error TEXT;
 ALTER TABLE probes ADD COLUMN claude_tokens INTEGER;
-CREATE INDEX IF NOT EXISTS servers_claude ON servers (claude_tokens DESC, name);
+-- Indexes: the daily workflow applies schema.sql, which creates and drops them.
 -- The update trigger now fires only when a searchable column changed.
 DROP TRIGGER IF EXISTS servers_au;
 CREATE TRIGGER IF NOT EXISTS servers_au AFTER UPDATE ON servers

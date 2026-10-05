@@ -42,9 +42,6 @@ CREATE TABLE IF NOT EXISTS servers (
   claude_measured_at TEXT,
   claude_error TEXT
 );
-CREATE INDEX IF NOT EXISTS servers_status ON servers (status);
-CREATE INDEX IF NOT EXISTS servers_host ON servers (host);
-CREATE INDEX IF NOT EXISTS servers_tokens ON servers (tools_tokens);
 CREATE INDEX IF NOT EXISTS servers_toolset ON servers (toolset_hash);
 
 CREATE TABLE IF NOT EXISTS probes (
@@ -70,18 +67,20 @@ CREATE TABLE IF NOT EXISTS hosts (
 );
 
 -- Indexes that let the list page read only the rows it shows. Directions match
--- the ORDER BY clauses in src/lib/db.ts so SQLite needs no temp sort.
+-- the ORDER BY clauses in src/lib/db.ts. The opposite direction reads the same
+-- index backwards, with the name tie-break reversed, so each sort has one index.
+-- Every index entry is a row written on each update of its columns, so there
+-- are as few as the page needs.
 CREATE INDEX IF NOT EXISTS servers_tokens_name ON servers (tools_tokens DESC, name);
 CREATE INDEX IF NOT EXISTS servers_status_tokens ON servers (status, tools_tokens DESC, name);
-CREATE INDEX IF NOT EXISTS servers_host_tokens ON servers (host, tools_tokens DESC, name);
-CREATE INDEX IF NOT EXISTS servers_protocol_tokens ON servers (protocol_version, tools_tokens DESC, name);
 CREATE INDEX IF NOT EXISTS servers_tools_name ON servers (tool_count DESC, name);
 CREATE INDEX IF NOT EXISTS servers_status_tools ON servers (status, tool_count DESC, name);
 CREATE INDEX IF NOT EXISTS servers_init_name ON servers (init_ms, name);
 CREATE INDEX IF NOT EXISTS servers_status_init ON servers (status, init_ms, name);
 CREATE INDEX IF NOT EXISTS servers_updated_name ON servers (registry_updated_at DESC, name);
 CREATE INDEX IF NOT EXISTS servers_status_updated ON servers (status, registry_updated_at DESC, name);
-DROP INDEX IF EXISTS servers_tokens;
+CREATE INDEX IF NOT EXISTS servers_claude ON servers (claude_tokens DESC, name);
+CREATE INDEX IF NOT EXISTS servers_status_claude ON servers (status, claude_tokens DESC, name);
 
 -- Full-text search over the columns people search by. The trigram tokenizer
 -- matches inside words, so "wiki" finds DeepWiki and "copilot" finds
@@ -115,17 +114,20 @@ END;
 -- The check page looks a URL up before it probes it live.
 CREATE INDEX IF NOT EXISTS servers_url ON servers (url);
 
--- Column sorts on the list page.
+-- Column sorts and filters on the list page.
 CREATE INDEX IF NOT EXISTS servers_status_name ON servers (status, name);
 CREATE INDEX IF NOT EXISTS servers_protocol_name ON servers (protocol_version, name);
 CREATE INDEX IF NOT EXISTS servers_host_name ON servers (host, name);
--- The reverse direction of each sortable column, so both directions read only their page.
-CREATE INDEX IF NOT EXISTS servers_tokens_asc ON servers (tools_tokens ASC, name);
-CREATE INDEX IF NOT EXISTS servers_tools_asc ON servers (tool_count ASC, name);
-CREATE INDEX IF NOT EXISTS servers_init_desc ON servers (init_ms DESC, name);
-CREATE INDEX IF NOT EXISTS servers_status_desc ON servers (status DESC, name);
-CREATE INDEX IF NOT EXISTS servers_protocol_desc ON servers (protocol_version DESC, name);
-CREATE INDEX IF NOT EXISTS servers_host_desc ON servers (host DESC, name);
 
--- Sort by the exact Claude count. The ascending sort reads the same index backwards.
-CREATE INDEX IF NOT EXISTS servers_claude ON servers (claude_tokens DESC, name);
+-- Indexes from earlier versions that a reverse scan or a prefix now covers.
+DROP INDEX IF EXISTS servers_tokens;
+DROP INDEX IF EXISTS servers_status;
+DROP INDEX IF EXISTS servers_host;
+DROP INDEX IF EXISTS servers_host_tokens;
+DROP INDEX IF EXISTS servers_protocol_tokens;
+DROP INDEX IF EXISTS servers_tokens_asc;
+DROP INDEX IF EXISTS servers_tools_asc;
+DROP INDEX IF EXISTS servers_init_desc;
+DROP INDEX IF EXISTS servers_status_desc;
+DROP INDEX IF EXISTS servers_protocol_desc;
+DROP INDEX IF EXISTS servers_host_desc;
