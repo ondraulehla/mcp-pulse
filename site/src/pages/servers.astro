@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Pager from '../components/Pager.astro';
-import { latestRun, listServers, SORTS, DEFAULT_SORT, type SortKey } from '../lib/db';
+import { latestRun, listServers, SORTS, DEFAULT_SORT, MAX_NUMBERED_PAGE, decodeCursor, encodeCursor, type SortKey } from '../lib/db';
 import { bucket, label, ms, num, tokens, STATUS_LABEL } from '../lib/format';
 
 const p = Astro.url.searchParams;
@@ -11,12 +11,29 @@ const host = p.get('host') ?? '';
 const protocol = p.get('protocol') ?? '';
 const transport = p.get('transport') ?? '';
 const sort = (Object.keys(SORTS).includes(p.get('sort') ?? '') ? p.get('sort') : DEFAULT_SORT) as SortKey;
-const page = Math.min(1000, Math.max(1, Number(p.get('page') ?? '1') || 1));
+// Pages 1 to MAX_NUMBERED_PAGE come by number; beyond that `c` is a cursor, `d=prev` goes back, `p` is the page label.
+const cursor = decodeCursor(p.get('c'));
+const back = p.get('d') === 'prev';
+const requestedPage = cursor ? Math.max(1, Number(p.get('p') ?? '1') || 1) : Math.min(MAX_NUMBERED_PAGE, Math.max(1, Number(p.get('page') ?? '1') || 1));
 
-const [{ rows, hasNext, perPage }, run] = await Promise.all([
-  listServers({ q, status, host, protocol, transport, sort, page }),
+const [{ rows, hasNext, hasPrev, perPage, page, nextCursor, prevCursor }, run] = await Promise.all([
+  listServers({ q, status, host, protocol, transport, sort, page: requestedPage, cursor, back }),
   latestRun()
 ]);
+function pageHref(n: number, c: { value: string | number | null; name: string } | null, direction?: 'prev'): string {
+  const u = new URL(Astro.url);
+  for (const k of ['page', 'c', 'd', 'p']) u.searchParams.delete(k);
+  if (c && n > MAX_NUMBERED_PAGE) {
+    u.searchParams.set('c', encodeCursor(c));
+    if (direction) u.searchParams.set('d', direction);
+    u.searchParams.set('p', String(n));
+  } else if (n > 1) {
+    u.searchParams.set('page', String(n));
+  }
+  return u.pathname + u.search;
+}
+const nextHref = hasNext ? pageHref(page + 1, nextCursor) : null;
+const prevHref = hasPrev ? pageHref(page - 1, prevCursor, 'prev') : null;
 // A total is cheap only when it is already in the run summary.
 const total =
   run && !q && !host && !protocol && !transport
@@ -29,7 +46,8 @@ const total =
 const pages = total !== null ? Math.max(1, Math.ceil(total / perPage)) : null;
 const protocols = run ? Object.keys(run.protocols).filter((v) => v !== 'unknown').sort().reverse() : [];
 
-Astro.response.headers.set('cache-control', 'public, max-age=120, s-maxage=1800');
+// The data changes once a day; three hours at the edge keeps repeat views off the database.
+Astro.response.headers.set('cache-control', 'public, max-age=120, s-maxage=10800');
 
 const filtered = Boolean(q || status || host || protocol || transport);
 
@@ -109,7 +127,7 @@ const robots = filtered || page > 1 || sort !== DEFAULT_SORT ? 'noindex, follow'
   <p class="pager-label small muted" style="margin:14px 0 6px">
     {total !== null ? `${num(total)} servers` : rows.length ? `${num(rows.length)}${hasNext ? '+' : ''} servers on this page` : 'no servers'}{host && <> on {host}</>}{protocol && <> · {protocol}</>}{transport && <> · {transport}</>}{pages !== null && <> · page {page} of {num(pages)}</>}
   </p>
-  <Pager page={page} pages={pages} hasNext={hasNext} url={Astro.url} position="top" />
+  <Pager page={page} pages={pages} hasNext={hasNext} hasPrev={hasPrev} nextHref={nextHref} prevHref={prevHref} maxNumbered={MAX_NUMBERED_PAGE} url={Astro.url} position="top" />
 
   <div class="frame">
     <table>
@@ -151,5 +169,5 @@ const robots = filtered || page > 1 || sort !== DEFAULT_SORT ? 'noindex, follow'
     </table>
   </div>
 
-  <Pager page={page} pages={pages} hasNext={hasNext} url={Astro.url} position="bottom" />
+  <Pager page={page} pages={pages} hasNext={hasNext} hasPrev={hasPrev} nextHref={nextHref} prevHref={prevHref} maxNumbered={MAX_NUMBERED_PAGE} url={Astro.url} position="bottom" />
 </Layout>

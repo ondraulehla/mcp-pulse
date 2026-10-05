@@ -1,63 +1,73 @@
 ---
 /**
- * Pagination: previous and next, a window of page numbers when the total is
- * known, and a "go to page" field. Works without JavaScript: the field is a
- * form that keeps every other filter as hidden inputs.
+ * Pagination: previous and next, a window of page numbers for the first pages,
+ * and a "go to page" field. Page numbers use OFFSET, which reads every row it
+ * skips, so they stop at `maxNumbered`; beyond that the list moves by cursor
+ * links that the page passes in. Works without JavaScript: the field is a form
+ * that keeps every other filter as hidden inputs.
  */
 interface Props {
   page: number;
   /** Total pages, or null when the total is not known (filtered lists). */
   pages: number | null;
   hasNext: boolean;
+  hasPrev: boolean;
+  /** Links for the next and the previous page; the page computes them (number or cursor). */
+  nextHref: string | null;
+  prevHref: string | null;
+  /** The last page that has a number. */
+  maxNumbered: number;
   /** Current URL; the component replaces its page parameter. */
   url: URL;
   position: 'top' | 'bottom';
 }
-const { page, pages, hasNext, url, position } = Astro.props;
+const { page, pages, hasNext, hasPrev, nextHref, prevHref, maxNumbered, url, position } = Astro.props;
 
 function href(n: number): string {
   const u = new URL(url);
-  if (n <= 1) u.searchParams.delete('page');
-  else u.searchParams.set('page', String(n));
+  for (const k of ['page', 'c', 'd', 'p']) u.searchParams.delete(k);
+  if (n > 1) u.searchParams.set('page', String(n));
   return u.pathname + u.search;
 }
 
+const numberedPages = pages === null ? null : Math.min(pages, maxNumbered);
 const numbers: Array<number | '…'> = [];
-if (pages !== null && pages > 1) {
-  const want = new Set<number>([1, 2, pages - 1, pages, page - 2, page - 1, page, page + 1, page + 2]);
-  const sorted = [...want].filter((n) => n >= 1 && n <= pages).sort((a, b) => a - b);
+if (numberedPages !== null && numberedPages > 1) {
+  const want = new Set<number>([1, 2, numberedPages - 1, numberedPages, page - 2, page - 1, page, page + 1, page + 2]);
+  const sorted = [...want].filter((n) => n >= 1 && n <= numberedPages).sort((a, b) => a - b);
   let prev = 0;
   for (const n of sorted) {
     if (n - prev > 1) numbers.push('…');
     numbers.push(n);
     prev = n;
   }
+  if (pages !== null && pages > numberedPages) numbers.push('…');
 }
-const hidden = [...url.searchParams.entries()].filter(([k]) => k !== 'page');
-const last = pages ?? (hasNext ? page + 1 : page);
+const hidden = [...url.searchParams.entries()].filter(([k]) => !['page', 'c', 'd', 'p'].includes(k));
+const gotoMax = numberedPages ?? maxNumbered;
 ---
 
 <nav class={`pager pager-${position}`} aria-label={`Pagination ${position}`}>
   <div class="pager-arrows">
-    <a class={`pbtn${page > 1 ? '' : ' disabled'}`} href={page > 1 ? href(1) : undefined} rel="nofollow" aria-label="First page" aria-disabled={page > 1 ? undefined : 'true'}>«</a>
-    <a class={`pbtn${page > 1 ? '' : ' disabled'}`} href={page > 1 ? href(page - 1) : undefined} rel="nofollow" aria-label="Previous page" aria-disabled={page > 1 ? undefined : 'true'}>‹ prev</a>
+    <a class={`pbtn${hasPrev ? '' : ' disabled'}`} href={hasPrev ? href(1) : undefined} rel="nofollow" aria-label="First page" aria-disabled={hasPrev ? undefined : 'true'}>«</a>
+    <a class={`pbtn${hasPrev && prevHref ? '' : ' disabled'}`} href={hasPrev && prevHref ? prevHref : undefined} rel="nofollow" aria-label="Previous page" aria-disabled={hasPrev && prevHref ? undefined : 'true'}>‹ prev</a>
   </div>
   {numbers.length > 0 ? (
     <ol class="pager-numbers">
       {numbers.map((n) =>
         n === '…' ? <li class="gap">…</li> : <li><a class={`pbtn${n === page ? ' current' : ''}`} href={href(n)} rel="nofollow" aria-current={n === page ? 'page' : undefined}>{n}</a></li>
       )}
+      {page > maxNumbered && <li><span class="pbtn current" aria-current="page">{page}</span></li>}
     </ol>
   ) : (
     <span class="pager-label">page {page}</span>
   )}
   <div class="pager-arrows">
-    <a class={`pbtn${hasNext ? '' : ' disabled'}`} href={hasNext ? href(page + 1) : undefined} rel="nofollow" aria-label="Next page" aria-disabled={hasNext ? undefined : 'true'}>next ›</a>
-    {pages !== null && <a class={`pbtn${page < pages ? '' : ' disabled'}`} href={page < pages ? href(pages) : undefined} rel="nofollow" aria-label="Last page" aria-disabled={page < pages ? undefined : 'true'}>»</a>}
+    <a class={`pbtn${hasNext && nextHref ? '' : ' disabled'}`} href={hasNext && nextHref ? nextHref : undefined} rel="nofollow" aria-label="Next page" aria-disabled={hasNext && nextHref ? undefined : 'true'}>next ›</a>
   </div>
   <form class="pager-goto" method="get" action={url.pathname}>
     {hidden.map(([k, v]) => <input type="hidden" name={k} value={v} />)}
-    <label>go to<input type="number" name="page" min="1" max={pages ?? 1000} value={page} aria-label="Page number" />{pages !== null && <span class="of">of {pages.toLocaleString('en-US').replace(/,/g, ' ')}</span>}</label>
+    <label>go to<input type="number" name="page" min="1" max={gotoMax} value={Math.min(page, gotoMax)} aria-label="Page number" /><span class="of">of {gotoMax}{pages !== null && pages > gotoMax ? ` numbered, ${pages.toLocaleString('en-US').replace(/,/g, ' ')} in all` : ''}</span></label>
     <button type="submit">Go</button>
   </form>
 </nav>

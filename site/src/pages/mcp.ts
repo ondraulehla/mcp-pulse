@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
-import { findByUrl, getServer, latestRun, listServers, SORTS, type SortKey } from '../lib/db';
+import { findByUrl, getServer, latestRun, listServers, SORTS, MAX_NUMBERED_PAGE, decodeCursor, encodeCursor, type SortKey } from '../lib/db';
 import { label } from '../lib/format';
 import { probeRemoteRaw } from '../../../packages/mcptop/src/core.ts';
 import { payloadBytes, BYTES_PER_TOKEN } from '../../../packages/mcptop/src/payload.ts';
@@ -51,17 +51,18 @@ function build(): McpServer {
     'search_servers',
     {
       title: 'Search the registry board',
-      description: 'Find servers by words in name, title, description or host, with optional filters, sorted by token cost by default. Returns up to 20 servers per page.',
+      description: 'Find servers by words in name, title, description or host, with optional filters, sorted by exact Claude token cost by default. Returns up to 20 servers per page; page numbers go to 20, after that pass the `next` cursor from the previous answer.',
       inputSchema: {
         query: z.string().optional().describe('Words to match, three or more characters each'),
         status: z.enum(['ok', 'auth', 'payment', 'newer_protocol', 'down']).optional().describe('ok = answers and lists tools'),
         sort: z.enum(Object.keys(SORTS) as [SortKey, ...SortKey[]]).optional(),
-        page: z.number().int().min(1).max(1000).optional()
+        page: z.number().int().min(1).max(MAX_NUMBERED_PAGE).optional(),
+        cursor: z.string().optional().describe('The `next` value of a previous answer, to continue from there')
       }
     },
-    async ({ query, status, sort, page }) => {
-      const { rows, hasNext } = await listServers({ q: query, status, sort: sort ?? 'tokens', page: page ?? 1, perPage: 20 });
-      const out = { page: page ?? 1, hasNext, servers: rows.map((r) => ({ name: r.name, title: r.title, host: r.host, status: r.status, toolCount: r.tool_count, claudeTokens: r.claude_tokens, toolsTokens: r.tools_tokens, protocolVersion: r.protocol_version, page: `${SITE}/s/${r.name}` })) };
+    async ({ query, status, sort, page, cursor }) => {
+      const { rows, hasNext, nextCursor } = await listServers({ q: query, status, sort: sort ?? 'claude', page: page ?? 1, perPage: 20, cursor: decodeCursor(cursor) });
+      const out = { page: cursor ? undefined : (page ?? 1), hasNext, next: hasNext && nextCursor ? encodeCursor(nextCursor) : null, servers: rows.map((r) => ({ name: r.name, title: r.title, host: r.host, status: r.status, toolCount: r.tool_count, claudeTokens: r.claude_tokens, toolsTokens: r.tools_tokens, protocolVersion: r.protocol_version, page: `${SITE}/s/${r.name}` })) };
       return { content: [{ type: 'text', text: JSON.stringify(out, null, 2) }], structuredContent: out };
     }
   );

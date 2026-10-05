@@ -12,7 +12,7 @@ const [history, siblings] = await Promise.all([
   getHistory(name, 60),
   server.toolset_hash ? getSiblings(server.toolset_hash, name) : Promise.resolve([])
 ]);
-Astro.response.headers.set('cache-control', 'public, max-age=300, s-maxage=3600');
+Astro.response.headers.set('cache-control', 'public, max-age=300, s-maxage=10800');
 
 const capabilities = server.capabilities ? (JSON.parse(server.capabilities) as string[]) : [];
 const topTools = server.top_tools ? (JSON.parse(server.top_tools) as Array<{ name: string; tokens: number }>) : [];
