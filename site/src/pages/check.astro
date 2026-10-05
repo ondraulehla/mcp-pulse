@@ -102,12 +102,6 @@ const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
             <dt>Schema size</dt><dd>{num(view.bytes)} bytes of tool definitions</dd>
             {view.claude?.error && <><dt>Claude count</dt><dd>Not available: <span class="mono">{view.claude.error}</span></dd></>}
             {view.claude?.tokens != null && <><dt>Claude count</dt><dd>Exact, from the Anthropic count_tokens endpoint. Claude Code adds a prefix like <span class="mono">{claudeCodePrefix(new URL(view.url).hostname)}</span> to each tool name. <a href="/methodology#tokens">Method</a>.</dd></>}
-            <dt>Not on the board</dt><dd>
-              No registry entry lists this exact URL as a remote. The daily probe takes the remote URL from the registry entry, so a different path, scheme or host is a different server to it.
-              {view.sameHost.length > 0
-                ? <> Registry servers on this host: {view.sameHost.map((s, i) => <>{i > 0 && ', '}<a href={`/s/${s.name}`}>{s.name}</a> <span class="faint mono">{s.url.replace(/^https?:\/\/[^/]+/, '')}</span></>)}.</>
-                : <> <a href="https://registry.modelcontextprotocol.io" rel="noopener">Publish the server</a> with this remote URL and the daily probe tracks it.</>}
-            </dd>
           </dl>
           <div id="tools-table" hidden>
             <h2>Most expensive tools</h2>
@@ -118,6 +112,15 @@ const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
         </>
       )}
       {view.result.status !== 'ok' && view.result.error && <pre>{view.result.error}</pre>}
+      <dl class="facts">
+            <dt>Not on the board</dt><dd>
+              No registry entry lists this exact URL as a remote. The daily probe takes the remote URL from the registry entry, so a different path, scheme or host is a different server to it.
+              {view.sameHost.length > 0
+                ? <> Registry servers on this host: {view.sameHost.map((s, i) => <>{i > 0 && ', '}<a href={`/s/${s.name}`}>{s.name}</a> <span class="faint mono">{s.url.replace(/^https?:\/\/[^/]+/, '')}</span></>)}.</>
+                : <> <a href="https://registry.modelcontextprotocol.io" rel="noopener">Publish the server</a> with this remote URL and the daily probe tracks it.</>}
+            </dd>
+      </dl>
+
       <p class="muted small">The same measurement in a terminal: <code>npx mcptop --url {view.url}</code></p>
     </section>
   )}

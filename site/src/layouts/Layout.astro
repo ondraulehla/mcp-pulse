@@ -231,7 +231,7 @@ const canonical = new URL(path + Astro.url.search, Astro.site ?? Astro.url).toSt
   /* filters: a band of cells */
   form.filters { display: grid; grid-template-columns: minmax(200px, 2fr) repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); margin: 24px 0 18px; }
   /* search, three filters, the sort (its options are the longest texts), the button */
-  form.filters.servers { grid-template-columns: minmax(180px, 2fr) repeat(3, minmax(110px, 1fr)) minmax(190px, 1.5fr) auto; }
+  form.filters.servers { grid-template-columns: minmax(180px, 1.6fr) repeat(3, minmax(100px, 1fr)) minmax(230px, 1.6fr) auto; }
   form.filters select { width: 100%; min-width: 0; text-overflow: ellipsis; }
   @media (max-width: 860px) {
     form.filters.servers { grid-template-columns: 1fr 1fr; }
