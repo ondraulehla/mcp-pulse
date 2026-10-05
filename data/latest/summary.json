@@ -1,97 +1,217 @@
 {
-  "probedAt": "2026-10-05T01:04:53.904Z",
-  "registryEntries": 39407,
-  "registryWithRemote": 24660,
-  "probed": 24660,
+  "probedAt": "2026-10-05T17:00:02.661Z",
+  "registryEntries": 39614,
+  "registryWithRemote": 24809,
+  "probed": 24809,
   "byStatus": {
-    "ok": 13324,
-    "auth": 6208,
-    "protocol_error": 1620,
-    "not_found": 913,
-    "dns": 792,
-    "payment": 441,
-    "rate_limited": 414,
-    "tls": 266,
-    "server_error": 251,
-    "timeout": 160,
-    "newer_protocol": 126,
-    "error": 120,
+    "ok": 13337,
+    "auth": 6255,
+    "protocol_error": 1643,
+    "not_found": 943,
+    "dns": 794,
+    "payment": 440,
+    "rate_limited": 333,
+    "server_error": 294,
+    "tls": 263,
+    "timeout": 239,
+    "newer_protocol": 128,
+    "error": 115,
     "refused": 25
   },
-  "reachable": 20099,
-  "ok": 13324,
-  "uniqueToolsets": 12645,
-  "duplicateServers": 679,
+  "reachable": 20160,
+  "ok": 13337,
+  "uniqueToolsets": 12656,
+  "duplicateServers": 681,
   "protocols": {
-    "2025-11-25": 7986,
-    "2025-03-26": 3129,
-    "2025-06-18": 1667,
-    "2024-11-05": 491,
+    "2025-11-25": 7989,
+    "2025-03-26": 3120,
+    "2025-06-18": 1688,
+    "2024-11-05": 489,
     "unknown": 51
   },
   "authSchemes": {
-    "Bearer": 5253,
-    "none": 932,
-    "ApiKey": 9,
+    "Bearer": 5306,
+    "none": 926,
+    "ApiKey": 10,
     "AzureApiManagementKey": 6,
     "OAuth": 2,
-    "Basic": 2,
+    "Basic": 1,
     "Key": 1,
     "Api-Key": 1,
     "Simple": 1,
     "RoseMember": 1
   },
   "transports": {
-    "streamable-http": 23920,
+    "streamable-http": 24069,
     "sse": 740
   },
   "toolsTokens": {
-    "median": 1673,
-    "p90": 7428,
-    "p99": 28606,
+    "median": 1678,
+    "p90": 7429,
+    "p99": 28682,
     "max": 431925,
-    "total": 57283988
+    "total": 57352806
   },
   "claudeTokens": {
     "model": "claude-opus-5-5",
-    "counted": 587,
+    "counted": 12674,
     "refused": 221,
-    "median": 2262,
-    "p90": 13045,
-    "p99": 49126,
-    "max": 233693,
-    "total": 3496944,
+    "median": 2909,
+    "p90": 13050,
+    "p99": 44095,
+    "max": 828785,
+    "total": 93916022,
     "claudeCode": {
-      "median": 2400,
-      "p90": 13356,
-      "p99": 49621,
-      "max": 236813,
-      "total": 3584544
+      "median": 3002,
+      "p90": 13485,
+      "p99": 45514,
+      "max": 829313,
+      "total": 96205642
     },
     "ratioToEstimate": {
-      "median": 1.756225602369094,
-      "p10": 1.6284686536485098,
-      "p90": 1.853566958698373
+      "median": 1.756902356902357,
+      "p10": 1.6390243902439023,
+      "p90": 1.852459503640957
     }
   },
   "toolCount": {
     "median": 8,
     "p90": 31,
-    "max": 1379
+    "max": 1401
   },
   "initMs": {
-    "median": 278,
-    "p90": 1135
+    "median": 486,
+    "p90": 1749
   },
-  "hosts": 16861,
+  "hosts": 16980,
   "heaviest": [
     {
+      "name": "com.replynodes/mcp",
+      "toolCount": 66,
+      "toolsTokens": 431925,
+      "claudeTokens": 828785,
+      "claudeTokensCc": 829313,
+      "host": "mcp.replynodes.com"
+    },
+    {
+      "name": "co.ainumbers/tools",
+      "toolCount": 729,
+      "toolsTokens": 345060,
+      "claudeTokens": 604821,
+      "claudeTokensCc": 609924,
+      "host": "mcp.ainumbers.co"
+    },
+    {
+      "name": "io.github.whiteknightonhorse/apibase",
+      "toolCount": 1401,
+      "toolsTokens": 345704,
+      "claudeTokens": 591725,
+      "claudeTokensCc": 602933,
+      "host": "apibase.pro"
+    },
+    {
+      "name": "ai.oobeprotocol.sap.mcp/sap-mcp",
+      "toolCount": 453,
+      "toolsTokens": 178444,
+      "claudeTokens": 317425,
+      "claudeTokensCc": 322408,
+      "host": "mcp.sap.oobeprotocol.ai"
+    },
+    {
+      "name": "io.github.Invaro/opentax",
+      "toolCount": 15,
+      "toolsTokens": 175279,
+      "claudeTokens": 293598,
+      "claudeTokensCc": 293718,
+      "host": "opentax.invaro.ai"
+    },
+    {
+      "name": "io.github.WellApp-ai/well-mcp",
+      "toolCount": 119,
+      "toolsTokens": 157501,
+      "claudeTokens": 245055,
+      "claudeTokensCc": 246245,
+      "host": "api.wellapp.ai"
+    },
+    {
       "name": "io.github.duvoai/duvo",
-      "toolCount": 390,
-      "toolsTokens": 143460,
-      "claudeTokens": 233693,
-      "claudeTokensCc": 236813,
+      "toolCount": 398,
+      "toolsTokens": 148049,
+      "claudeTokens": 241013,
+      "claudeTokensCc": 244197,
       "host": "api.duvo.ai"
+    },
+    {
+      "name": "io.github.getgapup/gapup-mcp",
+      "toolCount": 279,
+      "toolsTokens": 103782,
+      "claudeTokens": 188039,
+      "claudeTokensCc": 191387,
+      "host": "mcp.gapup.io"
+    },
+    {
+      "name": "io.github.getgapup/mcp-knowledge",
+      "toolCount": 279,
+      "toolsTokens": 103782,
+      "claudeTokens": 188039,
+      "claudeTokensCc": 191666,
+      "host": "mcp.gapup.io"
+    },
+    {
+      "name": "co.lovie/company-formation",
+      "toolCount": 340,
+      "toolsTokens": 90475,
+      "claudeTokens": 175497,
+      "claudeTokensCc": 178557,
+      "host": "mcp.lovie.co"
+    },
+    {
+      "name": "fr.synergieloc/immobilier",
+      "toolCount": 70,
+      "toolsTokens": 100284,
+      "claudeTokens": 165559,
+      "claudeTokensCc": 166189,
+      "host": "synergieloc.fr"
+    },
+    {
+      "name": "io.github.yzlee/opcmenu",
+      "toolCount": 368,
+      "toolsTokens": 94715,
+      "claudeTokens": 158702,
+      "claudeTokensCc": 162382,
+      "host": "mcp.opcmenu.com"
+    },
+    {
+      "name": "io.github.hermoso-ai/hermoso",
+      "toolCount": 185,
+      "toolsTokens": 89477,
+      "claudeTokens": 148914,
+      "claudeTokensCc": 150579,
+      "host": "app.hermoso.ai"
+    },
+    {
+      "name": "io.github.blackboxfoundry/livedatalink",
+      "toolCount": 381,
+      "toolsTokens": 81256,
+      "claudeTokens": 143072,
+      "claudeTokensCc": 146882,
+      "host": "livedatalink.ai"
+    },
+    {
+      "name": "ai.intuitek.the-stall/the-stall",
+      "toolCount": 302,
+      "toolsTokens": 77498,
+      "claudeTokens": 131893,
+      "claudeTokensCc": 134611,
+      "host": "the-stall.intuitek.ai"
+    },
+    {
+      "name": "io.github.pedro381/gover-mcp",
+      "toolCount": 102,
+      "toolsTokens": 73831,
+      "claudeTokens": 131773,
+      "claudeTokensCc": 132895,
+      "host": "mcp.gover.phs.tec.br"
     },
     {
       "name": "io.github.tresor4k/macalc-mcp",
@@ -102,148 +222,28 @@
       "host": "macalculatriceenligne.com"
     },
     {
-      "name": "io.github.cnghockey/sats4ai",
-      "toolCount": 57,
-      "toolsTokens": 33688,
-      "claudeTokens": 58310,
-      "claudeTokensCc": 58880,
-      "host": "sats4ai.com"
+      "name": "com.adbutler/mcp-server",
+      "toolCount": 627,
+      "toolsTokens": 67290,
+      "claudeTokens": 124652,
+      "claudeTokensCc": 130922,
+      "host": "mcp.adbutler.com"
     },
     {
-      "name": "com.webotee/amazon-product-research-mcp",
-      "toolCount": 83,
-      "toolsTokens": 30774,
-      "claudeTokens": 53945,
-      "claudeTokensCc": 55273,
-      "host": "app.webotee.com"
+      "name": "io.github.BigRedCloud/red-mcp-server",
+      "toolCount": 159,
+      "toolsTokens": 68543,
+      "claudeTokens": 123336,
+      "claudeTokensCc": 125244,
+      "host": "red.bigredcloud.com"
     },
     {
-      "name": "com.vendooly/vendooly",
-      "toolCount": 111,
-      "toolsTokens": 29199,
-      "claudeTokens": 51696,
-      "claudeTokensCc": 52695,
-      "host": "mcp.vendooly.com"
-    },
-    {
-      "name": "com.mailrith/mailrith",
-      "toolCount": 55,
-      "toolsTokens": 25745,
-      "claudeTokens": 49126,
-      "claudeTokensCc": 49621,
-      "host": "api.mailrith.com"
-    },
-    {
-      "name": "ai.timix/time-tracking",
-      "toolCount": 114,
-      "toolsTokens": 19615,
-      "claudeTokens": 33252,
-      "claudeTokensCc": 34392,
-      "host": "api.timix.ai"
-    },
-    {
-      "name": "io.github.pipeworx-io/china-news",
-      "toolCount": 39,
-      "toolsTokens": 19507,
-      "claudeTokens": 32327,
-      "claudeTokensCc": 32639,
-      "host": "gateway.pipeworx.io"
-    },
-    {
-      "name": "io.github.pipeworx-io/congressional-documents",
-      "toolCount": 39,
-      "toolsTokens": 19410,
-      "claudeTokens": 32057,
-      "claudeTokensCc": 32486,
-      "host": "gateway.pipeworx.io"
-    },
-    {
-      "name": "io.github.pipeworx-io/boe-uk",
-      "toolCount": 42,
-      "toolsTokens": 19196,
-      "claudeTokens": 31816,
-      "claudeTokensCc": 32236,
-      "host": "gateway.pipeworx.io"
-    },
-    {
-      "name": "io.github.pipeworx-io/china-air-quality",
-      "toolCount": 39,
-      "toolsTokens": 19176,
-      "claudeTokens": 31767,
-      "claudeTokensCc": 32196,
-      "host": "gateway.pipeworx.io"
-    },
-    {
-      "name": "io.github.pipeworx-io/arcgis-dc",
-      "toolCount": 39,
-      "toolsTokens": 19171,
-      "claudeTokens": 31764,
-      "claudeTokensCc": 32232,
-      "host": "gateway.pipeworx.io"
-    },
-    {
-      "name": "io.github.pipeworx-io/crates",
-      "toolCount": 41,
-      "toolsTokens": 19141,
-      "claudeTokens": 31699,
-      "claudeTokensCc": 31986,
-      "host": "gateway.pipeworx.io"
-    },
-    {
-      "name": "io.github.pipeworx-io/artsmia",
-      "toolCount": 39,
-      "toolsTokens": 19035,
-      "claudeTokens": 31550,
-      "claudeTokensCc": 31901,
-      "host": "gateway.pipeworx.io"
-    },
-    {
-      "name": "io.github.pipeworx-io/cpsc",
-      "toolCount": 38,
-      "toolsTokens": 18990,
-      "claudeTokens": 31414,
-      "claudeTokensCc": 31756,
-      "host": "gateway.pipeworx.io"
-    },
-    {
-      "name": "io.github.pipeworx-io/bonhams",
-      "toolCount": 38,
-      "toolsTokens": 18984,
-      "claudeTokens": 31398,
-      "claudeTokensCc": 31740,
-      "host": "gateway.pipeworx.io"
-    },
-    {
-      "name": "io.github.pipeworx-io/bankruptcy",
-      "toolCount": 38,
-      "toolsTokens": 18951,
-      "claudeTokens": 31396,
-      "claudeTokensCc": 31814,
-      "host": "gateway.pipeworx.io"
-    },
-    {
-      "name": "io.github.pipeworx-io/bored",
-      "toolCount": 39,
-      "toolsTokens": 18835,
-      "claudeTokens": 31162,
-      "claudeTokensCc": 31435,
-      "host": "gateway.pipeworx.io"
-    },
-    {
-      "name": "io.github.pipeworx-io/connecticut-code",
-      "toolCount": 37,
-      "toolsTokens": 18710,
-      "claudeTokens": 30933,
-      "claudeTokensCc": 31340,
-      "host": "gateway.pipeworx.io"
-    },
-    {
-      "name": "io.github.jsvvsolsllc/mioffice",
-      "toolCount": 134,
-      "toolsTokens": 16814,
-      "claudeTokens": 29317,
-      "claudeTokensCc": 30523,
-      "host": "mioffice.ai"
+      "name": "com.theaslangroupllc.pulse/pulsenetwork",
+      "toolCount": 80,
+      "toolsTokens": 70926,
+      "claudeTokens": 121479,
+      "claudeTokensCc": 122439,
+      "host": "pulse.theaslangroupllc.com"
     }
   ]
 }
