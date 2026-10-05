@@ -1,10 +1,10 @@
 ---
 /**
- * The mcp-pulse mark: the pulse line from the favicon. On hover a second line
- * draws itself over the first, left to right. It is a transition, not an
- * animation, so when the pointer leaves halfway the trace retracts from where
- * it is instead of jumping. CSS only; it stands still for people who asked
- * for less motion.
+ * The mcp-pulse mark: the pulse line from the favicon, orange at rest. On
+ * hover a trace in ink draws over it left to right and fades out again, and
+ * it always runs to the end: a few lines of script start the keyframes on
+ * pointer entry and clear them when they finish, so leaving halfway changes
+ * nothing. People who asked for less motion see the orange line only.
  */
 interface Props {
   class?: string;
