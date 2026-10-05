@@ -101,7 +101,9 @@ function narrowUpdates(rows: ServerRow[]): string[] {
   for (const s of rows) {
     const before = serverValues(previousRows.get(s.name)!);
     const after = serverValues(s);
-    const changed = serverColumns.filter((c, i) => c !== 'name' && lit(before[i]) !== lit(after[i]));
+    // The two latencies differ on every probe and sit in two indexes each. They are written only when the result changed; the probes table keeps the fresh value.
+    const statusChanged = s.status !== previousRows.get(s.name)!.status;
+    const changed = serverColumns.filter((c, i) => c !== 'name' && lit(before[i]) !== lit(after[i]) && (statusChanged || (c !== 'init_ms' && c !== 'tools_ms')));
     if (!changed.length) continue;
     const key = changed.join(',');
     const g = groups.get(key) ?? groups.set(key, { columns: changed, values: [] }).get(key)!;

@@ -40,13 +40,14 @@ jobs:
           for id in $(gh run list --workflow "Daily probe" --status success --limit 10 --json databaseId -q '.[].databaseId'); do
             if gh run download "$id" --name "probe-$id" --dir data/previous 2>/dev/null; then echo "previous run $id"; break; fi
           done
-          f=$(find data/previous -name servers.json | head -1); test -n "$f" && cp "$f" data/previous/servers.json || echo "::notice::No previous run found, importing everything."
-          h=$(find data/previous -name hosts.json | head -1); test -n "$h" && cp "$h" data/previous/hosts.json || true
+          # A single-file artifact lands at the target path itself, so copy only when the paths differ.
+          f=$(find data/previous -name servers.json | head -1); test -n "$f" && { [ "$f" = data/previous/servers.json ] || cp "$f" data/previous/servers.json; } || echo "::notice::No previous run found, importing everything."
+          h=$(find data/previous -name hosts.json | head -1); test -n "$h" && { [ "$h" = data/previous/hosts.json ] || cp "$h" data/previous/hosts.json; } || true
           # The count cache is uploaded before the import, so counting progress survives a failed import.
           for id in $(gh run list --workflow "Daily probe" --limit 10 --json databaseId -q '.[].databaseId'); do
             if gh run download "$id" --name "claude-cache-$id" --dir data/cache 2>/dev/null; then echo "count cache from run $id"; break; fi
           done
-          c=$(find data/cache -name servers.json | head -1); test -n "$c" && cp "$c" data/cache/servers.json || { test -f data/previous/servers.json && cp data/previous/servers.json data/cache/servers.json && echo "count cache from the previous run" || echo "::notice::No count cache found."; }
+          c=$(find data/cache -name servers.json | head -1); test -n "$c" && { [ "$c" = data/cache/servers.json ] || cp "$c" data/cache/servers.json; } || { test -f data/previous/servers.json && cp data/previous/servers.json data/cache/servers.json && echo "count cache from the previous run" || echo "::notice::No count cache found."; }
       - name: Probe the registry
         run: |
           if [ -n "${{ inputs.sample }}" ]; then
