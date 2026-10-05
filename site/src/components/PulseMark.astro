@@ -1,15 +1,19 @@
 ---
 /**
- * The mcp-pulse mark: the pulse line from the favicon. The line draws itself
- * and fades, then again, like a trace on a monitor. CSS only; it stands still
- * for people who asked for less motion.
+ * The mcp-pulse mark: the pulse line from the favicon. On hover a second line
+ * draws itself over the first, left to right. It is a transition, not an
+ * animation, so when the pointer leaves halfway the trace retracts from where
+ * it is instead of jumping. CSS only; it stands still for people who asked
+ * for less motion.
  */
 interface Props {
   class?: string;
 }
 const { class: cls = '' } = Astro.props;
+const points = '3,17 10,17 13,9 17,24 20,14 22,17 29,17';
 ---
 
-<svg class={`pulse ${cls}`} viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true">
-  <polyline points="3,17 10,17 13,9 17,24 20,14 22,17 29,17" pathLength="100"></polyline>
+<svg class={`pulse ${cls}`} viewBox="0 0 32 32" fill="none" stroke-width="2.6" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true">
+  <polyline class="base" points={points}></polyline>
+  <polyline class="trace" points={points} pathLength="100"></polyline>
 </svg>
