@@ -134,6 +134,7 @@ const canonical = new URL(path + Astro.url.search, Astro.site ?? Astro.url).toSt
   .cell[aria-current] { color: var(--ink); box-shadow: inset 0 -2px 0 var(--accent); }
   .brand { border-left: 0; gap: 0.8rem; padding-left: var(--gutter); color: var(--ink); }
   .wordmark { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600; }
+  .brand .wordmark { font-size: 1.05rem; letter-spacing: 0.2em; }
   .emblem { width: 2.1rem; height: 2.1rem; color: var(--accent); transition: transform 0.5s ease-out; }
   /* the same turn the emblem makes on ulehla.dev: a hover transition, no script, nothing moves on its own */
   @media (hover: hover) and (prefers-reduced-motion: no-preference) { .brand:hover .emblem { transform: rotate(45deg); } }
@@ -170,8 +171,9 @@ const canonical = new URL(path + Astro.url.search, Astro.site ?? Astro.url).toSt
   p { margin: 10px 0; }
 
   /* hairline stat cells: 1px gaps painted by the line colour */
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); margin: 32px 0 0; }
-  .stat { background: var(--surface); padding: 18px 18px 16px; }
+  /* seven cells fit one row from about 960px up; below that they wrap */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(124px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); margin: 32px 0 0; }
+  .stat { background: var(--surface); padding: 18px 14px 16px; min-width: 0; }
   .stat b { display: block; font-family: var(--font-display); font-weight: 600; font-size: clamp(1.4rem, 0.9rem + 1.5vw, 2.1rem); line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .stat span { display: block; margin-top: 8px; font-family: var(--font-sans); font-size: 0.9rem; color: var(--ink-muted); line-height: 1.4; }
 
