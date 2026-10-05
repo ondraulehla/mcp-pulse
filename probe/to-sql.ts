@@ -41,7 +41,8 @@ function fingerprint(s: ServerRow): string {
 }
 const previousByName = new Map((previous ?? []).map((s) => [s.name, fingerprint(s)]));
 const servers = previous ? allServers.filter((s) => previousByName.get(s.name) !== fingerprint(s)) : allServers;
-const removed = previous ? [...previousByName.keys()].filter((name) => !allServers.some((s) => s.name === name)) : [];
+const currentNames = new Set(allServers.map((s) => s.name));
+const removed = previous ? [...previousByName.keys()].filter((name) => !currentNames.has(name)) : [];
 const summary = JSON.parse(await readFile(`${args.in}/summary.json`, 'utf8')) as { probedAt: string };
 const hosts = JSON.parse(await readFile(`${args.in}/hosts.json`, 'utf8')) as Array<{
   host: string; servers: number; byStatus: Record<string, number>; uniqueToolsets: number; medianTokens: number;
@@ -111,9 +112,8 @@ function narrowUpdates(rows: ServerRow[]): string[] {
     const cols = ['name', ...columns].map((c) => `c_${c}`);
     for (let i = 0; i < values.length; i += rowsPerInsert) {
       const chunk = values.slice(i, i + rowsPerInsert).map((r) => `(${r.map(lit).join(',')})`);
-      out.push(
-        `UPDATE servers SET ${columns.map((c) => `${c}=v.c_${c}`).join(', ')}\nFROM (SELECT * FROM (VALUES\n${chunk.join(',\n')}) AS t(${cols.join(',')})) AS v\nWHERE servers.name = v.c_name;`
-      );
+      // A CTE with a column list is the one form of a named VALUES table that SQLite accepts.
+      out.push(`WITH v(${cols.join(',')}) AS (VALUES\n${chunk.join(',\n')})\nUPDATE servers SET ${columns.map((c) => `${c}=v.c_${c}`).join(', ')} FROM v WHERE servers.name = v.c_name;`);
     }
   }
   return out;
