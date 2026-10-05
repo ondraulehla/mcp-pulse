@@ -152,23 +152,23 @@ export async function getSiblings(hash: string, except: string, limit = 12): Pro
  * the same index backwards, so its name tie-break is reversed too.
  */
 export const SORTS = {
-  claude: { order: 'claude_tokens DESC, name', where: '', label: 'most Claude tokens' },
-  'claude-asc': { order: 'claude_tokens ASC, name DESC', where: 'claude_tokens IS NOT NULL', label: 'fewest Claude tokens' },
-  tokens: { order: 'tools_tokens DESC, name', where: '', label: 'largest estimate' },
-  'tokens-asc': { order: 'tools_tokens ASC, name DESC', where: 'tools_tokens IS NOT NULL', label: 'smallest estimate' },
-  tools: { order: 'tool_count DESC, name', where: '', label: 'most tools' },
-  'tools-asc': { order: 'tool_count ASC, name DESC', where: 'tool_count IS NOT NULL', label: 'fewest tools' },
-  latency: { order: 'init_ms ASC, name', where: 'init_ms IS NOT NULL', label: 'fastest' },
-  'latency-desc': { order: 'init_ms DESC, name DESC', where: 'init_ms IS NOT NULL', label: 'slowest' },
+  claude: { order: 'claude_tokens DESC, name', where: '', label: 'Claude: most tokens' },
+  'claude-asc': { order: 'claude_tokens ASC, name DESC', where: 'claude_tokens IS NOT NULL', label: 'Claude: fewest tokens' },
+  tokens: { order: 'tools_tokens DESC, name', where: '', label: 'estimate: largest' },
+  'tokens-asc': { order: 'tools_tokens ASC, name DESC', where: 'tools_tokens IS NOT NULL', label: 'estimate: smallest' },
+  tools: { order: 'tool_count DESC, name', where: '', label: 'tools: most' },
+  'tools-asc': { order: 'tool_count ASC, name DESC', where: 'tool_count IS NOT NULL', label: 'tools: fewest' },
+  latency: { order: 'init_ms ASC, name', where: 'init_ms IS NOT NULL', label: 'init: fastest' },
+  'latency-desc': { order: 'init_ms DESC, name DESC', where: 'init_ms IS NOT NULL', label: 'init: slowest' },
   name: { order: 'name', where: '', label: 'name A to Z' },
   'name-desc': { order: 'name DESC', where: '', label: 'name Z to A' },
   status: { order: 'status, name', where: '', label: 'result A to Z' },
   'status-desc': { order: 'status DESC, name DESC', where: '', label: 'result Z to A' },
-  protocol: { order: 'protocol_version ASC, name', where: 'protocol_version IS NOT NULL', label: 'oldest protocol' },
-  'protocol-desc': { order: 'protocol_version DESC, name DESC', where: 'protocol_version IS NOT NULL', label: 'newest protocol' },
+  protocol: { order: 'protocol_version ASC, name', where: 'protocol_version IS NOT NULL', label: 'protocol: oldest' },
+  'protocol-desc': { order: 'protocol_version DESC, name DESC', where: 'protocol_version IS NOT NULL', label: 'protocol: newest' },
   host: { order: 'host, name', where: '', label: 'host A to Z' },
   'host-desc': { order: 'host DESC, name DESC', where: '', label: 'host Z to A' },
-  updated: { order: 'registry_updated_at DESC, name', where: '', label: 'recently updated' }
+  updated: { order: 'registry_updated_at DESC, name', where: '', label: 'updated: newest first' }
 } as const;
 export type SortKey = keyof typeof SORTS;
 

@@ -30,8 +30,17 @@ export async function fetchRegistry(options: FetchRegistryOptions = {}): Promise
     url.searchParams.set('limit', String(limit));
     if (latest) url.searchParams.set('version', 'latest');
     if (cursor) url.searchParams.set('cursor', cursor);
-    const res = await doFetch(url, { headers: { accept: 'application/json' } });
-    if (!res.ok) throw new Error(`registry ${url} responded ${res.status}`);
+    // The registry answers 5xx now and then in the middle of a 400-page walk. Wait and ask again.
+    let res: Response | undefined;
+    for (let attempt = 0; ; attempt++) {
+      res = await doFetch(url, { headers: { accept: 'application/json' } }).catch((e: unknown) => {
+        if (attempt >= 5) throw e;
+        return undefined;
+      });
+      if (res?.ok) break;
+      if (attempt >= 5) throw new Error(`registry ${url} responded ${res?.status ?? 'nothing'}`);
+      await new Promise((r) => setTimeout(r, 2000 * 2 ** attempt));
+    }
     const page = (await res.json()) as RawPage;
     for (const item of page.servers) {
       entries.push({ server: item.server, meta: item._meta[OFFICIAL_META] });
