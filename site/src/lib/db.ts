@@ -114,8 +114,21 @@ export async function getServer(name: string): Promise<ServerRecord | null> {
 
 /** The registry name of the server at this URL, if any. */
 export async function findByUrl(url: string): Promise<string | null> {
-  const row = await db().prepare('SELECT name FROM servers WHERE url = ? OR url = ? LIMIT 1').bind(url, url.replace(/\/$/, '')).first<{ name: string }>();
+  const bare = url.replace(/\/$/, '');
+  const row = await db()
+    .prepare('SELECT name FROM servers WHERE url IN (?, ?, ?, ?) LIMIT 1')
+    .bind(url, bare, bare + '/', bare.replace(/^http:/, 'https:'))
+    .first<{ name: string }>();
   return row?.name ?? null;
+}
+
+/** Registry servers on the same host, for a URL that is not registered as is. */
+export async function serversOnHost(host: string, limit = 8): Promise<Array<Pick<ServerRecord, 'name' | 'url' | 'status'>>> {
+  const { results } = await db()
+    .prepare('SELECT name, url, status FROM servers WHERE host = ? ORDER BY name LIMIT ?')
+    .bind(host, limit)
+    .all<Pick<ServerRecord, 'name' | 'url' | 'status'>>();
+  return results;
 }
 
 export async function getHistory(name: string, limit = 60): Promise<ProbeRecord[]> {

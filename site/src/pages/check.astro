@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getServer, findByUrl } from '../lib/db';
+import { getServer, findByUrl, serversOnHost } from '../lib/db';
 import { bucket, label, ms, num, modelName } from '../lib/format';
 import { probeRemoteRaw } from '../../../packages/mcptop/src/core.ts';
 import { payloadBytes, toolPayload, BYTES_PER_TOKEN } from '../../../packages/mcptop/src/payload.ts';
@@ -16,7 +16,7 @@ type View =
   | { kind: 'not-found'; name: string }
   | { kind: 'invalid'; reason: string }
   | { kind: 'busy' }
-  | { kind: 'probed'; url: string; result: Awaited<ReturnType<typeof probeRemoteRaw>>['result']; payloads: string[]; bytes: number; estimate: number; embed: boolean; claude: LiveClaudeCount | null };
+  | { kind: 'probed'; url: string; result: Awaited<ReturnType<typeof probeRemoteRaw>>['result']; payloads: string[]; bytes: number; estimate: number; embed: boolean; claude: LiveClaudeCount | null; sameHost: Awaited<ReturnType<typeof serversOnHost>> };
 
 // A small per-isolate budget keeps the live probe from being used as a free proxy.
 const g = globalThis as unknown as { __checks?: { minute: number; n: number } };
@@ -53,8 +53,8 @@ if (raw) {
         const { result, tools } = await probeRemoteRaw({ url: url.toString(), type }, { timeoutMs: 10_000 });
         const payloads = tools.map(toolPayload);
         const bytes = tools.reduce((a, t) => a + payloadBytes(t), 0);
-        const claude = result.status === 'ok' ? await liveClaudeCount(tools, url.hostname) : null;
-        view = { kind: 'probed', url: url.toString(), result, payloads, bytes, estimate: Math.round(bytes / BYTES_PER_TOKEN), embed: bytes <= 1_500_000, claude };
+        const [claude, sameHost] = await Promise.all([result.status === 'ok' ? liveClaudeCount(tools, url.hostname) : Promise.resolve(null), serversOnHost(url.hostname)]);
+        view = { kind: 'probed', url: url.toString(), result, payloads, bytes, estimate: Math.round(bytes / BYTES_PER_TOKEN), embed: bytes <= 1_500_000, claude, sameHost };
         if (result.status !== 'ok') headers.set('cache-control', 'public, max-age=30, s-maxage=120');
       }
     }
@@ -102,7 +102,12 @@ const site = Astro.site?.toString().replace(/\/$/, '') ?? '';
             <dt>Schema size</dt><dd>{num(view.bytes)} bytes of tool definitions</dd>
             {view.claude?.error && <><dt>Claude count</dt><dd>Not available: <span class="mono">{view.claude.error}</span></dd></>}
             {view.claude?.tokens != null && <><dt>Claude count</dt><dd>Exact, from the Anthropic count_tokens endpoint. Claude Code adds a prefix like <span class="mono">{claudeCodePrefix(new URL(view.url).hostname)}</span> to each tool name. <a href="/methodology#tokens">Method</a>.</dd></>}
-            <dt>Not in the registry</dt><dd><a href="https://registry.modelcontextprotocol.io" rel="noopener">Publish the server</a>. The daily probe then tracks it.</dd>
+            <dt>Not on the board</dt><dd>
+              No registry entry lists this exact URL as a remote. The daily probe takes the remote URL from the registry entry, so a different path, scheme or host is a different server to it.
+              {view.sameHost.length > 0
+                ? <> Registry servers on this host: {view.sameHost.map((s, i) => <>{i > 0 && ', '}<a href={`/s/${s.name}`}>{s.name}</a> <span class="faint mono">{s.url.replace(/^https?:\/\/[^/]+/, '')}</span></>)}.</>
+                : <> <a href="https://registry.modelcontextprotocol.io" rel="noopener">Publish the server</a> with this remote URL and the daily probe tracks it.</>}
+            </dd>
           </dl>
           <div id="tools-table" hidden>
             <h2>Most expensive tools</h2>
