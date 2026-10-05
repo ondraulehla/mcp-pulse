@@ -46,7 +46,7 @@ jobs:
           for id in $(gh run list --workflow "Daily probe" --limit 10 --json databaseId -q '.[].databaseId'); do
             if gh run download "$id" --name "claude-cache-$id" --dir data/cache 2>/dev/null; then echo "count cache from run $id"; break; fi
           done
-          c=$(find data/cache -name servers.json | head -1); test -n "$c" && cp "$c" data/cache/servers.json || echo "::notice::No count cache found."
+          c=$(find data/cache -name servers.json | head -1); test -n "$c" && cp "$c" data/cache/servers.json || { test -f data/previous/servers.json && cp data/previous/servers.json data/cache/servers.json && echo "count cache from the previous run" || echo "::notice::No count cache found."; }
       - name: Probe the registry
         run: |
           if [ -n "${{ inputs.sample }}" ]; then
