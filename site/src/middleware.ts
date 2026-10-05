@@ -94,6 +94,15 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (/daily row (read|write) limit|D1_/i.test(message)) return limitResponse(url, message);
     throw err;
   }
+  // A page that failed while rendering comes back as a 500, not as a thrown error. Ask D1 whether the budget is the reason.
+  if (response.status === 500) {
+    try {
+      await (env as unknown as { DB: D1Database }).DB.prepare('SELECT 1').first();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (/daily row (read|write) limit/i.test(message)) return limitResponse(url, message);
+    }
+  }
   const ttl = ttlOf(response);
   if (response.status !== 200 || ttl <= 0) {
     if (response.headers.has('cache-control') && response.status === 200) {
