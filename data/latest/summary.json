@@ -1,37 +1,37 @@
 {
-  "probedAt": "2026-10-08T11:31:51.887Z",
-  "registryEntries": 40822,
-  "registryWithRemote": 25805,
-  "probed": 25805,
+  "probedAt": "2026-10-09T11:39:23.448Z",
+  "registryEntries": 41051,
+  "registryWithRemote": 25944,
+  "probed": 25944,
   "byStatus": {
-    "ok": 13670,
-    "auth": 6580,
-    "protocol_error": 1770,
-    "not_found": 939,
-    "dns": 920,
-    "rate_limited": 450,
+    "ok": 14054,
+    "auth": 6719,
+    "protocol_error": 1671,
+    "not_found": 943,
+    "dns": 690,
     "payment": 441,
-    "server_error": 292,
-    "tls": 269,
+    "server_error": 405,
+    "tls": 270,
+    "rate_limited": 270,
     "timeout": 201,
-    "newer_protocol": 129,
-    "error": 120,
-    "refused": 24
+    "newer_protocol": 130,
+    "error": 121,
+    "refused": 29
   },
-  "reachable": 20820,
-  "ok": 13670,
-  "uniqueToolsets": 13098,
-  "duplicateServers": 572,
+  "reachable": 21344,
+  "ok": 14054,
+  "uniqueToolsets": 13435,
+  "duplicateServers": 619,
   "protocols": {
-    "2025-11-25": 8245,
-    "2025-03-26": 3155,
-    "2025-06-18": 1724,
-    "2024-11-05": 494,
-    "unknown": 52
+    "2025-11-25": 8359,
+    "2025-03-26": 3158,
+    "2025-06-18": 1982,
+    "2024-11-05": 502,
+    "unknown": 53
   },
   "authSchemes": {
-    "Bearer": 5614,
-    "none": 941,
+    "Bearer": 5751,
+    "none": 943,
     "ApiKey": 10,
     "AzureApiManagementKey": 6,
     "OAuth": 2,
@@ -43,36 +43,36 @@
     "RoseMember": 1
   },
   "transports": {
-    "streamable-http": 25069,
-    "sse": 736
+    "streamable-http": 25206,
+    "sse": 738
   },
   "toolsTokens": {
-    "median": 1674,
+    "median": 1772,
     "p90": 7429,
-    "p99": 30611,
-    "max": 517882,
-    "total": 60322800
+    "p99": 30395,
+    "max": 517980,
+    "total": 63085347
   },
   "claudeTokens": {
     "model": "claude-opus-5-5",
-    "counted": 13427,
-    "refused": 235,
-    "median": 2843,
+    "counted": 13813,
+    "refused": 233,
+    "median": 2998,
     "p90": 13050,
-    "p99": 49181,
-    "max": 884848,
-    "total": 100278321,
+    "p99": 48534,
+    "max": 884995,
+    "total": 104921565,
     "claudeCode": {
-      "median": 2929,
-      "p90": 13514,
-      "p99": 49893,
-      "max": 891176,
-      "total": 102666748
+      "median": 3092,
+      "p90": 13483,
+      "p99": 49470,
+      "max": 891323,
+      "total": 107412102
     },
     "ratioToEstimate": {
       "median": 1.7568004309183949,
-      "p10": 1.6348012889366272,
-      "p90": 1.8497191011235956
+      "p10": 1.634540556719545,
+      "p90": 1.8490652074783402
     }
   },
   "toolCount": {
@@ -81,17 +81,17 @@
     "max": 2000
   },
   "initMs": {
-    "median": 718,
-    "p90": 2584
+    "median": 583,
+    "p90": 2138
   },
-  "hosts": 17712,
+  "hosts": 18022,
   "heaviest": [
     {
       "name": "info.astroway/astrology",
       "toolCount": 791,
-      "toolsTokens": 517882,
-      "claudeTokens": 884848,
-      "claudeTokensCc": 891176,
+      "toolsTokens": 517980,
+      "claudeTokens": 884995,
+      "claudeTokensCc": 891323,
       "host": "mcp.astroway.info"
     },
     {
@@ -104,34 +104,34 @@
     },
     {
       "name": "co.ainumbers/tools",
-      "toolCount": 730,
-      "toolsTokens": 345739,
-      "claudeTokens": 605953,
-      "claudeTokensCc": 611063,
+      "toolCount": 733,
+      "toolsTokens": 350525,
+      "claudeTokens": 613146,
+      "claudeTokensCc": 618277,
       "host": "mcp.ainumbers.co"
     },
     {
       "name": "io.github.whiteknightonhorse/apibase",
-      "toolCount": 1410,
-      "toolsTokens": 347282,
-      "claudeTokens": 594344,
-      "claudeTokensCc": 605624,
+      "toolCount": 1418,
+      "toolsTokens": 350073,
+      "claudeTokens": 599275,
+      "claudeTokensCc": 610619,
       "host": "apibase.pro"
     },
     {
       "name": "net.crawlora/crawlora-mcp",
       "toolCount": 2000,
-      "toolsTokens": 312497,
-      "claudeTokens": 546239,
-      "claudeTokensCc": 572239,
+      "toolsTokens": 313945,
+      "claudeTokens": 548748,
+      "claudeTokensCc": 574748,
       "host": "mcp.crawlora.net"
     },
     {
       "name": "io.github.WellApp-ai/well-mcp",
-      "toolCount": 174,
-      "toolsTokens": 229699,
-      "claudeTokens": 355134,
-      "claudeTokensCc": 356874,
+      "toolCount": 185,
+      "toolsTokens": 250638,
+      "claudeTokens": 387266,
+      "claudeTokensCc": 389116,
       "host": "api.wellapp.ai"
     },
     {
@@ -153,17 +153,17 @@
     {
       "name": "info.astroway/vedic",
       "toolCount": 193,
-      "toolsTokens": 163603,
-      "claudeTokens": 277577,
-      "claudeTokensCc": 279121,
+      "toolsTokens": 163672,
+      "claudeTokens": 277675,
+      "claudeTokensCc": 279219,
       "host": "mcp.astroway.info"
     },
     {
       "name": "io.github.duvoai/duvo",
       "toolCount": 400,
-      "toolsTokens": 149439,
-      "claudeTokens": 243193,
-      "claudeTokensCc": 246393,
+      "toolsTokens": 149750,
+      "claudeTokens": 243636,
+      "claudeTokensCc": 246836,
       "host": "api.duvo.ai"
     },
     {
@@ -201,9 +201,9 @@
     {
       "name": "io.github.yzlee/opcmenu",
       "toolCount": 396,
-      "toolsTokens": 95879,
-      "claudeTokens": 161923,
-      "claudeTokensCc": 165883,
+      "toolsTokens": 95912,
+      "claudeTokens": 162017,
+      "claudeTokensCc": 165977,
       "host": "mcp.opcmenu.com"
     },
     {
@@ -225,9 +225,9 @@
     {
       "name": "info.astroway/core",
       "toolCount": 105,
-      "toolsTokens": 81481,
-      "claudeTokens": 140583,
-      "claudeTokensCc": 141213,
+      "toolsTokens": 81462,
+      "claudeTokens": 140558,
+      "claudeTokensCc": 141188,
       "host": "mcp.astroway.info"
     },
     {
