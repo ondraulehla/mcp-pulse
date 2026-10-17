@@ -41,4 +41,5 @@ jobs:
         with:
           config: .github/examples/mcp-budget.json
           budget: 10
+          comment: false
       - run: test "${{ steps.fail.outcome }}" = failure
