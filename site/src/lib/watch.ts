@@ -45,8 +45,28 @@ function db(): D1Database {
   return (env as unknown as { DB: D1Database }).DB;
 }
 
+/**
+ * The way out for a mail: the Cloudflare Email Sending binding when the Worker
+ * has one (Workers Paid plan), else the Resend REST API when RESEND_API_KEY is
+ * set, else nothing. Both need ulehla.dev verified as a sending domain.
+ */
 function mailer(): { send(mail: Mail): Promise<unknown> } | undefined {
-  return (env as unknown as { EMAIL?: { send(mail: Mail): Promise<unknown> } }).EMAIL;
+  const e = env as unknown as { EMAIL?: { send(mail: Mail): Promise<unknown> }; RESEND_API_KEY?: string };
+  if (e.EMAIL) return e.EMAIL;
+  const key = e.RESEND_API_KEY;
+  if (!key) return undefined;
+  return {
+    async send(mail) {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' },
+        body: JSON.stringify({ from: `${mail.from.name} <${mail.from.email}>`, to: [mail.to], subject: mail.subject, text: mail.text }),
+        signal: AbortSignal.timeout(15_000)
+      });
+      if (!res.ok) throw new Error(`Resend: HTTP ${res.status} ${(await res.text()).slice(0, 200)}`);
+      return res.json();
+    }
+  };
 }
 
 /** A stable, anonymous id for a client within one month. */

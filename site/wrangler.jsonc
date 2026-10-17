@@ -10,8 +10,11 @@
   "workers_dev": true,
   // Alert mails after the daily run; the handler is idempotent, so three runs a day cost nothing extra.
   "triggers": { "crons": ["45 6,12,18 * * *"] },
-  // Cloudflare Email Service. The sending domain ulehla.dev must be enabled: npx wrangler email sending enable ulehla.dev
-  "send_email": [{ "name": "EMAIL" }],
+  // Alert mails go out through one of two ways, see site/src/lib/watch.ts:
+  // 1. Cloudflare Email Sending (Workers Paid plan): enable ulehla.dev under Email Service, then uncomment the binding.
+  //    "send_email": [{ "name": "EMAIL" }],
+  // 2. Resend: verify ulehla.dev at resend.com and set the secret: npx wrangler secret put RESEND_API_KEY
+  // Without either, the watch form answers that the confirmation mail could not be sent.
   "vars": {
     // Cloudflare Web Analytics site token (dashboard: Analytics & Logs, Web Analytics, Manage site). Empty: no beacon is rendered.
     "CF_BEACON_TOKEN": "c4630a14eada43df926afcf0d18f91b9"

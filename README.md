@@ -157,6 +157,8 @@ npm run db:schema:local && npm run db:import:local
 npm run dev
 ```
 
+The alert mails need a sending domain: either Cloudflare Email Sending (Workers Paid plan, then the `send_email` binding in `site/wrangler.jsonc`) or Resend (verify the domain there and `npx wrangler secret put RESEND_API_KEY`). Without one, the watch form says that the confirmation mail could not be sent.
+
 Deploying needs a Cloudflare account with a D1 database named `mcpcost` (`wrangler d1 create mcpcost`, then put the id in `site/wrangler.jsonc`). The workflows expect the repository secrets `CLOUDFLARE_API_TOKEN` (Workers Scripts: Edit, D1: Edit) and `CLOUDFLARE_ACCOUNT_ID`.
 
 ## Licence
