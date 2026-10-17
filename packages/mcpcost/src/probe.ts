@@ -1,6 +1,7 @@
 import { probeRemoteRaw, type CoreOptions, type RawTool } from './core.js';
 import { toolsCost } from './tokens.js';
 import { countForServer, ClaudeCountError, CLAUDE_MODEL } from './claude.js';
+import { countGeminiTokens, GeminiCountError, GEMINI_MODEL } from './gemini.js';
 import type { ProbeResult, RemoteTransport } from './types.js';
 
 export { VERSION, USER_AGENT, emptyResult, measure, classify } from './core.js';
@@ -15,11 +16,34 @@ export interface ClaudeOptions {
   serverName?: string;
 }
 
+export interface GeminiOptions {
+  /** Gemini API key. Only the free countTokens endpoint is called. */
+  apiKey: string;
+  /** Model id. Default gemini-3.8-flash. */
+  model?: string;
+}
+
 export interface ProbeOptions extends CoreOptions {
   /** Keep the per-tool list in the result. Default true. */
   includeTools?: boolean;
   /** Also ask the Anthropic count_tokens endpoint for the exact count. */
   claude?: ClaudeOptions;
+  /** Also ask the Gemini countTokens endpoint for the exact count. */
+  gemini?: GeminiOptions;
+}
+
+/** Adds the exact Gemini count to an alive result. A refused schema becomes `gemini.error`; a transport failure leaves `gemini` empty. */
+export async function attachGemini(result: ProbeResult, tools: RawTool[], gemini: GeminiOptions | undefined): Promise<ProbeResult> {
+  if (!gemini || result.status !== 'ok') return result;
+  const measuredAt = new Date().toISOString();
+  try {
+    const c = await countGeminiTokens(tools, { apiKey: gemini.apiKey, model: gemini.model });
+    result.gemini = { model: c.model, tokens: c.tokens, measuredAt };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    if (e instanceof GeminiCountError && e.status >= 400 && e.status < 500 && e.status !== 429) result.gemini = { model: gemini.model ?? GEMINI_MODEL, measuredAt, error: message };
+  }
+  return result;
 }
 
 /** Adds the exact Claude count to an alive result. A refused schema becomes `claude.error`; a transport failure leaves `claude` empty. */
@@ -52,5 +76,6 @@ export function priceTools(result: ProbeResult, tools: RawTool[], includeTools =
 export async function probeRemote(remote: { url: string; type: RemoteTransport }, options: ProbeOptions = {}): Promise<ProbeResult> {
   const { result, tools } = await probeRemoteRaw(remote, options);
   priceTools(result, tools, options.includeTools ?? true);
-  return attachClaude(result, tools, options.claude);
+  await attachClaude(result, tools, options.claude);
+  return attachGemini(result, tools, options.gemini);
 }

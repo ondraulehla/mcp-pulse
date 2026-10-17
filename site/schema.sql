@@ -40,7 +40,12 @@ CREATE TABLE IF NOT EXISTS servers (
   claude_tokens INTEGER,
   claude_tokens_cc INTEGER,
   claude_measured_at TEXT,
-  claude_error TEXT
+  claude_error TEXT,
+  -- Exact counts from the Gemini countTokens endpoint. See migrations/003-gemini.sql for an existing database.
+  gemini_model TEXT,
+  gemini_tokens INTEGER,
+  gemini_measured_at TEXT,
+  gemini_error TEXT
 );
 CREATE INDEX IF NOT EXISTS servers_toolset ON servers (toolset_hash);
 
@@ -53,6 +58,29 @@ CREATE TABLE IF NOT EXISTS probes (
   tools_tokens INTEGER,
   claude_tokens INTEGER,
   PRIMARY KEY (name, probed_at)
+);
+
+-- Alerts: a mail when a watched server changes. Confirmed by a link, stopped by another.
+CREATE TABLE IF NOT EXISTS watches (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT NOT NULL,
+  server TEXT NOT NULL,
+  token TEXT NOT NULL UNIQUE,
+  created_at TEXT NOT NULL,
+  confirmed_at TEXT,
+  stopped_at TEXT,
+  notified_at TEXT,
+  ip_hash TEXT
+);
+CREATE INDEX IF NOT EXISTS watches_server ON watches (server);
+
+-- Servers outside the official registry, tracked on request from /check. The daily probe reads /api/tracked.json.
+CREATE TABLE IF NOT EXISTS tracked (
+  name TEXT PRIMARY KEY,
+  url TEXT NOT NULL UNIQUE,
+  transport TEXT NOT NULL,
+  submitted_at TEXT NOT NULL,
+  ip_hash TEXT
 );
 
 CREATE TABLE IF NOT EXISTS hosts (

@@ -5,4 +5,6 @@ Allow: /
 Disallow: /servers?
 Disallow: /api/
 Disallow: /check?
+Disallow: /watch
+Disallow: /track
 Sitemap: https://mcpcost.ulehla.dev/sitemap.xml

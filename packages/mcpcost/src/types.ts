@@ -110,6 +110,18 @@ export interface ProbeResult {
   tools?: ToolCost[];
   /** Exact count from the Anthropic count_tokens endpoint, when a key was available. */
   claude?: ClaudeTokens;
+  /** Exact count from the Gemini countTokens endpoint, when a key was available. */
+  gemini?: GeminiTokens;
+  error?: string;
+}
+
+export interface GeminiTokens {
+  /** Model id the count was made for, for example gemini-3.8-flash. */
+  model: string;
+  /** Tokens the tool definitions add, from the Gemini countTokens endpoint. */
+  tokens?: number;
+  measuredAt: string;
+  /** Why the count failed, for example a schema the API does not accept. */
   error?: string;
 }
 

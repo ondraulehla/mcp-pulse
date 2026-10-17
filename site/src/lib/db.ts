@@ -36,6 +36,11 @@ export interface ServerRecord {
   claude_model: string | null;
   claude_measured_at: string | null;
   claude_error: string | null;
+  /** Exact count from the Gemini countTokens endpoint. */
+  gemini_tokens: number | null;
+  gemini_model: string | null;
+  gemini_measured_at: string | null;
+  gemini_error: string | null;
 }
 
 export interface HostRecord {
@@ -91,6 +96,8 @@ export interface RunSummary {
     /** Alive servers per cost band: bins[i] holds counts below edges[i]; the last bin is the rest. */
     histogram?: { edges: number[]; bins: number[] };
   };
+  /** Exact Gemini counts, present once a run had a Gemini key. */
+  geminiTokens?: TokenStats & { model?: string; counted: number; refused: number };
   toolCount: { median: number; p90: number; max: number };
   initMs: { median: number; p90: number };
   hosts: number;

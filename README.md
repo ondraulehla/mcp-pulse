@@ -39,6 +39,8 @@ It starts every configured server the way your client does, lists the tools and 
 
 The job summary gets a table with every server, its result and its cost, plus the most expensive tools. A pull request that adds a 40 000-token server fails the check. Set `claude: true` and put `ANTHROPIC_API_KEY` in `env` for exact counts from the free count_tokens endpoint; the default is the o200k_base estimate. Outputs: `tokens`, `servers`, `over-budget`.
 
+On a pull request the action also measures the same config files on the base branch and posts one comment with the difference: servers added, removed and changed, the token delta per server, the new total and the budget verdict. The comment is updated on every push, never duplicated. The job needs `pull-requests: write` for it; without that permission the step warns and the check still runs. Set `comment: false` to turn it off. A complete workflow is in [.github/examples/mcp-budget.yml](.github/examples/mcp-budget.yml).
+
 ### In Claude Code, as a plugin
 
 In a Claude Code session:
@@ -59,7 +61,8 @@ The plugin adds one skill, `/mcpcost:measure`, which runs `npx mcpcost` on your 
 - **Check**: probes one URL live, with the same steps as the daily run; the exact token count runs in the browser
 - **Statistics**: results by cause, token cost and tool count percentiles, the heaviest tool sets, protocol versions, auth schemes, transports, biggest publishers
 - **Servers**: full-text search over name, title, description and host (word prefixes, so `git copilot` finds the GitHub Copilot servers), filters by result, protocol and transport, seven sorts, and every filter is a plain URL you can share
-- **Server page**: status, latency, protocol, capabilities, the most expensive tools, servers with the same tool set, history, and the badge
+- **Server page**: status, latency, protocol, capabilities, the most expensive tools, servers with the same tool set, history, the badge, and e-mail alerts: a mail when the server stops answering, comes back, or its tool set or token cost changes
+- **Track**: a server that is not in the registry can be tracked from the check page; the daily probe then measures it under the name `url/<host>/<path>`
 - **Hosts**: the 500 biggest publishers with how many distinct tool sets they actually serve
 
 ## For agents and scripts
@@ -129,7 +132,7 @@ registry ──▶ probe/run.ts ──▶ data/raw/probe-run.json
 
 - **Transport.** The probe uses the official TypeScript SDK as a client. Streamable HTTP first, SSE when that is the only remote.
 - **No GET stream.** The probe answers 405 to the SDK's standalone GET, so it never opens a server-to-client stream. The probe needs no server-initiated messages, and some servers stall `tools/list` while that stream is open (DeepWiki held it for 15 s and never answered the POST meanwhile).
-- **Exact token count.** The daily run asks the Anthropic `count_tokens` endpoint for every alive server: one request with the server's tools plus a marker tool, one with the marker tool only, and the difference is what the tools cost in `claude-opus-5-5`. A second count uses Claude Code's `mcp__<server>__` prefix on each tool name. The endpoint is free and calls no model. A server is counted again only when its tool definitions change. About 5 % of servers publish a schema the endpoint refuses; they show the estimate and the reason.
+- **Exact token count.** The daily run asks the Anthropic `count_tokens` endpoint for every alive server, and the Gemini `countTokens` endpoint when `GEMINI_API_KEY` is set (the CLI: `--gemini`). Anthropic first: one request with the server's tools plus a marker tool, one with the marker tool only, and the difference is what the tools cost in `claude-opus-5-5`. A second count uses Claude Code's `mcp__<server>__` prefix on each tool name. The endpoint is free and calls no model. A server is counted again only when its tool definitions change. About 5 % of servers publish a schema the endpoint refuses; they show the estimate and the reason.
 - **Estimate.** Each tool is serialised as compact JSON with `name`, `description` and `input_schema`, and counted with the `o200k_base` tokenizer. The exact count is about 1.9 times the estimate at the median. The estimate needs no key and is the same for every server.
 - **Same tool set.** A hash of the sorted tool names and schema sizes marks servers that serve identical tools under different names.
 - **Timeouts.** 15 seconds per request. At most one probe runs against a host at a time.

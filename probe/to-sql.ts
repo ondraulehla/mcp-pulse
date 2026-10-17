@@ -77,14 +77,16 @@ const serverColumns = [
   'name', 'title', 'description', 'url', 'host', 'transport', 'repo', 'website', 'registry_status', 'registry_updated_at',
   'probed_at', 'status', 'http_status', 'auth_scheme', 'protocol_version', 'server_name', 'server_version', 'capabilities',
   'init_ms', 'tools_ms', 'tool_count', 'tools_tokens', 'instructions_chars', 'toolset_hash', 'toolset_siblings', 'top_tools', 'error',
-  'claude_model', 'claude_tokens', 'claude_tokens_cc', 'claude_measured_at', 'claude_error'
+  'claude_model', 'claude_tokens', 'claude_tokens_cc', 'claude_measured_at', 'claude_error',
+  'gemini_model', 'gemini_tokens', 'gemini_measured_at', 'gemini_error'
 ];
 function serverValues(s: ServerRow): Value[] {
   return [
     s.name, s.title, s.description, s.url, s.host, s.transport, s.repo, s.website, s.registryStatus, s.registryUpdatedAt,
     s.probedAt, s.status, s.httpStatus, s.authScheme, s.protocolVersion, s.serverName, s.serverVersion, s.capabilities ? JSON.stringify(s.capabilities) : null,
     s.initMs, s.toolsMs, s.toolCount, s.toolsTokens, s.instructionsChars, s.toolsetHash, s.toolsetSiblings, s.topTools ? JSON.stringify(s.topTools) : null, s.error,
-    s.claudeModel, s.claudeTokens, s.claudeTokensCc, s.claudeMeasuredAt, s.claudeError
+    s.claudeModel, s.claudeTokens, s.claudeTokensCc, s.claudeMeasuredAt, s.claudeError,
+    s.geminiModel, s.geminiTokens, s.geminiMeasuredAt, s.geminiError
   ];
 }
 const previousRows = new Map((previous ?? []).map((s) => [s.name, s]));

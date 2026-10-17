@@ -1,0 +1,26 @@
+# Copy to .github/workflows/mcp-budget.yml in your repository.
+# On every pull request: measures the MCP servers in .mcp.json, fails above the budget,
+# and posts one comment on the pull request with the difference against the base branch.
+name: MCP token budget
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  mcpcost:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - uses: ondraulehla/mcpcost@v1
+        with:
+          config: .mcp.json
+          budget: 30000
+          # claude: true            # exact counts for Claude; put ANTHROPIC_API_KEY in env
+        # env:
+        #   ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

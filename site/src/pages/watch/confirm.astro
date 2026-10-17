@@ -1,0 +1,31 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { confirmWatch } from '../../lib/watch';
+
+Astro.response.headers.set('cache-control', 'no-store');
+const token = (Astro.url.searchParams.get('t') ?? '').trim().slice(0, 80);
+const watch = token ? await confirmWatch(token) : null;
+---
+
+<Layout title="Watch confirmed" robots="noindex, nofollow">
+  <p class="kicker">alerts</p>
+  {watch && !watch.stopped_at && (
+    <>
+      <h1 class="poster">Confirmed</h1>
+      <p class="lede"><span class="mono">{watch.email}</span> gets a mail when <a href={`/s/${watch.server}`}>{watch.server}</a> stops answering, comes back, or its tool set or token cost changes. The first mail comes with the first change after today's probe.</p>
+      <p class="muted small">Stop at any time: <a href={`/watch/stop?t=${watch.token}`}>stop watching {watch.server}</a>. The link is in every mail too.</p>
+    </>
+  )}
+  {watch && watch.stopped_at && (
+    <>
+      <h1 class="poster">This watch was stopped</h1>
+      <p class="lede">To watch <a href={`/s/${watch.server}`}>{watch.server}</a> again, <a href={`/watch?server=${encodeURIComponent(watch.server)}`}>start a new watch</a>.</p>
+    </>
+  )}
+  {!watch && (
+    <>
+      <h1 class="poster">Unknown link</h1>
+      <p class="lede">This confirmation link is not valid. Start again from the server's page.</p>
+    </>
+  )}
+</Layout>

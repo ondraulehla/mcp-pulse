@@ -1,11 +1,17 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "mcpcost",
+  // The Astro app plus a cron handler that sends the alert mails. See src/worker.ts.
+  "main": "./src/worker.ts",
   "compatibility_date": "2026-09-15",
   "compatibility_flags": ["nodejs_compat"],
   "observability": { "enabled": true },
   "version_metadata": { "binding": "CF_VERSION_METADATA" },
   "workers_dev": true,
+  // Alert mails after the daily run; the handler is idempotent, so three runs a day cost nothing extra.
+  "triggers": { "crons": ["45 6,12,18 * * *"] },
+  // Cloudflare Email Service. The sending domain ulehla.dev must be enabled: npx wrangler email sending enable ulehla.dev
+  "send_email": [{ "name": "EMAIL" }],
   "vars": {
     // Cloudflare Web Analytics site token (dashboard: Analytics & Logs, Web Analytics, Manage site). Empty: no beacon is rendered.
     "CF_BEACON_TOKEN": "c4630a14eada43df926afcf0d18f91b9"

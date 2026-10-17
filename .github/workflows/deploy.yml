@@ -27,6 +27,14 @@ jobs:
       - name: Build
         working-directory: site
         run: npm run build
+      - name: Apply the schema and the pending migrations
+        # schema.sql is idempotent (CREATE ... IF NOT EXISTS). A migration that adds columns runs once, when its first column is missing.
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
+        working-directory: site
+        run: |
+          npx wrangler d1 execute mcp-pulse --remote --file=schema.sql
+          has() { npx wrangler d1 execute mcp-pulse --remote --json --command "SELECT count(*) AS n FROM pragma_table_info('servers') WHERE name='$1'" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s)[0].results[0].n))'; }
+          if [ "$(has gemini_tokens)" = "0" ]; then npx wrangler d1 execute mcp-pulse --remote --file=migrations/003-gemini.sql; echo "migration 003 applied"; fi
       - name: Deploy
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
         working-directory: site

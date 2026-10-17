@@ -1,0 +1,25 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { stopWatch } from '../../lib/watch';
+
+Astro.response.headers.set('cache-control', 'no-store');
+const token = (Astro.url.searchParams.get('t') ?? '').trim().slice(0, 80);
+const watch = token ? await stopWatch(token) : null;
+---
+
+<Layout title="Watch stopped" robots="noindex, nofollow">
+  <p class="kicker">alerts</p>
+  {watch && (
+    <>
+      <h1 class="poster">Stopped</h1>
+      <p class="lede">No more mails about <a href={`/s/${watch.server}`}>{watch.server}</a> to <span class="mono">{watch.email}</span>.</p>
+      <p class="muted small">Changed your mind? <a href={`/watch?server=${encodeURIComponent(watch.server)}`}>Watch it again</a>.</p>
+    </>
+  )}
+  {!watch && (
+    <>
+      <h1 class="poster">Unknown link</h1>
+      <p class="lede">This stop link is not valid. If the mails keep coming, open an issue on <a href="https://github.com/ondraulehla/mcpcost/issues" rel="noopener">GitHub</a>.</p>
+    </>
+  )}
+</Layout>

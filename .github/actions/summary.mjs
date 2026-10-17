@@ -6,7 +6,7 @@ const fmt = (n) => (n == null ? '' : Number(n).toLocaleString('en-US'));
 const pct = (n) => (n == null ? '' : `${((n / r.window) * 100).toFixed(1)} %`);
 const exact = Boolean(r.exact);
 const rows = r.servers.map((s) => {
-  const cost = exact ? s.claudeTokens : s.toolsTokens;
+  const cost = s.tokens ?? (exact ? s.claudeTokens : s.toolsTokens);
   const result = s.skipped ? `skipped: ${s.skipped}` : s.status === 'ok' ? 'alive' : (s.status ?? '').replace('_', ' ');
   return `| ${s.name} | ${result} | ${fmt(s.toolCount)} | ${fmt(cost)} | ${pct(cost)} |`;
 });

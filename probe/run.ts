@@ -11,6 +11,7 @@ import { fetchRegistry, hostOf, primaryRemote, CLAUDE_MODEL } from '../packages/
 import { probeRemoteRaw } from '../packages/mcpcost/src/core.js';
 import { priceTools } from '../packages/mcpcost/src/probe.js';
 import { createClaudeCounter, payloadHash } from './claude-cache.js';
+import { createGeminiCounter } from './gemini-cache.js';
 import type { ProbeResult, RegistryEntry } from '../packages/mcpcost/src/index.js';
 
 const { values: args } = parseArgs({
@@ -29,7 +30,11 @@ const { values: args } = parseArgs({
     /** count_tokens requests a minute. Small organisations get 100. */
     'claude-rpm': { type: 'string', default: '90' },
     /** Minutes after start when counting stops. Servers left over are counted next run. */
-    'claude-deadline-min': { type: 'string', default: '270' }
+    'claude-deadline-min': { type: 'string', default: '270' },
+    /** Servers tracked on request, outside the registry. Empty string: none. */
+    tracked: { type: 'string', default: 'https://mcpcost.ulehla.dev/api/tracked.json' },
+    'gemini-model': { type: 'string', default: 'gemini-3.8-flash' },
+    'gemini-rpm': { type: 'string', default: '60' }
   }
 });
 const started = Date.now();
@@ -56,6 +61,14 @@ const claude = await createClaudeCounter({
   deadline: started + (Number(args['claude-deadline-min']) || 270) * 60_000
 });
 
+const gemini = await createGeminiCounter({
+  apiKey: process.env.GEMINI_API_KEY,
+  cachePath: args['claude-cache'],
+  model: args['gemini-model'],
+  rpm: Number(args['gemini-rpm']) || 60,
+  deadline: started + (Number(args['claude-deadline-min']) || 270) * 60_000
+});
+
 async function loadRegistry(): Promise<RegistryEntry[]> {
   if (existsSync(args.cache)) {
     const raw = JSON.parse(await readFile(args.cache, 'utf8')) as Array<{ server: RegistryEntry['server']; _meta: Record<string, RegistryEntry['meta']> }>;
@@ -66,6 +79,23 @@ async function loadRegistry(): Promise<RegistryEntry[]> {
   await mkdir('data/raw', { recursive: true });
   await writeFile(args.cache, JSON.stringify(entries.map((e) => ({ server: e.server, _meta: { 'io.modelcontextprotocol.registry/official': e.meta } }))));
   return entries;
+}
+
+/** The servers tracked on request, as registry-shaped entries with the status "tracked". */
+async function loadTracked(): Promise<RegistryEntry[]> {
+  if (!args.tracked) return [];
+  try {
+    const res = await fetch(args.tracked, { signal: AbortSignal.timeout(15_000), headers: { 'user-agent': 'mcpcost-probe' } });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const { tracked } = (await res.json()) as { tracked: Array<{ name: string; url: string; transport: 'streamable-http' | 'sse'; submittedAt: string }> };
+    return tracked.map((t) => ({
+      server: { name: t.name, title: t.url.replace(/^https:\/\//, ''), description: 'Tracked on request. Not in the official MCP registry.', remotes: [{ type: t.transport, url: t.url }] },
+      meta: { status: 'tracked', publishedAt: t.submittedAt, updatedAt: t.submittedAt, isLatest: true }
+    }));
+  } catch (e) {
+    console.error(`tracked list not loaded: ${e instanceof Error ? e.message : String(e)}`);
+    return [];
+  }
 }
 
 function mulberry32(seed: number) {
@@ -127,6 +157,7 @@ async function runAll(targets: Target[]): Promise<Array<Target & { result: Probe
           hash = payloadHash(tools);
           busyHosts.delete(target.host);
           result.claude = await claude.count(target.name, tools, hash);
+          result.gemini = await gemini.count(target.name, tools, hash);
         }
         out.push({ ...target, result, payloadHash: hash });
       } finally {
@@ -171,13 +202,23 @@ function summarize(rows: Array<Target & { result: ProbeResult }>) {
   };
 }
 
-const entries = await loadRegistry();
+const registryEntries = await loadRegistry();
+const tracked = await loadTracked();
+const known = new Set(registryEntries.map((e) => e.server.name));
+const entries = [...registryEntries, ...tracked.filter((t) => !known.has(t.server.name))];
+if (entries.length > registryEntries.length) {
+  // build-data reads the same file, so the tracked servers must be in it too.
+  await writeFile(args.cache, JSON.stringify(entries.map((e) => ({ server: e.server, _meta: { 'io.modelcontextprotocol.registry/official': e.meta } }))));
+  console.error(`${entries.length - registryEntries.length} tracked servers added to the targets`);
+}
 const targets = pickTargets(entries);
 console.error(`${entries.length} registry entries, ${targets.length} targets, concurrency ${concurrency}, timeout ${timeoutMs}ms`);
 const rows = await runAll(targets);
 const summary = summarize(rows);
 if (claude.enabled) { const c = claude.stats(); console.error(`Claude counts: ${c.counted} servers counted now, ${c.reused} reused from the previous run, ${c.skipped} left for the next run (deadline)`); }
 else console.error('ANTHROPIC_API_KEY is not set: no exact Claude counts in this run.');
+if (gemini.enabled) { const g = gemini.stats(); console.error(`Gemini counts: ${g.counted} servers counted now, ${g.reused} reused from the previous run, ${g.skipped} left for the next run (deadline)`); }
+else console.error('GEMINI_API_KEY is not set: no exact Gemini counts in this run.');
 const stamp = new Date().toISOString().slice(0, 10);
 await mkdir('data/samples', { recursive: true });
 const file = args.out ?? `data/samples/probe-${stamp}${args.all ? '-all' : `-n${targets.length}`}.json`;

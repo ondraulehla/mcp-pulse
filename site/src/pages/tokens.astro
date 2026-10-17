@@ -34,7 +34,7 @@ const faq = [
   },
   {
     q: 'How do we count the tokens?',
-    a: `We ask the Anthropic count_tokens endpoint. It returns the exact number of input tokens for a request, as the model will see it. We send one request with the server's tools and one request without them. The difference is what the tools cost. The endpoint is free and calls no model. The number is exact for ${model}. Other models count in a different way. We also show an o200k_base estimate over the compact JSON of each tool. ${ratio ? `The exact count is ${ratio.median.toFixed(2)} times the estimate at the median (${ratio.p10.toFixed(2)} to ${ratio.p90.toFixed(2)} for 80 % of servers).` : ''}`
+    a: `We ask the Anthropic count_tokens endpoint. It returns the exact number of input tokens for a request, as the model will see it. We send one request with the server's tools and one request without them. The difference is what the tools cost. The endpoint is free and calls no model. The number is exact for ${model}. Other models count in a different way. Where the run had a Gemini key, the server page also shows the exact count from the Gemini countTokens endpoint, the same method. We also show an o200k_base estimate over the compact JSON of each tool. ${ratio ? `The exact count is ${ratio.median.toFixed(2)} times the estimate at the median (${ratio.p10.toFixed(2)} to ${ratio.p90.toFixed(2)} for 80 % of servers).` : ''}`
   },
   {
     q: 'What does Claude Code add?',

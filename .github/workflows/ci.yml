@@ -15,10 +15,14 @@ jobs:
       - run: npm ci
       - run: npx tsc -p packages/mcpcost/tsconfig.json --noEmit
       - run: npm test --workspaces --if-present
+      - run: node --test ".github/actions/*.test.mjs"
       - run: npm run build -w site
   action:
     name: the GitHub Action against two public servers
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5

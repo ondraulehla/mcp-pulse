@@ -12,7 +12,8 @@ Token counts: claudeTokens is exact. It comes from the Anthropic count_tokens en
 - https://mcpcost.ulehla.dev/changes : what changed since the previous run (new, removed, down, back, tool sets that grew or shrank); Atom feed at /changes.xml
 - https://mcpcost.ulehla.dev/s/<registry name> : one server, for example https://mcpcost.ulehla.dev/s/com.replynodes/mcp
 - https://mcpcost.ulehla.dev/servers?q=<words>&status=ok&sort=claude : search and filters (sort=tokens for the estimate)
-- https://mcpcost.ulehla.dev/check?target=<https url> : probe a server that is not in the registry
+- https://mcpcost.ulehla.dev/check?target=<https url> : probe a server that is not in the registry; a form there tracks it on the board (name url/<host>/<path>)
+- https://mcpcost.ulehla.dev/watch?server=<name> : e-mail alerts when a server stops answering, comes back, or its tool set or token cost changes
 - https://mcpcost.ulehla.dev/statistics, /hosts, /methodology
 
 ## Machine access
@@ -20,6 +21,7 @@ Token counts: claudeTokens is exact. It comes from the Anthropic count_tokens en
 - JSON, search: https://mcpcost.ulehla.dev/api/servers.json?q=<words>&status=ok&sort=claude&page=1
 - JSON, live probe: https://mcpcost.ulehla.dev/api/check.json?url=<https url>
 - JSON, run summary: https://mcpcost.ulehla.dev/api/summary.json
+- JSON, servers tracked outside the registry: https://mcpcost.ulehla.dev/api/tracked.json
 - MCP server (Streamable HTTP, no auth): https://mcpcost.ulehla.dev/mcp with tools lookup_server, search_servers, check_server, registry_summary
 - CLI for your own config: npx mcpcost (https://www.npmjs.com/package/mcpcost)
 - Source and raw data: https://github.com/ondraulehla/mcpcost (MIT)

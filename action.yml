@@ -33,6 +33,14 @@ inputs:
     description: 'mcpcost version to run.'
     required: false
     default: 'latest'
+  comment:
+    description: 'On a pull request, post one comment with the difference against the base branch. The job needs "pull-requests: write".'
+    required: false
+    default: 'true'
+  token:
+    description: 'Token for the pull request comment.'
+    required: false
+    default: ${{ github.token }}
 outputs:
   tokens:
     description: 'Total tokens of all measured servers.'
@@ -56,6 +64,8 @@ runs:
         INPUT_CLAUDE: ${{ inputs.claude }}
         INPUT_NO_STDIO: ${{ inputs.no-stdio }}
         INPUT_VERSION: ${{ inputs.version }}
+        INPUT_COMMENT: ${{ inputs.comment }}
+        GITHUB_TOKEN: ${{ inputs.token }}
       run: |
         set -euo pipefail
         args=()
@@ -65,6 +75,28 @@ runs:
         args+=(--window "$INPUT_WINDOW" --tools "$INPUT_TOOLS" --json)
         npx -y "mcpcost@$INPUT_VERSION" "${args[@]}" > mcpcost.json
         node "$GITHUB_ACTION_PATH/.github/actions/summary.mjs" mcpcost.json "$INPUT_BUDGET" >> "$GITHUB_STEP_SUMMARY"
+        # On a pull request: the same measurement on the base branch, in a worktree, then one comment with the difference.
+        if [ "$INPUT_COMMENT" = "true" ] && [ "${GITHUB_EVENT_NAME:-}" = "pull_request" ] && [ -n "${GITHUB_BASE_REF:-}" ]; then
+          base_json=-
+          if git rev-parse --is-inside-work-tree >/dev/null 2>&1 && git fetch --no-tags --depth=1 origin "$GITHUB_BASE_REF" 2>/dev/null; then
+            worktree=$(mktemp -d)
+            git worktree add --detach "$worktree" FETCH_HEAD >/dev/null
+            base_args=()
+            while IFS= read -r f; do [ -n "$f" ] && [ -f "$worktree/$f" ] && base_args+=(--config "$f"); done <<< "$INPUT_CONFIG"
+            if [ ${#base_args[@]} -gt 0 ]; then
+              [ "$INPUT_CLAUDE" = "true" ] && base_args+=(--claude)
+              [ "$INPUT_NO_STDIO" = "true" ] && base_args+=(--no-stdio)
+              base_args+=(--window "$INPUT_WINDOW" --tools "$INPUT_TOOLS" --json)
+              if (cd "$worktree" && npx -y "mcpcost@$INPUT_VERSION" "${base_args[@]}" > "$GITHUB_WORKSPACE/mcpcost-base.json"); then base_json=mcpcost-base.json; else echo "::warning title=mcpcost::The measurement of $GITHUB_BASE_REF failed; the comment shows the head only."; fi
+            else
+              echo '{"servers":[],"total":{"servers":0,"tools":0,"tokens":0}}' > mcpcost-base.json; base_json=mcpcost-base.json
+            fi
+            git worktree remove --force "$worktree" >/dev/null 2>&1 || true
+          else
+            echo "::warning title=mcpcost::Could not fetch $GITHUB_BASE_REF; the comment shows the head only."
+          fi
+          node "$GITHUB_ACTION_PATH/.github/actions/comment.mjs" mcpcost.json "$base_json" "$INPUT_BUDGET"
+        fi
         total=$(node -e 'console.log(JSON.parse(require("fs").readFileSync("mcpcost.json","utf8")).total.tokens)')
         servers=$(node -e 'console.log(JSON.parse(require("fs").readFileSync("mcpcost.json","utf8")).total.servers)')
         echo "tokens=$total" >> "$GITHUB_OUTPUT"

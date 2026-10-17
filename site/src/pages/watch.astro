@@ -1,0 +1,51 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { createWatch, hashIp, type CreateResult } from '../lib/watch';
+
+Astro.response.headers.set('cache-control', 'no-store');
+let server = (Astro.url.searchParams.get('server') ?? '').trim().slice(0, 200);
+let email = '';
+let result: CreateResult | null = null;
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  email = String(form.get('email') ?? '').trim().slice(0, 254);
+  server = String(form.get('server') ?? '').trim().slice(0, 200);
+  let ip: string | undefined;
+  try {
+    ip = Astro.clientAddress;
+  } catch {
+    ip = undefined;
+  }
+  // The hidden "website" field is a honeypot: a browser leaves it empty, a bot fills it.
+  result = String(form.get('website') ?? '') ? { ok: true, token: '', mailed: true, already: false } : await createWatch(email, server, await hashIp(ip));
+}
+---
+
+<Layout title="Watch a server" description="An e-mail when an MCP server stops answering, comes back, or its tool set or token cost changes." robots="noindex, nofollow">
+  <p class="kicker">alerts</p>
+  <h1 class="poster">Watch a server</h1>
+  {result?.ok && !result.already && (
+    <section class="frame pad">
+      <p><b>Check your inbox.</b> A confirmation mail is on its way to <span class="mono">{email}</span>. Nothing is sent before you open the link in it.</p>
+      <p class="muted small">No mail after a few minutes? Look in the spam folder, then <a href={`/watch?server=${encodeURIComponent(server)}`}>try again</a>.</p>
+    </section>
+  )}
+  {result?.ok && result.already && (
+    <section class="frame pad">
+      <p><b>Already watching.</b> <span class="mono">{email}</span> gets a mail when <a href={`/s/${server}`}>{server}</a> changes.</p>
+    </section>
+  )}
+  {result && !result.ok && <section class="frame pad"><p><b>Not done.</b> {result.reason}</p></section>}
+  {!result?.ok && (
+    <>
+      <p class="lede">One mail when <a href={`/s/${server}`} class="mono">{server || 'a server'}</a> stops answering, comes back, or its tool set or token cost changes. A confirmation mail first; every mail has a stop link.</p>
+      <form class="checkform" method="post" action="/watch" style="margin-top:18px">
+        <input type="hidden" name="server" value={server} />
+        <input type="email" name="email" value={email} placeholder="you@example.com" required autocomplete="email" aria-label="E-mail address" />
+        <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px" />
+        <button type="submit">Watch</button>
+      </form>
+      <p class="muted small">We keep the address for this watch only. The stop link in any mail deletes the watch. The same changes are also in the server's <a href={`/s/${server}.xml`}>Atom feed</a>, with no address needed.</p>
+    </>
+  )}
+</Layout>

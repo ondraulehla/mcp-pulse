@@ -1,0 +1,63 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { probeRemoteRaw } from '../../../packages/mcpcost/src/core.ts';
+import { label } from '../lib/format';
+import { createTracked, parseTrackable, type TrackResult } from '../lib/track';
+import { hashIp } from '../lib/watch';
+
+if (Astro.request.method !== 'POST') return Astro.redirect('/check', 302);
+Astro.response.headers.set('cache-control', 'no-store');
+
+// The same per-isolate budget as the live check.
+const g = globalThis as unknown as { __checks?: { minute: number; n: number } };
+function allowed(): boolean {
+  const minute = Math.floor(Date.now() / 60_000);
+  if (!g.__checks || g.__checks.minute !== minute) g.__checks = { minute, n: 0 };
+  return ++g.__checks.n <= 40;
+}
+
+const form = await Astro.request.formData();
+const raw = String(form.get('url') ?? '').trim().slice(0, 500);
+const parsed = parseTrackable(raw);
+let result: TrackResult;
+let status = '';
+if (!(parsed instanceof URL)) result = { ok: false, reason: parsed.reason };
+else if (!allowed()) result = { ok: false, reason: 'Too many live checks right now. Try again in a minute.' };
+else {
+  let ip: string | undefined;
+  try {
+    ip = Astro.clientAddress;
+  } catch {
+    ip = undefined;
+  }
+  const type = /\/sse\/?$/.test(parsed.pathname) ? 'sse' : 'streamable-http';
+  const { result: probe } = await probeRemoteRaw({ url: parsed.toString(), type }, { timeoutMs: 10_000 });
+  status = probe.status;
+  result = await createTracked(parsed, probe.status, await hashIp(ip));
+}
+---
+
+<Layout title="Track a server" robots="noindex, nofollow">
+  <p class="kicker">board</p>
+  {result.ok && result.inRegistry && (
+    <>
+      <h1 class="poster">Already on the board</h1>
+      <p class="lede">A registry entry lists this URL: <a href={`/s/${result.name}`}>{result.name}</a>.</p>
+    </>
+  )}
+  {result.ok && !result.inRegistry && (
+    <>
+      <h1 class="poster">{result.existed ? 'Already tracked' : 'Tracked'}</h1>
+      <p class="lede">The daily probe measures <span class="mono">{raw}</span> with the registry servers, under the name <span class="mono">{result.name}</span>.{status && <> Right now it answers: {label(status)}.</>}</p>
+      <p>The page <a href={`/s/${result.name}`}>/s/{result.name}</a> is there after the next daily run, which starts at 03:17 UTC. Then the badge, the feed and the alerts work for it like for any server.</p>
+      <p class="muted small">To have it removed, open an issue with the name on <a href="https://github.com/ondraulehla/mcpcost/issues" rel="noopener">GitHub</a>. A server that is published to the <a href="https://registry.modelcontextprotocol.io" rel="noopener">official registry</a> later gets its registry name.</p>
+    </>
+  )}
+  {!result.ok && (
+    <>
+      <h1 class="poster">Not tracked</h1>
+      <p class="lede">{result.reason}</p>
+      <p class="muted small"><a href={`/check?target=${encodeURIComponent(raw)}`}>Back to the check</a>.</p>
+    </>
+  )}
+</Layout>

@@ -1,6 +1,6 @@
 export { fetchRegistry, primaryRemote, hostOf, REGISTRY_URL } from './registry.js';
 export { probeRemote, USER_AGENT, VERSION } from './probe.js';
-export type { ProbeOptions, ClaudeOptions } from './probe.js';
+export type { ProbeOptions, ClaudeOptions, GeminiOptions } from './probe.js';
 export { probeStdio, probeStdioRaw } from './stdio.js';
 export { measure, emptyResult } from './core.js';
 export type { RawTool } from './core.js';
@@ -11,6 +11,8 @@ export { toolCost, toolsCost, toolPayload, countTokens, TOKENIZER } from './toke
 export type { ToolLike } from './tokens.js';
 export { countClaudeTokens, countForServer, claudeCodePrefix, toApiTools, createLimiter, ClaudeCountError, CLAUDE_MODEL } from './claude.js';
 export type { ClaudeCountOptions, ClaudeCount, Limiter } from './claude.js';
+export { countGeminiTokens, toGeminiDeclarations, GeminiCountError, GEMINI_MODEL } from './gemini.js';
+export type { GeminiCountOptions, GeminiCount } from './gemini.js';
 export type * from './types.js';
 export { GATED_STATUSES } from './types.js';
 export { buildServer } from './mcp.js';

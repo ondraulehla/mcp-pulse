@@ -107,7 +107,7 @@ const pageTitle = ok
   : `${name}: ${label(server.status)}`;
 const answer = ok
   ? exact
-    ? `${name} costs ${num(server.claude_tokens)} tokens of context per session in ${model}. In Claude Code it costs ${num(server.claude_tokens_cc ?? server.claude_tokens)} tokens. It has ${num(server.tool_count)} tool definitions. That is ${share} % of a 200k window. The o200k_base estimate is ${num(server.tools_tokens)} tokens. Measured ${date(server.claude_measured_at ?? server.probed_at)}.`
+    ? `${name} costs ${num(server.claude_tokens)} tokens of context per session in ${model}. In Claude Code it costs ${num(server.claude_tokens_cc ?? server.claude_tokens)} tokens. It has ${num(server.tool_count)} tool definitions. That is ${share} % of a 200k window. Measured ${date(server.claude_measured_at ?? server.probed_at)}.`
     : `${name} costs about ${num(server.tools_tokens)} tokens of context per session (o200k_base estimate${server.claude_error ? ', Claude refused the schema' : ''}). It has ${num(server.tool_count)} tool definitions. That is ${share} % of a 200k window. Measured ${date(server.probed_at)}.`
   : `${name} did not answer the probe on ${date(server.probed_at)}. Result: ${label(server.status)}${server.http_status ? ` (HTTP ${server.http_status})` : ''}.`;
 const pageUrl = `${site}/s/${name}`;
@@ -153,11 +153,9 @@ const jsonld = {
   {server.status === 'ok' && (
     <div class="stats">
       <div class="stat"><b>{num(server.tool_count)}</b><span>tools</span></div>
-      {exact && <div class="stat"><b>{tokens(server.claude_tokens)}</b><span>tokens in {model}</span></div>}
-      {exact && <div class="stat"><b>{tokens(server.claude_tokens_cc ?? server.claude_tokens)}</b><span>tokens in Claude Code</span></div>}
+      <div class="stat"><b>{tokens(cost)}</b><span>{exact ? `tokens in ${model}` : 'tokens, o200k_base estimate'}</span></div>
       <div class="stat"><b>{windowShare(cost)}</b><span>of a 200k context window</span></div>
       {multipleText && <div class="stat"><b>{multipleText}</b><span>the median server</span></div>}
-      <div class="stat"><b>{tokens(server.tools_tokens)}</b><span>{exact ? 'o200k_base estimate' : 'tokens, o200k_base estimate'}</span></div>
       <div class="stat"><b>{ms(server.init_ms)}</b><span>to initialize</span></div>
       <div class="stat"><b>{ms(server.tools_ms)}</b><span>to list tools</span></div>
     </div>
@@ -174,10 +172,14 @@ const jsonld = {
     {capabilities.length > 0 && <><dt>Capabilities</dt><dd class="mono">{capabilities.join(', ')}</dd></>}
     {server.instructions_chars != null && server.status === 'ok' && <><dt>Instructions</dt><dd>{server.instructions_chars ? `${num(server.instructions_chars)} characters` : 'none'}</dd></>}
     {ok && server.claude_error && <><dt>Claude count</dt><dd>The count_tokens endpoint refused the tool schemas: <span class="mono">{server.claude_error}</span>. The estimate stands in.</dd></>}
-    {exact && <><dt>Claude count</dt><dd>{model}, measured {date(server.claude_measured_at)}. Counted again when the tool definitions change. <a href="/methodology#tokens">Method</a>.</dd></>}
+    {exact && <><dt>Count</dt><dd>{tokens(server.claude_tokens)} tokens in {model}, exact, measured {date(server.claude_measured_at)}. With the Claude Code prefix <span class="mono">mcp__…__</span> on each tool name: {tokens(server.claude_tokens_cc ?? server.claude_tokens)}. The o200k_base estimate is {tokens(server.tools_tokens)}. Counted again when the tool definitions change. <a href="/methodology#tokens">Method</a>.</dd></>}
+    {ok && server.gemini_tokens != null && <><dt>Gemini</dt><dd>{tokens(server.gemini_tokens)} tokens in {server.gemini_model}, exact, from the Gemini countTokens endpoint, measured {date(server.gemini_measured_at)}.</dd></>}
+    {ok && server.gemini_tokens == null && server.gemini_error && <><dt>Gemini</dt><dd>The countTokens endpoint refused the tool schemas: <span class="mono">{server.gemini_error}</span>.</dd></>}
     {server.repo && <><dt>Repository</dt><dd><a href={server.repo} rel="noopener" class="break">{server.repo}</a></dd></>}
     {server.website && <><dt>Website</dt><dd><a href={server.website} rel="noopener" class="break">{server.website}</a></dd></>}
-    <dt>Registry</dt><dd>{server.registry_status}, updated {date(server.registry_updated_at)} · <a href={`https://registry.modelcontextprotocol.io/v0/servers?search=${encodeURIComponent(name)}`} rel="noopener">registry entry</a></dd>
+    {server.registry_status === 'tracked'
+      ? <><dt>Registry</dt><dd>Not in the official registry. Tracked on request since {date(server.registry_updated_at)}. <a href="https://registry.modelcontextprotocol.io" rel="noopener">Publish it</a> and it gets its registry name here.</dd></>
+      : <><dt>Registry</dt><dd>{server.registry_status}, updated {date(server.registry_updated_at)} · <a href={`https://registry.modelcontextprotocol.io/v0/servers?search=${encodeURIComponent(name)}`} rel="noopener">registry entry</a></dd></>}
     {history.length > 0 && <><dt>Reachable</dt><dd>{reachable} of the last {history.length} probe{history.length === 1 ? '' : 's'}</dd></>}
   </dl>
 
@@ -230,6 +232,15 @@ const jsonld = {
     {hints.map((h) => <li>{h}</li>)}
   </ul>
   {probeNow && <p class="muted small">Fixed something? <a href={probeNow}>Probe it now</a>, with the same steps as the daily run. This page updates with the next daily run.</p>}
+
+  <h2>Alerts</h2>
+  <p class="muted small">A mail when this server stops answering, comes back, or its tool set or token cost changes. One confirmation mail first; every mail has a stop link.</p>
+  <form class="checkform" method="post" action="/watch">
+    <input type="hidden" name="server" value={name} />
+    <input type="email" name="email" placeholder="you@example.com" required autocomplete="email" aria-label="E-mail address" />
+    <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px" />
+    <button type="submit">Watch</button>
+  </form>
 
   <h2>Badge and feed</h2>
   <p><img src={`/badge/${name}.svg`} alt={`mcpcost: ${label(server.status)}`} height="20" /></p>
